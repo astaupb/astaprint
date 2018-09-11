@@ -1,0 +1,15 @@
+[package]
+name = "astaprint-common"
+version = "0.1.0"
+authors = ["Gerrit Pape <papeg@mail.upb.de>"]
+
+[dependencies]
+log = {version = "*", features = ["std", "max_level_debug", "release_max_level_info"]}
+chrono = "*"
+serde = "*"
+serde_json = "*"
+serde_derive = "*"
+netsnmp-sys = "*"
+poppler = "*"
+cairo-rs = { version= "0.3.0", features = ["png"]}
+astaprint-database = {path = "../astaprint/database"}
