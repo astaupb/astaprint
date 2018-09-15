@@ -89,9 +89,9 @@ impl PDFDocument {
             .expect("writing cairo surface to file");
     }
 
-    pub fn render_previews_up_to(&self, number: usize, path: &Vec<String>) {
-        for i in (0..number).filter(|n| n < &self.pagecount && n < &path.len()) {
-            self.render_page(i, &path[i]);
+    pub fn render_previews_up_to(&self, number: usize, base_path: &str) {
+        for i in (0..number).filter(|n| n < &self.pagecount) {
+            self.render_page(i, &format!("{}-{}", base_path, i));
         }
     }
 }

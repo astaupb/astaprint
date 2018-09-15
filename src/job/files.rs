@@ -23,30 +23,28 @@ pub struct JobFiles {
     pub pdf: String,
     pub tmp: String,
     pub index: String,
-    pub preview: Vec<String>,
+    pub preview: String,
 }
 
 impl JobFiles {
-    pub fn new(uid: &str, username: &str) -> JobFiles {
-        let spooldir = env::var("ASTAPRINT_SPOOL_DIR").expect("reading spooldir from environemt");
-        let userdir = format!("{}/user/{}", spooldir, username);
-        let mut preview: Vec<String> = Vec::new();
-        for i in 0..4 {
-            preview.push(format!("{}/preview/{}-{}", userdir, uid, i));
-        }
+    pub fn new(uid: &str, user_id: u32) -> JobFiles {
+        let userdir = env::var("ASTAPRINT_USER_DIR")
+            .expect("reading spooldir from environemt");
+        let userdir = format!("{}/{}", userdir, user_id);
         JobFiles {
             pdf: format!("{}/pdf/{}", userdir, uid),
             tmp: format!("{}/tmp/{}", userdir, uid),
             index: format!("{}/index/{}", userdir, uid),
-            preview: preview,
+            preview: format!("{}/preview/{}", userdir, uid),
         }
     }
-    pub fn clean_up(&self, pagecount: &u16) {
+    pub fn clean_up(&self, pagecount: u16) {
         remove_file(&self.pdf).expect("removing pdf file");
         remove_file(&self.index).expect("removing index file");
-        for (i, file) in self.preview.iter().enumerate() {
-            if i < *pagecount as usize {
-                remove_file(&file).expect("removing preview file");
+        for i in 0..pagecount {
+            if i < 4 {
+                remove_file(&format!("{}-{}", &self.preview, i))
+                    .expect(&format!("removing preview file #{}", i));
             }
         }
     }
