@@ -12,4 +12,4 @@ serde_derive = "*"
 netsnmp-sys = "*"
 poppler = "*"
 cairo-rs = { version= "0.3.0", features = ["png"]}
-astaprint-database = {git = "https://git.uni-paderborn.de/asta/astaprint-database.git"}
+astaprint-database = {git = "https://git.uni-paderborn.de/asta/astaprint-database.git", rev="1dea7b5e"}
