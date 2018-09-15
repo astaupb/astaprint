@@ -27,7 +27,7 @@ pub struct AccountWorkerJSON {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct AccountData {
-    pub username: String,
+    pub user_id: u32,
     pub uid: String,
     pub counter: CounterValues,
 }
@@ -40,7 +40,7 @@ pub struct AccountWork {
 impl AccountWork {
     pub fn new(data: AccountData) -> AccountWork {
         let spooldir = env::var("ASTAPRINT_SPOOL_DIR").expect("reading spooldir from environment");
-        let lock = Lock::new(&format!("{}/user/{}/accounting", spooldir, &data.username));
+        let lock = Lock::new(&format!("{}/user/{}/accounting", spooldir, &data.user_id));
         AccountWork { data, lock }
     }
 }

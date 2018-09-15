@@ -23,21 +23,27 @@ use pagerange::page_range_is_valid;
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ShortJobData {
     pub uid: String,
-    pub username: String,
+    pub user_id: u32,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct JobData {
     pub uid: String,
-    pub username: String,
-    pub timestamp: u64,
+    pub user_id: u32,
+    pub timestamp: i64,
     pub info: JobInfo,
     pub options: JobOptions,
 }
 
-impl PartialEq for JobData {
-    fn eq(&self, other: &JobData) -> bool {
-        self.uid == other.uid
+impl JobData {
+    pub fn new(uid: &str, user_id: u32, filename: &str, password: &str) -> JobData {
+        JobData{
+            uid: String::from(uid),
+            user_id: user_id,
+            timestamp: Local::now().timestamp(),
+            info: JobInfo::new(filename, password),
+            options: JobOptions::default(),
+        }
     }
 }
 
@@ -50,6 +56,18 @@ pub struct JobInfo {
     pub password: String,
 }
 
+impl JobInfo {
+    fn new(filename: &str, password: &str) -> JobInfo {
+        JobInfo{
+            filename: String::from(filename),
+            pagecount: 0,
+            color: 0,
+            a3: 0,
+            password: String::from(password),
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct JobOptions {
     pub duplex: u8,
@@ -60,6 +78,21 @@ pub struct JobOptions {
     pub nup: u8,
     pub nuppageorder: u8,
     pub range: String,
+}
+
+impl Default for JobOptions {
+    fn default() -> JobOptions {
+        JobOptions{
+            duplex: 0,
+            copies: 1,
+            collate: 0,
+            keep: 0,
+            a3: 0,
+            nup: 1,
+            nuppageorder: 0,
+            range: String::from(""),
+        }
+    }
 }
 
 impl JobData {
@@ -95,7 +128,7 @@ impl JobData {
         buf.append(
             &mut format!(
                 "\x40\x50\x4a\x4c\x20\x53\x45\x54\x20\x55\x53\x45\x52\x4e\x41\x4d\x45\x3d\"{}\"\r\n",
-                &self.username
+                &self.user_id
             ).as_bytes()
                 .to_owned(),
         );

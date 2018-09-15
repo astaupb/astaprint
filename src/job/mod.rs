@@ -32,7 +32,7 @@ pub struct Job {
 
 impl Job {
     pub fn new(data: JobData) -> Job {
-        let files = JobFiles::new(&data.uid, &data.username);
+        let files = JobFiles::new(&data.uid, data.user_id);
         Job { data, files }
     }
 }
