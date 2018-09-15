@@ -19,7 +19,8 @@
 use pdf::pageinfo::{Is::Almost, PageInfo, PageOrientation, PageSize};
 
 use std::{
-    fs::{rename, OpenOptions},
+    env,
+    fs::{rename, OpenOptions, File},
     io::Write,
     process::{Command, Stdio},
 };
@@ -85,13 +86,20 @@ pub fn create_pdf_from_ps(path_to_pdf: &str) -> bool {
     ps2pdf.success() && rename(&outfile, path_to_pdf).is_ok()
 }
 
-pub fn log_gs_fonts(line: &str) {
-    let mut file = OpenOptions::new()
+fn log_gs_font_substitutions(lines: Vec<String>) {
+    let spooldir = env::var("ASTAPRINT_SPOOL_DIR")
+        .expect("reading ASTAPRINT_SPOOL_DIR from environment");
+    let path = format!("{}/dispatch/fonts.log", spooldir);
+    let mut file = match OpenOptions::new()
         .append(true)
-        .open("/astaprint/spool/dispatch/fonts.log")
-        .expect("opening font log");
-    file.write(&format!("{}\n", line).as_bytes())
-        .expect("logging font line");
+        .open(&path) {
+            Ok(file) => file,
+            Err(_) => File::create(&path).expect("creating fonts.log file"),
+        };
+    for line in lines {
+        write!(file, "{}", line)
+            .expect("writing font substitution line to file");
+    }
 }
 
 /// returns pagecount of converted pdf, in case something failed 0 will be returned
@@ -119,15 +127,17 @@ pub fn create_greyscale_pdf(path_to_pdf: &str) -> u16 {
     let mut pagecount = 0;
     println!("{:?}", gs_pdf);
     if gs_pdf.status.success() {
+        let mut substitutions: Vec<String> = Vec::new();
         for line in String::from_utf8_lossy(&gs_pdf.stdout).lines() {
             if line.contains("Substituting") || line.contains("Loading") {
-                log_gs_fonts(&line);
+                substitutions.push(String::from(line));
                 continue;
             }
             if line.contains("Page") && !line.contains("LastPage") {
                 pagecount += 1;
             }
         }
+        log_gs_font_substitutions(substitutions);
     }
     if rename(&outfile, &path_to_pdf).is_ok() {
         pagecount
