@@ -36,12 +36,12 @@ pub struct JobData {
 }
 
 impl JobData {
-    pub fn new(uid: &str, user_id: u32, filename: &str, password: &str) -> JobData {
+    pub fn new(uid: &str, user_id: u32, filename: &str, password: &str, color: bool) -> JobData {
         JobData{
             uid: String::from(uid),
             user_id: user_id,
             timestamp: Local::now().timestamp(),
-            info: JobInfo::new(filename, password),
+            info: JobInfo::new(filename, password, color),
             options: JobOptions::default(),
         }
     }
@@ -51,18 +51,18 @@ impl JobData {
 pub struct JobInfo {
     pub filename: String,
     pub pagecount: u16,
-    pub color: u8,
-    pub a3: u8,
+    pub color: bool,
+    pub a3: bool,
     pub password: String,
 }
 
 impl JobInfo {
-    fn new(filename: &str, password: &str) -> JobInfo {
+    fn new(filename: &str, password: &str, color: bool) -> JobInfo {
         JobInfo{
             filename: String::from(filename),
             pagecount: 0,
-            color: 0,
-            a3: 0,
+            color: color,
+            a3: false,
             password: String::from(password),
         }
     }
@@ -72,9 +72,9 @@ impl JobInfo {
 pub struct JobOptions {
     pub duplex: u8,
     pub copies: u16,
-    pub collate: u8,
-    pub keep: u8,
-    pub a3: u8,
+    pub collate: bool,
+    pub keep: bool,
+    pub a3: bool,
     pub nup: u8,
     pub nuppageorder: u8,
     pub range: String,
@@ -85,9 +85,9 @@ impl Default for JobOptions {
         JobOptions{
             duplex: 0,
             copies: 1,
-            collate: 0,
-            keep: 0,
-            a3: 0,
+            collate: false,
+            keep: false,
+            a3: false,
             nup: 1,
             nuppageorder: 0,
             range: String::from(""),
@@ -144,13 +144,12 @@ impl JobData {
         );
 
         match self.options.a3 {
-            0 => {
+            false => {
                 buf.append(&mut b"\x40\x50\x4a\x4c\x20\x53\x45\x54\x20\x50\x41\x50\x45\x52\x3d\x41\x34\r\n".to_vec());
             }
-            1 => {
+            true => {
                 buf.append(&mut b"\x40\x50\x4a\x4c\x20\x53\x45\x54\x20\x50\x41\x50\x45\x52\x3d\x41\x33\r\n".to_vec());
             }
-            _ => (),
         }
 
         match self.options.duplex {
@@ -169,7 +168,7 @@ impl JobData {
         if self.options.copies > 1 {
             match self.options.collate {
                 // WHAT THE FUCK RICOH
-                1 => {
+                true => {
                     buf.append(
                         &mut format!(
                             "\x40\x50\x4a\x4c\x20\x53\x45\x54\x20\x43\x4f\x50\x49\x45\x53\x3d{}\r\n",
@@ -178,7 +177,7 @@ impl JobData {
                             .to_owned(),
                     );
                 }
-                0 => {
+                false => {
                     buf.append(
                         &mut format!(
                             "\x40\x50\x4a\x4c\x20\x53\x45\x54\x20\x51\x54\x59\x3d{}\r\n",
@@ -187,23 +186,21 @@ impl JobData {
                             .to_owned(),
                     );
                 }
-                _ => (),
             }
         }
 
         if self.options.a3 != self.info.a3 {
             match self.options.a3 {
-                0 => {
+                false => {
                     buf.append(
                         &mut b"\x40\x50\x4a\x4c\x20\x53\x45\x54\x20\x46\x49\x54\x54\x4f\x50\x41\x47\x45\x53\x49\x5a\x45\x3d\x41\x34\r\n".to_vec(),
                     );
                 }
-                1 => {
+                true => {
                     buf.append(
                         &mut b"\x40\x50\x4a\x4c\x20\x53\x45\x54\x20\x46\x49\x54\x54\x4f\x50\x41\x47\x45\x53\x49\x5a\x45\x3d\x41\x33\r\n".to_vec(),
                     );
                 }
-                _ => (),
             }
         }
 
