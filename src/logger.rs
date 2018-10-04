@@ -32,6 +32,7 @@ impl Log for Logger {
     }
 
     fn log(&self, record: &Record) {
+        /*
         if record.level() == Level::Error {
             panic!(
                 "{} {} {} {}",
@@ -41,6 +42,7 @@ impl Log for Logger {
                 record.args()
             );
         }
+        */
         if self.enabled(record.metadata()) {
             println!(
                 "{} {} {} {}",
