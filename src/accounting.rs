@@ -39,8 +39,8 @@ pub struct AccountWork {
 
 impl AccountWork {
     pub fn new(data: AccountData) -> AccountWork {
-        let spooldir = env::var("ASTAPRINT_SPOOL_DIR").expect("reading spooldir from environment");
-        let lock = Lock::new(&format!("{}/user/{}/accounting", spooldir, &data.user_id));
+        let userdir = env::var("ASTAPRINT_USER_DIR").expect("reading userdir from environment");
+        let lock = Lock::new(&format!("{}/{}/accounting", userdir, &data.user_id));
         AccountWork { data, lock }
     }
 }
