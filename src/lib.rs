@@ -1,5 +1,3 @@
-#![feature(custom_attribute)]
-
 /// AStAPrint - lib.rs
 /// Copyright (C) 2018  AStA der Universität Paderborn
 ///

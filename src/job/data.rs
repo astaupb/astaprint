@@ -17,7 +17,7 @@
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use chrono::Local;
 
-use crate::pagerange::page_range_is_valid;
+use pagerange::page_range_is_valid;
 
 use std::{fs::File,
           io::Read};
