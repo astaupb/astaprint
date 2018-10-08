@@ -15,24 +15,31 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 pub mod data;
 pub mod files;
 pub mod json;
 
-pub use self::data::{JobData, ShortJobData};
-pub use self::files::JobFiles;
-pub use self::json::{DispatchWorkerJSON, PrintWorkerJSON};
+pub use self::{data::{JobData,
+                      ShortJobData},
+               files::JobFiles,
+               json::{DispatchWorkerJSON,
+                      PrintWorkerJSON}};
 
 #[derive(Serialize, Deserialize)]
-pub struct Job {
+
+pub struct Job
+{
     pub data: JobData,
     pub files: JobFiles,
 }
 
-impl Job {
-    pub fn new(data: JobData) -> Job {
+impl Job
+{
+    pub fn new(data: JobData) -> Job
+    {
         let files = JobFiles::new(&data.uid, data.user_id);
-        Job { data, files }
+
+        Job { data,
+              files, }
     }
 }

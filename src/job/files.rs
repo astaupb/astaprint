@@ -15,36 +15,42 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-use std::{env, fs::remove_file};
+use std::{env,
+          fs::remove_file};
 
 #[derive(Serialize, Deserialize)]
-pub struct JobFiles {
+
+pub struct JobFiles
+{
     pub pdf: String,
     pub tmp: String,
     pub index: String,
     pub preview: String,
 }
 
-impl JobFiles {
-    pub fn new(uid: &str, user_id: u32) -> JobFiles {
-        let userdir = env::var("ASTAPRINT_USER_DIR")
-            .expect("reading spooldir from environemt");
+impl JobFiles
+{
+    pub fn new(uid: &str, user_id: u32) -> JobFiles
+    {
+        let userdir = env::var("ASTAPRINT_USER_DIR").expect("reading spooldir from environemt");
+
         let userdir = format!("{}/{}", userdir, user_id);
-        JobFiles {
-            pdf: format!("{}/pdf/{}", userdir, uid),
-            tmp: format!("{}/tmp/{}", userdir, uid),
-            index: format!("{}/index/{}", userdir, uid),
-            preview: format!("{}/preview/{}", userdir, uid),
-        }
+
+        JobFiles { pdf: format!("{}/pdf/{}", userdir, uid),
+                   tmp: format!("{}/tmp/{}", userdir, uid),
+                   index: format!("{}/index/{}", userdir, uid),
+                   preview: format!("{}/preview/{}", userdir, uid), }
     }
-    pub fn clean_up(&self, pagecount: u16) {
+
+    pub fn clean_up(&self, pagecount: u16)
+    {
         remove_file(&self.pdf).expect("removing pdf file");
+
         remove_file(&self.index).expect("removing index file");
+
         for i in 0..pagecount {
             if i < 4 {
-                remove_file(&format!("{}-{}", &self.preview, i))
-                    .expect(&format!("removing preview file #{}", i));
+                remove_file(&format!("{}-{}", &self.preview, i)).expect(&format!("removing preview file #{}", i));
             }
         }
     }

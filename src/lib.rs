@@ -1,4 +1,6 @@
-/// AStAPrint-Common
+#![feature(custom_attribute)]
+
+/// AStAPrint - lib.rs
 /// Copyright (C) 2018  AStA der Universität Paderborn
 ///
 /// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
@@ -15,27 +17,24 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 extern crate log;
 extern crate serde;
 extern crate serde_json;
+
 #[macro_use]
+
 extern crate serde_derive;
 
+#[macro_use]
+
+extern crate diesel;
+
+extern crate bigdecimal;
 extern crate chrono;
 
-extern crate cairo;
-extern crate poppler;
-
-extern crate astaprint_database;
-
-pub mod accounting;
-pub mod file;
+pub mod database;
+pub mod filetype;
 pub mod job;
 pub mod lock;
 pub mod logger;
 pub mod pagerange;
-pub mod pdf;
-
-pub mod snmp;
-pub mod subprocesses;

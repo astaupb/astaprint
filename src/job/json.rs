@@ -15,23 +15,29 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-use super::{JobData, ShortJobData};
+use super::{JobData,
+            ShortJobData};
 
 #[allow(non_camel_case_types)]
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub enum PrintWorkerJSON {
+
+pub enum PrintWorkerJSON
+{
     print(JobData),
     cancel(ShortJobData),
 }
 
-impl From<JobData> for PrintWorkerJSON {
-    fn from(data: JobData) -> PrintWorkerJSON {
+impl From<JobData> for PrintWorkerJSON
+{
+    fn from(data: JobData) -> PrintWorkerJSON
+    {
         PrintWorkerJSON::print(data)
     }
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct DispatchWorkerJSON {
+
+pub struct DispatchWorkerJSON
+{
     pub dispatch: JobData,
 }

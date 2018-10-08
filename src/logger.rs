@@ -15,55 +15,62 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 use chrono::Local;
 
-use log::{
-    set_boxed_logger, set_max_level, Level, LevelFilter, Log, Metadata, Record, SetLoggerError,
-};
+use log::{set_boxed_logger,
+          set_max_level,
+          Level,
+          LevelFilter,
+          Log,
+          Metadata,
+          Record,
+          SetLoggerError};
 
-pub struct Logger {
+pub struct Logger
+{
     name: String,
 }
 
-impl Log for Logger {
-    fn enabled(&self, metadata: &Metadata) -> bool {
+impl Log for Logger
+{
+    fn enabled(&self, metadata: &Metadata) -> bool
+    {
         metadata.level() <= Level::Debug
     }
 
-    fn log(&self, record: &Record) {
-        /*
-        if record.level() == Level::Error {
-            panic!(
-                "{} {} {} {}",
-                Local::now().format("%Y-%m-%d %H:%M:%S.%f"),
-                self.name,
-                record.level(),
-                record.args()
-            );
-        }
-        */
+    fn log(&self, record: &Record)
+    {
+        // if record.level() == Level::Error {
+        // panic!(
+        // "{} {} {} {}",
+        // Local::now().format("%Y-%m-%d %H:%M:%S.%f"),
+        // self.name,
+        // record.level(),
+        // record.args()
+        // );
+        // }
+
         if self.enabled(record.metadata()) {
-            println!(
-                "{} {} {} {}",
-                Local::now().format("%Y-%m-%d %H:%M:%S.%f"),
-                record.level(),
-                self.name,
-                record.args()
-            );
+            println!("{} {} {} {}", Local::now().format("%Y-%m-%d %H:%M:%S.%f"), record.level(), self.name, record.args());
         }
     }
 
-    fn flush(&self) {}
+    fn flush(&self)
+    {
+
+    }
 }
 
-impl Logger {
-    pub fn init(name: &str) -> Result<(), SetLoggerError> {
-        let logger = Logger {
-            name: name.to_string(),
-        };
+impl Logger
+{
+    pub fn init(name: &str) -> Result<(), SetLoggerError>
+    {
+        let logger = Logger { name: name.to_string(), };
+
         set_boxed_logger(Box::new(logger))?;
+
         set_max_level(LevelFilter::Debug);
+
         Ok(())
     }
 }

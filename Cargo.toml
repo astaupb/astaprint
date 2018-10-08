@@ -1,7 +1,11 @@
 [package]
-name = "astaprint-common"
+name = "astaprint"
 version = "0.1.0"
-authors = ["Gerrit Pape <papeg@mail.upb.de>"]
+authors = ["Gerrit Pape <gerrit.pape@asta.upb.de>"]
+edition = "2018"
+
+[workspace]
+members = ["backend", "worker", "dispatcher",]
 
 [dependencies]
 log = {version = "*", features = ["std", "max_level_debug", "release_max_level_info"]}
@@ -10,6 +14,8 @@ serde = "*"
 serde_json = "*"
 serde_derive = "*"
 netsnmp-sys = "*"
-poppler = "*"
-cairo-rs = { version= "0.3.0", features = ["png"]}
-astaprint-database = {git = "https://git.uni-paderborn.de/asta/astaprint-database.git", rev="1dea7b5e"}
+diesel = {version = "*", features = ["mysql", "r2d2", "chrono", "bigdecimal", "numeric"]}
+r2d2 = "*"
+bigdecimal = "0.0.11"
+sha2 = "*"
+
