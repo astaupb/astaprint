@@ -36,10 +36,12 @@ impl JobFiles
 
         let userdir = format!("{}/{}", userdir, user_id);
 
-        JobFiles { pdf: format!("{}/pdf/{}", userdir, uid),
-                   tmp: format!("{}/tmp/{}", userdir, uid),
-                   index: format!("{}/index/{}", userdir, uid),
-                   preview: format!("{}/preview/{}", userdir, uid), }
+        JobFiles {
+            pdf: format!("{}/pdf/{}", userdir, uid),
+            tmp: format!("{}/tmp/{}", userdir, uid),
+            index: format!("{}/index/{}", userdir, uid),
+            preview: format!("{}/preview/{}", userdir, uid),
+        }
     }
 
     pub fn clean_up(&self, pagecount: u16)

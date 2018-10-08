@@ -31,13 +31,14 @@ impl FileType
 {
     pub fn new(path_to_file: &str) -> FileType
     {
-        let file = Command::new("file").arg(path_to_file)
-                                       .stdout(Stdio::piped())
-                                       .stderr(Stdio::piped())
-                                       .spawn()
-                                       .expect("spawning file")
-                                       .wait_with_output()
-                                       .expect("waiting for file output");
+        let file = Command::new("file")
+            .arg(path_to_file)
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .expect("spawning file")
+            .wait_with_output()
+            .expect("waiting for file output");
 
         if file.status.success() {
             for line in String::from_utf8_lossy(&file.stdout).lines() {

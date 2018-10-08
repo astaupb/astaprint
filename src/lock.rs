@@ -46,8 +46,10 @@ impl Lock
             touch_file(&idle);
         }
 
-        Lock { lock,
-               idle, }
+        Lock {
+            lock,
+            idle,
+        }
     }
 
     pub fn is_grabbed(&self) -> bool

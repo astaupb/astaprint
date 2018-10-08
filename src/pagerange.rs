@@ -33,9 +33,9 @@ pub fn page_range_is_valid(range: &str) -> bool
 
         for page in pages {
             order.push(match page.parse() {
-                           Ok(int) => int,
-                           Err(_) => return false,
-                       });
+                Ok(int) => int,
+                Err(_) => return false,
+            });
         }
     }
 

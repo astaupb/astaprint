@@ -65,7 +65,9 @@ impl Logger
 {
     pub fn init(name: &str) -> Result<(), SetLoggerError>
     {
-        let logger = Logger { name: name.to_string(), };
+        let logger = Logger {
+            name: name.to_string(),
+        };
 
         set_boxed_logger(Box::new(logger))?;
 

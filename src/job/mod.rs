@@ -39,7 +39,9 @@ impl Job
     {
         let files = JobFiles::new(&data.uid, data.user_id);
 
-        Job { data,
-              files, }
+        Job {
+            data,
+            files,
+        }
     }
 }
