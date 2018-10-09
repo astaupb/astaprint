@@ -301,7 +301,7 @@ dependencies = [
  "inotify 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "json-receiver 0.1.0 (git+https://git.uni-paderborn.de/asta/json-receiver-rs.git)",
  "log 0.4.5 (registry+https://github.com/rust-lang/crates.io-index)",
- "poppler 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "poppler 0.2.3 (git+https://git.uni-paderborn.de/asta/poppler-rs?rev=ff2e29fa)",
  "serde_json 1.0.32 (registry+https://github.com/rust-lang/crates.io-index)",
  "threadpool 1.7.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -776,7 +776,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "poppler"
 version = "0.2.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
+source = "git+https://git.uni-paderborn.de/asta/poppler-rs?rev=ff2e29fa#ff2e29faa1f9bb486a298eed0348371895187b9e"
 dependencies = [
  "cairo-rs 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "cairo-sys-rs 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1465,7 +1465,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum pear_codegen 0.0.20 (registry+https://github.com/rust-lang/crates.io-index)" = "fd0f3ef1db2d855e0c00fad8e5a8216a70df6d9c1c7f7a7ac9f1cf50675142b7"
 "checksum percent-encoding 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)" = "31010dd2e1ac33d5b46a5b413495239882813e0369f8ed8a5e266f173602f831"
 "checksum pkg-config 0.3.14 (registry+https://github.com/rust-lang/crates.io-index)" = "676e8eb2b1b4c9043511a9b7bea0915320d7e502b0a079fb03f9635a5252b18c"
-"checksum poppler 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)" = "18bb86f45383e9aa8b9df4a2d1356f4c42ce7e49bf86b92279dc1b58e45e0c7b"
+"checksum poppler 0.2.3 (git+https://git.uni-paderborn.de/asta/poppler-rs?rev=ff2e29fa)" = "<none>"
 "checksum proc-macro2 0.3.8 (registry+https://github.com/rust-lang/crates.io-index)" = "1b06e2f335f48d24442b35a19df506a835fb3547bc3c06ef27340da9acf5cae7"
 "checksum proc-macro2 0.4.20 (registry+https://github.com/rust-lang/crates.io-index)" = "3d7b7eaaa90b4a90a932a9ea6666c95a389e424eff347f0f793979289429feee"
 "checksum quote 0.5.2 (registry+https://github.com/rust-lang/crates.io-index)" = "9949cfe66888ffe1d53e6ec9d9f3b70714083854be20fd5e271b232a017401e8"
