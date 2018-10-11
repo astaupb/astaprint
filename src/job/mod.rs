@@ -26,7 +26,6 @@ pub use self::{data::{JobData,
                       PrintWorkerJSON}};
 
 use chrono::Local;
-use pagerange::page_range_is_valid;
 
 use std::{
     io::Read,
@@ -243,7 +242,8 @@ impl Job
             }
         }
 
-        if self.data.options.range != "" && page_range_is_valid(&self.data.options.range) {
+        if self.data.options.range != "" {
+            // assuming pagerange is valid here
             header.append(&mut format!(
                    "\x40\x50\x4a\x4c\x20\x53\x45\x54\
                     \x20\x50\x52\x49\x4e\x54\x50\x41\
