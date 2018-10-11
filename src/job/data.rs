@@ -17,8 +17,6 @@
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use chrono::Local;
 
-use pagerange::page_range_is_valid;
-
 #[derive(Serialize, Deserialize, Debug, Clone)]
 
 pub struct ShortJobData
@@ -42,11 +40,13 @@ impl JobData
 {
     pub fn new(uid: &str, user_id: u32, filename: &str, password: &str, color: bool) -> JobData
     {
-        JobData { uid: String::from(uid),
-                  user_id,
-                  timestamp: Local::now().timestamp(),
-                  info: JobInfo::new(filename, password, color),
-                  options: JobOptions::default(), }
+        JobData {
+            uid: String::from(uid),
+            user_id,
+            timestamp: Local::now().timestamp(),
+            info: JobInfo::new(filename, password, color),
+            options: JobOptions::default(),
+        }
     }
 }
 
@@ -65,11 +65,13 @@ impl JobInfo
 {
     fn new(filename: &str, password: &str, color: bool) -> JobInfo
     {
-        JobInfo { filename: String::from(filename),
-                  pagecount: 0,
-                  color,
-                  a3: false,
-                  password: String::from(password), }
+        JobInfo {
+            filename: String::from(filename),
+            pagecount: 0,
+            color,
+            a3: false,
+            password: String::from(password),
+        }
     }
 }
 
@@ -91,18 +93,43 @@ impl Default for JobOptions
 {
     fn default() -> JobOptions
     {
-        JobOptions { duplex: 0,
-                     copies: 1,
-                     collate: false,
-                     keep: false,
-                     a3: false,
-                     nup: 1,
-                     nuppageorder: 0,
-                     range: String::from(""), }
+        JobOptions {
+            duplex: 0,
+            copies: 1,
+            collate: false,
+            keep: false,
+            a3: false,
+            nup: 1,
+            nuppageorder: 0,
+            range: String::from(""),
+        }
     }
 }
 
 impl JobData
 {
+    pub fn pages_to_print(&self) -> u16
+    {
+        let mut count = self.info.pagecount;
 
+        count = (count / self.options.nup as u16) + match self.info.pagecount % self.options.nup as u16 {
+            0 => 0,
+            _ => 1,
+        };
+
+        if self.options.a3 {
+            count *= 2;
+        }
+
+        count * self.options.copies
+    }
+}
+
+#[test]
+fn pages_to_print()
+{
+    let mut data = JobData::new("uid", 1, "filename", "password", true);
+    data.info.pagecount = 18;
+    data.options.nup = 4;
+    println!("{:?}, pages to print: {}", data, data.pages_to_print());
 }
