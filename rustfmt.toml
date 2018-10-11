@@ -56,7 +56,7 @@ error_on_unformatted = true
 report_todo = "Always"
 report_fixme = "Always"
 ignore = [
-       "src/job/data.rs",      
+       "src/job/mod.rs",
 ]
 emit_mode = "Files"
 make_backup = false
