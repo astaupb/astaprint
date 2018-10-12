@@ -51,7 +51,13 @@ impl Log for Logger
         // }
 
         if self.enabled(record.metadata()) {
-            println!("{} {} {} {}", Local::now().format("%Y-%m-%d %H:%M:%S.%f"), record.level(), self.name, record.args());
+            println!(
+                "{} {} {} {}",
+                Local::now().format("%Y-%m-%d %H:%M:%S.%f"),
+                record.level(),
+                self.name,
+                record.args()
+            );
         }
     }
 

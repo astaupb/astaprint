@@ -25,11 +25,24 @@ use diesel::prelude::*;
 
 use super::establish_connection;
 
-pub fn select_printer_interface_information(device_id: &u16) -> (Counter, QueueCtl, EnergyCtl, String, String)
+pub fn select_printer_interface_information(
+    device_id: &u16,
+) -> (Counter, QueueCtl, EnergyCtl, String, String)
 {
     let result: (Counter, QueueCtl, EnergyCtl, String, String) = counter::table
-        .inner_join(model::table.inner_join(printer::table).inner_join(energy_ctl::table).inner_join(queue_ctl::table))
-        .select((counter::all_columns, queue_ctl::all_columns, energy_ctl::all_columns, printer::community, printer::ip))
+        .inner_join(
+            model::table
+                .inner_join(printer::table)
+                .inner_join(energy_ctl::table)
+                .inner_join(queue_ctl::table),
+        )
+        .select((
+            counter::all_columns,
+            queue_ctl::all_columns,
+            energy_ctl::all_columns,
+            printer::community,
+            printer::ip,
+        ))
         .filter(printer::device_id.eq(device_id))
         .first(&establish_connection())
         .expect("fetching printer interface information");

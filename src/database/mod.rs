@@ -92,15 +92,25 @@ mod database_tests
     {
         let connection = establish_connection();
 
-        let mut digests: Vec<Vec<u8>> = journal_digest::table.select(journal_digest::digest).load(&connection).unwrap();
+        let mut digests: Vec<Vec<u8>> =
+            journal_digest::table.select(journal_digest::digest).load(&connection).unwrap();
 
-        let journal_rows: Vec<Journal> = journal::table.select(journal::all_columns).load(&connection).unwrap();
+        let journal_rows: Vec<Journal> =
+            journal::table.select(journal::all_columns).load(&connection).unwrap();
 
         for (i, row) in journal_rows.iter().enumerate() {
             // FIXME
             let diff = Duration::hours(2);
 
-            let concat = format!("{}{}{}{}{}{}", row.id, row.customer_id, row.value, row.credit, row.description, row.time + diff);
+            let concat = format!(
+                "{}{}{}{}{}{}",
+                row.id,
+                row.customer_id,
+                row.value,
+                row.credit,
+                row.description,
+                row.time + diff
+            );
 
             let mut concat_bytes = concat.as_bytes().to_owned();
 

@@ -1,4 +1,4 @@
-/// AStAPrint-Common - Files.rs
+/// AStAPrint - files.rs
 /// Copyright (C) 2018  AStA der Universität Paderborn
 ///
 /// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
@@ -52,7 +52,8 @@ impl JobFiles
 
         for i in 0..pagecount {
             if i < 4 {
-                remove_file(&format!("{}-{}", &self.preview, i)).expect(&format!("removing preview file #{}", i));
+                remove_file(&format!("{}-{}", &self.preview, i))
+                    .expect(&format!("removing preview file #{}", i));
             }
         }
     }
