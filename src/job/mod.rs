@@ -103,21 +103,18 @@ impl Job
             ).as_bytes().to_owned(),
         );
 
-        match self.data.options.a3 {
-            false => {
-                header.append(&mut
+        if !self.data.options.a3 {
+            header.append(&mut
                   b"\x40\x50\x4a\x4c\x20\x53\x45\x54\
                     \x20\x50\x41\x50\x45\x52\x3d\x41\
                     \x34\r\n".to_vec(),
-                );
-            },
-            true => {
-                header.append(&mut
+            );
+        } else {
+            header.append(&mut
                   b"\x40\x50\x4a\x4c\x20\x53\x45\x54\
                     \x20\x50\x41\x50\x45\x52\x3d\x41\
                     \x33\r\n".to_vec(),
-                );
-            },
+            );
         }
 
         match self.data.options.duplex {
@@ -152,42 +149,36 @@ impl Job
         }
 
         if self.data.options.copies > 1 {
-            match self.data.options.collate {
+            if self.data.options.collate {
                 // WHAT THE FUCK RICOH
-                true => {
-                    header.append(&mut format!(
-                    "\x40\x50\x4a\x4c\x20\x53\x45\x54\
+                header.append(&mut format!(
+                   "\x40\x50\x4a\x4c\x20\x53\x45\x54\
                     \x20\x43\x4f\x50\x49\x45\x53\x3d\
                     {}\r\n",
-                        self.data.options.copies
-                    ).as_bytes().to_owned(),);
-                },
-                false => {
-                    header.append(&mut format!(
+                    self.data.options.copies
+                ).as_bytes().to_owned(),);
+            } else {
+                header.append(&mut format!(
                    "\x40\x50\x4a\x4c\x20\x53\x45\x54\
                     \x20\x51\x54\x59\x3d{}\r\n",
-                        self.data.options.copies
-                    ).as_bytes().to_owned(),);
-                },
+                    self.data.options.copies
+                ).as_bytes().to_owned(),);
             }
         }
 
         if self.data.options.a3 != self.data.info.a3 {
-            match self.data.options.a3 {
-                false => {
-                    header.append(&mut
+            if !self.data.options.a3 {
+                header.append(&mut
                   b"\x40\x50\x4a\x4c\x20\x53\x45\x54\
                     \x20\x46\x49\x54\x54\x4f\x50\x41\
                     \x47\x45\x53\x49\x5a\x45\x3d\x41\
                     \x34\r\n".to_vec(),);
-                },
-                true => {
-                    header.append(&mut
+            } else {
+                header.append(&mut
                   b"\x40\x50\x4a\x4c\x20\x53\x45\x54\
                     \x20\x46\x49\x54\x54\x4f\x50\x41\
                     \x47\x45\x53\x49\x5a\x45\x3d\x41\
                     \x33\r\n".to_vec(),);
-                },
             }
         }
 
@@ -275,7 +266,7 @@ impl Job
                     .to_vec(),
         );
 
-        let mut buf: Vec<u8> = Vec::with_capacity(102400);
+        let mut buf: Vec<u8> = Vec::with_capacity(102_400);
 
         let mut file = File::open(&self.files.pdf)
             .expect("opening pdf");

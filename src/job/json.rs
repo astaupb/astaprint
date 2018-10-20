@@ -15,8 +15,10 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use super::{JobData,
-            ShortJobData};
+use super::{
+    JobData,
+    ShortJobData,
+};
 
 #[allow(non_camel_case_types)]
 #[derive(Serialize, Deserialize, Debug, Clone)]

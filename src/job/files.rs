@@ -15,8 +15,10 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use std::{env,
-          fs::remove_file};
+use std::{
+    env,
+    fs::remove_file,
+};
 
 #[derive(Serialize, Deserialize)]
 
@@ -53,7 +55,7 @@ impl JobFiles
         for i in 0..pagecount {
             if i < 4 {
                 remove_file(&format!("{}-{}", &self.preview, i))
-                    .expect(&format!("removing preview file #{}", i));
+                    .unwrap_or_else(|_| panic!("removing preview file {}#{}", &self.preview, i));
             }
         }
     }

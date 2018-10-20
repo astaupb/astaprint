@@ -17,14 +17,16 @@
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use chrono::Local;
 
-use log::{set_boxed_logger,
-          set_max_level,
-          Level,
-          LevelFilter,
-          Log,
-          Metadata,
-          Record,
-          SetLoggerError};
+use log::{
+    set_boxed_logger,
+    set_max_level,
+    Level,
+    LevelFilter,
+    Log,
+    Metadata,
+    Record,
+    SetLoggerError,
+};
 
 pub struct Logger
 {

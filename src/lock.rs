@@ -15,15 +15,21 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use std::{fs::{metadata,
-               rename},
-          process::Command,
-          thread,
-          time};
+use std::{
+    fs::{
+        metadata,
+        rename,
+    },
+    process::Command,
+    thread,
+    time,
+};
 
 fn touch_file(path_to_file: &str) -> bool
 {
-    Command::new("touch").arg(path_to_file).status().expect(&format!("touching {}", path_to_file)).success()
+    Command::new("touch").arg(path_to_file).status()
+        .unwrap_or_else(|_| panic!("touching {}", path_to_file))
+        .success()
 }
 
 #[derive(Debug)]

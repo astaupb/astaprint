@@ -18,15 +18,17 @@ pub mod representation;
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 pub mod schema;
 
-use self::{representation::*,
-           schema::*};
+use self::{
+    representation::*,
+    schema::*,
+};
 
 use diesel::prelude::*;
 
 use super::establish_connection;
 
 pub fn select_printer_interface_information(
-    device_id: &u16,
+    device_id: u16,
 ) -> (Counter, QueueCtl, EnergyCtl, String, String)
 {
     let result: (Counter, QueueCtl, EnergyCtl, String, String) = counter::table

@@ -18,16 +18,24 @@ pub mod printer;
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 pub mod user;
 
-pub use self::{printer::*,
-               user::*};
+pub use self::{
+    printer::*,
+    user::*,
+};
 
-use std::{env,
-          ops::Deref};
+use std::{
+    env,
+    ops::Deref,
+};
 
-use diesel::{prelude::*,
-             r2d2::{ConnectionManager,
-                    Pool,
-                    PooledConnection}};
+use diesel::{
+    prelude::*,
+    r2d2::{
+        ConnectionManager,
+        Pool,
+        PooledConnection,
+    },
+};
 
 pub fn establish_connection() -> MysqlConnection
 {
@@ -64,8 +72,10 @@ impl Deref for PoolConnection
 mod database_tests
 {
 
-    use super::printer::{select_device_ids,
-                         select_printer_interface_information};
+    use super::printer::{
+        select_device_ids,
+        select_printer_interface_information,
+    };
 
     #[test]
 
@@ -76,15 +86,23 @@ mod database_tests
         }
     }
 
-    use super::{customer::{representation::Journal,
-                           schema::{journal,
-                                    journal_digest}},
-                establish_connection};
+    use super::{
+        establish_connection,
+        user::{
+            representation::Journal,
+            schema::{
+                journal,
+                journal_digest,
+            },
+        },
+    };
 
     use chrono::Duration;
     use diesel::prelude::*;
-    use sha2::{Digest,
-               Sha512};
+    use sha2::{
+        Digest,
+        Sha512,
+    };
 
     #[test]
 
@@ -105,11 +123,11 @@ mod database_tests
             let concat = format!(
                 "{}{}{}{}{}{}",
                 row.id,
-                row.customer_id,
+                row.user_id,
                 row.value,
                 row.credit,
                 row.description,
-                row.time + diff
+                row.timestamp + diff
             );
 
             let mut concat_bytes = concat.as_bytes().to_owned();

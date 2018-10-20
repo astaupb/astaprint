@@ -31,7 +31,7 @@ impl<'a> FromStr for PageDifference
     fn from_str(difference: &str) -> Result<PageDifference, ()>
     {
         let difference = difference.trim();
-        let split: Vec<&str> = difference.split("-").collect();
+        let split: Vec<&str> = difference.split('-').collect();
 
         if split.len() != 2 {
             return Err(());
@@ -70,7 +70,7 @@ impl<'a> FromStr for PageRange
     {
         let range = range.trim();
 
-        let steps: Vec<&str> = range.split(",").collect();
+        let steps: Vec<&str> = range.split(',').collect();
 
         let mut page_singles: Vec<u32> = steps.iter().filter_map(|s| s.parse().ok()).collect();
 

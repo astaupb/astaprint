@@ -112,7 +112,7 @@ impl JobData
     {
         let mut count = self.info.pagecount;
 
-        count = (count / self.options.nup as u16) + match self.info.pagecount % self.options.nup as u16 {
+        count = (count / u16::from(self.options.nup)) + match self.info.pagecount % u16::from(self.options.nup) {
             0 => 0,
             _ => 1,
         };

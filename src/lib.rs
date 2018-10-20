@@ -20,15 +20,14 @@ extern crate serde;
 extern crate serde_json;
 
 #[macro_use]
-
 extern crate serde_derive;
 
 #[macro_use]
-
 extern crate diesel;
 
 extern crate bigdecimal;
 extern crate chrono;
+extern crate sha2;
 
 pub mod database;
 pub mod filetype;

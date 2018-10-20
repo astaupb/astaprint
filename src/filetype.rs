@@ -15,8 +15,10 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use std::process::{Command,
-                   Stdio};
+use std::process::{
+    Command,
+    Stdio,
+};
 
 #[derive(Debug, PartialEq)]
 
@@ -50,6 +52,6 @@ impl FileType
             }
         }
 
-        return FileType::Invalid;
+        FileType::Invalid
     }
 }
