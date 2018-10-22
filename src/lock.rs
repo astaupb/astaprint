@@ -27,7 +27,9 @@ use std::{
 
 fn touch_file(path_to_file: &str) -> bool
 {
-    Command::new("touch").arg(path_to_file).status()
+    Command::new("touch")
+        .arg(path_to_file)
+        .status()
         .unwrap_or_else(|_| panic!("touching {}", path_to_file))
         .success()
 }
