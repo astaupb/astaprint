@@ -1,18 +1,18 @@
 --  AStAPrint-Database - User Create
 --  Copyright (C) 2018  AStA der Universität Paderborn
--- 
+--
 --  Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
--- 
+--
 --  This program is free software: you can redistribute it and/or modify
 --  it under the terms of the GNU Affero General Public License as published by
 --  the Free Software Foundation, either version 3 of the License, or
 --  (at your option) any later version.
--- 
+--
 --  This program is distributed in the hope that it will be useful,
 --  but WITHOUT ANY WARRANTY; without even the implied warranty of
 --  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 --  GNU Affero General Public License for more details.
--- 
+--
 --  You should have received a copy of the GNU Affero General Public License
 --  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
@@ -28,7 +28,7 @@ CREATE TABLE `journal_digest`(
 	`id` INT UNSIGNED UNIQUE PRIMARY KEY AUTO_INCREMENT,
 	`digest` BINARY(64) NOT NULL,
 	`timestamp` TIMESTAMP NOT NULL);
-	
+
 -- seed journal digests
 INSERT INTO `journal_digest`(digest) VALUES (UNHEX(SHA2(NOW(), 512)));
 
@@ -45,7 +45,7 @@ CREATE TABLE `user`(
 CREATE TABLE `token`(
 	`id` INT UNSIGNED UNIQUE PRIMARY KEY AUTO_INCREMENT,
 	`user_id` INT UNSIGNED NOT NULL,
-	`user_agent` VARCHAR(64) NOT NULL,
+	`user_agent` VARCHAR(128) NOT NULL,
 	`location` VARCHAR(64) NOT NULL,
 	`value` BINARY(64) NOT NULL,
 	`timestamp` TIMESTAMP NOT NULL);
@@ -62,11 +62,11 @@ CREATE TRIGGER `journal_insert`
 AFTER INSERT ON `journal`
 FOR EACH ROW BEGIN
 
-SET @current_id := (SELECT `auto_increment` 
+SET @current_id := (SELECT `auto_increment`
 						FROM INFORMATION_SCHEMA.TABLES
 						WHERE table_name = "journal_digest") - 1;
 
-SET @digest := UNHEX((SELECT 
+SET @digest := UNHEX((SELECT
 					SHA2(CONCAT(
 						jd.digest, j.id, j.user_id, j.value, j.credit, j.description, j.timestamp), 512)
 				FROM journal j
@@ -75,7 +75,7 @@ SET @digest := UNHEX((SELECT
 				WHERE j.id = @current_id));
 
 INSERT INTO journal_digest(digest) VALUES (@digest);
-				
+
 END $$
 DELIMITER ;
 
