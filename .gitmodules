@@ -1,9 +1,0 @@
-[submodule "worker"]
-	path = worker
-	url = git@git.upb.de:asta/astaprint-workers
-[submodule "backend"]
-	path = backend
-	url = git@git.upb.de:asta/astaprint-backend
-[submodule "dispatcher"]
-	path = dispatcher
-	url = git@git.upb.de:asta/astaprint-dispatcher

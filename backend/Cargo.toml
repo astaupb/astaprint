@@ -1,0 +1,21 @@
+[package]
+name = "backend"
+version = "0.1.0"
+authors = ["Gerrit Pape <gerrit.pape@asta.upb.de>"]
+
+[dependencies]
+astaprint = {path = ".."}
+log = {version = "*", features = ["std", "max_level_debug", "release_max_level_info"]}
+r2d2 = "*"
+rocket = "*"
+rocket_contrib = "*"
+rocket_codegen = "*"
+rocket_cors = "*"
+serde = "*"
+serde_json = "*"
+serde_derive = "*"
+base64 = "*"
+diesel = {version = "*", features = ["mysql", "r2d2", "chrono", "bigdecimal", "numeric"]}
+bigdecimal = "*"
+chrono = "*"
+json-receiver = {git = "https://git.uni-paderborn.de/asta/json-receiver-rs.git", rev="1e27f201"}
