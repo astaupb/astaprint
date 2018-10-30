@@ -58,18 +58,19 @@ pub fn delete_all_tokens(user: User) -> Result<Reset, diesel::result::Error>
 }
 
 #[delete("/<short_token>")]
-pub fn delete_single_token(user: User, short_token: String) -> Result<Option<Reset>, diesel::result::Error>
+pub fn delete_single_token(user: User, short_token: String)
+    -> Result<Option<Reset>, diesel::result::Error>
 {
     match base64::decode_config(&short_token, base64::URL_SAFE) {
         Ok(binary_short_token) => {
-            let tokens: Vec<Token> = token::table
-                .select(token::all_columns)
-                .load(&user.connection)?;
+            let tokens: Vec<Token> = token::table.select(token::all_columns).load(&user.connection)?;
 
             for token in tokens.iter() {
                 if &token.value[..6] == &binary_short_token[..] {
                     diesel::delete(
-                        token::table.filter(token::user_id.eq(user.id)).filter(token::value.eq(&token.value)),
+                        token::table
+                            .filter(token::user_id.eq(user.id))
+                            .filter(token::value.eq(&token.value)),
                     )
                     .execute(&user.connection)?;
                     info!("{} deleted token {}", user.id, &token.id);
@@ -90,9 +91,7 @@ pub fn get_single_token(
 {
     match base64::decode_config(&short_token, base64::URL_SAFE) {
         Ok(binary_short_token) => {
-            let tokens: Vec<Token> = token::table
-                .select(token::all_columns)
-                .load(&user.connection)?;
+            let tokens: Vec<Token> = token::table.select(token::all_columns).load(&user.connection)?;
 
             for token in tokens.iter() {
                 if &token.value[..6] == &binary_short_token[..] {
