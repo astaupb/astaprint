@@ -52,7 +52,7 @@ pub fn decrypt_pdf(path_to_pdf: &str, password: &str) -> bool
     rename(&outfile, path_to_pdf).is_ok()
 }
 
-pub fn pdfjam(path_to_pdf: &str, info: PageInfo) -> bool
+pub fn pdfjam(path_to_pdf: &str, info: &PageInfo) -> bool
 {
     let mut arguments =
         ["--a4paper", "--no-landscape", "--checkfiles", "--outfile", path_to_pdf, path_to_pdf];

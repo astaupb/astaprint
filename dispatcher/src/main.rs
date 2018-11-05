@@ -47,7 +47,10 @@ use dispatcher::{
     pdf::{
         document::PDFDocument,
         pageinfo::{
-            Is::Valid,
+            Is::{
+                Almost,
+                Valid,
+            },
             PageSize,
         },
     },
@@ -128,7 +131,7 @@ fn work(json: DispatchWorkerJSON, pool: &ThreadPool)
         if page_info.size != Valid(PageSize::A3) && page_info.size != Valid(PageSize::A4) {
             info!("invalid pageformat, using pdfjam to fix it");
 
-            if !pdfjam(&job.files.tmp, page_info) {
+            if !pdfjam(&job.files.tmp, &page_info) {
                 error!("could not jam pdf to a4");
 
                 panic!();
@@ -136,6 +139,9 @@ fn work(json: DispatchWorkerJSON, pool: &ThreadPool)
                 pdf_document = PDFDocument::new(&job.files.tmp, &job.data.info.password);
             }
         }
+
+        job.data.info.a3 =
+            (page_info.size == Valid(PageSize::A3)) || (page_info.size == Almost(PageSize::A3));
 
         if !job.data.info.color {
             job.data.info.pagecount = create_greyscale_pdf(&job.files.tmp);
