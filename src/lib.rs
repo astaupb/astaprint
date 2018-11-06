@@ -25,6 +25,8 @@ extern crate serde_derive;
 #[macro_use]
 extern crate diesel;
 
+extern crate redis;
+
 extern crate bigdecimal;
 extern crate chrono;
 extern crate sha2;

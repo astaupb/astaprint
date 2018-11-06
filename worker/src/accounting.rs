@@ -24,8 +24,6 @@ use diesel::{
     prelude::*,
 };
 
-use std::env;
-
 use astaprint::{
     database::{
         establish_connection,
@@ -50,9 +48,7 @@ impl Accounting
 {
     pub fn new(user_id: u32, color: bool) -> Accounting
     {
-        let userdir = env::var("ASTAPRINT_USER_DIR").expect("reading userdir from environment");
-
-        let lock = Lock::new(&format!("{}/{}/accounting", userdir, user_id));
+        let lock = Lock::new(user_id);
 
         if lock.is_grabbed() {
             info!("accounting for {} locked", &user_id);

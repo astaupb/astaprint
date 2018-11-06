@@ -15,6 +15,6 @@ diesel = {version = "*", features = ["mysql", "chrono", "bigdecimal", "numeric"]
 chrono = "*"
 bigdecimal = "*"
 netsnmp-sys = "*"
-lpr = "*"
+lpr = "0.1.3"
 json-receiver = {git = "https://git.uni-paderborn.de/asta/json-receiver-rs.git"}
 mpsc-queue = {git = "https://git.uni-paderborn.de/asta/mpsc-queue-rs.git"}

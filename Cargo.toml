@@ -17,4 +17,5 @@ diesel = {version = "*", features = ["mysql", "r2d2", "chrono", "bigdecimal", "n
 r2d2 = "*"
 bigdecimal = "*"
 sha2 = "*"
+redis = "*"
 
