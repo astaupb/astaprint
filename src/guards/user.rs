@@ -38,20 +38,20 @@ use diesel::{
     },
 };
 
-use astaprint::database::user::schema::*;
+use crate::user::*;
 
-pub struct User
+pub struct UserGuard
 {
     pub id: u32,
     pub token_id: u32,
     pub connection: PooledConnection<ConnectionManager<MysqlConnection>>,
 }
 
-impl<'a, 'r> FromRequest<'a, 'r> for User
+impl<'a, 'r> FromRequest<'a, 'r> for UserGuard
 {
     type Error = ();
 
-    fn from_request(request: &'a Request<'r>) -> request::Outcome<User, ()>
+    fn from_request(request: &'a Request<'r>) -> request::Outcome<UserGuard, ()>
     {
         let keys: Vec<_> = request.headers().get("x-api-key").collect();
 
@@ -71,13 +71,13 @@ impl<'a, 'r> FromRequest<'a, 'r> for User
             Err(_) => return Outcome::Failure((Status::InternalServerError, ())),
         };
 
-        let result: Result<(u32, u32), diesel::result::Error> = token::table
-            .select((token::user_id, token::id))
-            .filter(token::value.eq(buf))
+        let result: Result<(u32, u32), diesel::result::Error> = user_token::table
+            .select((user_token::user_id, user_token::id))
+            .filter(user_token::hash.eq(buf))
             .first(&connection);
 
         if let Ok((id, token_id)) = result {
-            Outcome::Success(User {
+            Outcome::Success(UserGuard {
                 id,
                 token_id,
                 connection,

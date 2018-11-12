@@ -50,7 +50,7 @@ extern "C" {
     ) -> c_int;
 }
 
-pub fn verify_password(password: &str, hash: &[u8], salt: &[u8]) -> bool
+pub fn verify(password: &str, hash: &[u8], salt: &[u8]) -> bool
 {
     let out: [u8; HASHBYTES] = [0; HASHBYTES];
 
@@ -70,7 +70,7 @@ pub fn verify_password(password: &str, hash: &[u8], salt: &[u8]) -> bool
     out[..] == hash[..]
 }
 
-pub fn hash_password(password: &str) -> (Vec<u8>, Vec<u8>)
+pub fn create(password: &str) -> (Vec<u8>, Vec<u8>)
 {
     let out: [u8; HASHBYTES] = [0; HASHBYTES];
 
@@ -95,11 +95,11 @@ pub fn hash_password(password: &str) -> (Vec<u8>, Vec<u8>)
 }
 
 #[test]
-fn verify()
+fn pwhash_verify()
 {
-    let (hash, salt) = hash_password("0123456789abcdef");
+    let (hash, salt) = create("0123456789abcdef");
 
-    assert!(verify_password("0123456789abcdef", &hash[..], &salt[..]));
+    assert!(verify("0123456789abcdef", &hash[..], &salt[..]));
 }
 
 #[test]

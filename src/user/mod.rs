@@ -17,12 +17,22 @@
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use chrono::NaiveDateTime;
 
+use crate::journal::*;
+
+pub mod http;
+pub mod response;
+
+allow_tables_to_appear_in_same_query!(user, user_token, journal, journal_digest,);
+
+joinable!(user_token -> user (user_id));
+joinable!(journal -> user (user_id));
+
 table! {
     user (id) {
         id -> Unsigned<Integer>,
         name -> Varchar,
-        password_hash -> Binary,
-        password_salt -> Binary,
+        password -> Binary,
+        salt -> Binary,
         pin -> Nullable<Varchar>,
         locked -> Bool,
         created -> Timestamp,
@@ -40,7 +50,8 @@ pub struct User
     pub hash: Vec<u8>,
     pub salt: Vec<u8>,
     pub pin: Option<String>,
-    pub timestamp: NaiveDateTime,
+    pub created: NaiveDateTime,
+    pub updated: NaiveDateTime,
 }
 
 table! {
@@ -51,7 +62,6 @@ table! {
         ip -> Varchar,
         location -> Varchar,
         hash -> Binary,
-        salt -> Binary,
         created -> Timestamp,
     }
 }
@@ -66,6 +76,5 @@ pub struct UserToken
     pub ip: String,
     pub location: String,
     pub hash: Vec<u8>,
-    pub salt: Vec<u8>,
-    pub timestamp: NaiveDateTime,
+    pub created: NaiveDateTime,
 }

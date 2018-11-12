@@ -1,3 +1,4 @@
+#![allow(clippy::needless_pass_by_value)]
 /// AStAPrint-Backend - User Routes
 /// Copyright (C) 2018  AStA der Universität Paderborn
 ///
@@ -35,17 +36,14 @@ use diesel::{
 };
 
 use crate::{
-    crypto::{
-        hash_password,
-        verify_password,
-    },
+    crypto::pwhash,
     guards::{
-        Login,
-        User,
+        LoginGuard,
+        UserGuard,
     },
+    journal::*,
+    user::*,
 };
-
-use astaprint::database::user::schema::*;
 
 pub mod tokens;
 
@@ -71,24 +69,39 @@ struct UserInfo
     tokens: usize,
 }
 
+fn get_credit(user_id: u32, connection: &MysqlConnection) -> Result<BigDecimal, diesel::result::Error>
+{
+    let mut credit_id: u32 = user::table
+        .inner_join(journal::table)
+        .select(journal::id)
+        .filter(user::id.eq(journal::user_id))
+        .filter(user::id.eq(user_id))
+        .order(journal::id.desc())
+        .first(connection)?;
+
+    // calculated credit has offset of one from journal
+    credit_id += 1;
+
+    let credit: BigDecimal = journal_digest::table
+        .select(journal_digest::credit)
+        .filter(journal_digest::id.eq(credit_id))
+        .first(connection)?;
+
+    Ok(credit)
+}
+
 #[get("/")]
-fn get_user_info(user: User) -> Result<Json<UserInfo>, diesel::result::Error>
+fn get_user_info(user: UserGuard) -> Result<Json<UserInfo>, diesel::result::Error>
 {
     let id = user.id;
-    let tokens: Vec<u32> =
-        token::table.select(token::id).filter(token::user_id.eq(id)).load(&user.connection)?;
+    let tokens: Vec<u32> = user_token::table
+        .select(user_token::id)
+        .filter(user_token::user_id.eq(id))
+        .load(&user.connection)?;
 
     let tokens = tokens.len();
 
-    let credit: BigDecimal = user::table
-        .inner_join(journal::table)
-        .select(journal::credit)
-        .filter(user::id.eq(journal::user_id))
-        .filter(user::id.eq(user.id))
-        .order(journal::id.desc())
-        .first(&user.connection)?;
-
-    let credit = credit.to_f64().unwrap();
+    let credit = get_credit(user.id, &user.connection)?.to_f64().unwrap();
 
     let name: String =
         user::table.select(user::name).filter(user::id.eq(user.id)).first(&user.connection)?;
@@ -104,20 +117,20 @@ fn get_user_info(user: User) -> Result<Json<UserInfo>, diesel::result::Error>
 
 #[put("/password", data = "<body>")]
 fn change_password(
-    user: User,
+    user: UserGuard,
     body: Json<PasswordChangeBody>,
 ) -> Result<Result<NoContent, BadRequest<&'static str>>, diesel::result::Error>
 {
     let (hash, salt): (Vec<u8>, Vec<u8>) = user::table
-        .select((user::password_hash, user::password_salt))
+        .select((user::password, user::salt))
         .filter(user::id.eq(user.id))
         .first(&user.connection)?;
 
-    if verify_password(&body.password.old, &hash[..], &salt[..]) {
-        let (hash, salt) = hash_password(&body.password.new);
+    if pwhash::verify(&body.password.old, &hash[..], &salt[..]) {
+        let (hash, salt) = pwhash::create(&body.password.new);
 
         update(user::table.filter(user::id.eq(user.id)))
-            .set((user::password_hash.eq(hash), user::password_salt.eq(salt)))
+            .set((user::password.eq(hash), user::salt.eq(salt)))
             .execute(&user.connection)?;
 
         info!("{} changed password", user.id);
@@ -131,7 +144,7 @@ fn change_password(
 }
 
 #[get("/username")]
-fn fetch_username(user: User) -> Result<Json<String>, diesel::result::Error>
+fn fetch_username(user: UserGuard) -> Result<Json<String>, diesel::result::Error>
 {
     let username: String =
         user::table.select(user::name).filter(user::id.eq(user.id)).first(&user.connection)?;
@@ -142,7 +155,7 @@ fn fetch_username(user: User) -> Result<Json<String>, diesel::result::Error>
 }
 
 #[put("/username", data = "<new_username>")]
-fn change_username(user: User, new_username: Json<String>) -> Result<Reset, diesel::result::Error>
+fn change_username(user: UserGuard, new_username: Json<String>) -> Result<Reset, diesel::result::Error>
 {
     update(user::table.filter(user::id.eq(user.id)))
         .set(user::name.eq(new_username.into_inner()))
@@ -154,15 +167,9 @@ fn change_username(user: User, new_username: Json<String>) -> Result<Reset, dies
 }
 
 #[get("/credit")]
-pub fn credit(user: User) -> Result<Json<f64>, diesel::result::Error>
+pub fn credit(user: UserGuard) -> Result<Json<f64>, diesel::result::Error>
 {
-    let credit: BigDecimal = user::table
-        .inner_join(journal::table)
-        .select(journal::credit)
-        .filter(user::id.eq(journal::user_id))
-        .filter(user::id.eq(user.id))
-        .order(journal::id.desc())
-        .first(&user.connection)?;
+    let credit: BigDecimal = get_credit(user.id, &user.connection)?;
 
     info!("{} fetched credit", user.id);
 
@@ -170,15 +177,15 @@ pub fn credit(user: User) -> Result<Json<f64>, diesel::result::Error>
 }
 
 #[post("/login")]
-pub fn login(login: Login) -> String
+pub fn login(login: LoginGuard) -> String
 {
     login.token
 }
 
 #[post("/logout")]
-pub fn logout(user: User) -> Result<Reset, diesel::result::Error>
+pub fn logout(user: UserGuard) -> Result<Reset, diesel::result::Error>
 {
-    delete(token::table.filter(token::id.eq(user.token_id))).execute(&user.connection)?;
+    delete(user_token::table.filter(user_token::id.eq(user.token_id))).execute(&user.connection)?;
 
     info!("{} logged out", user.id);
 

@@ -1,6 +1,4 @@
-#![feature(plugin, custom_derive, custom_attribute)]
-#![plugin(rocket_codegen)]
-/// AStAPrint - lib.rs
+/// AStAPrint-Backend - Request Guards
 /// Copyright (C) 2018  AStA der Universität Paderborn
 ///
 /// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
@@ -17,34 +15,10 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#[macro_use]
-extern crate log;
-extern crate serde;
-extern crate serde_json;
-
-#[macro_use]
-extern crate serde_derive;
-
-#[macro_use]
-extern crate diesel;
-
-#[macro_use]
-extern crate rocket;
-extern crate rocket_contrib;
-
-extern crate redis;
-
-extern crate base64;
-extern crate bigdecimal;
-extern crate chrono;
-extern crate sha2;
-
-pub mod crypto;
-pub mod guards;
-
-// routes
-pub mod jobs;
-pub mod journal;
-pub mod manager;
-pub mod printers;
+pub mod login;
 pub mod user;
+
+pub use self::{
+    login::LoginGuard,
+    user::UserGuard,
+};

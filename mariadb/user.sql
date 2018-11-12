@@ -19,8 +19,8 @@
 CREATE TABLE `user`(
   `id` INT UNSIGNED UNIQUE PRIMARY KEY AUTO_INCREMENT,
   `name` VARCHAR(32) UNIQUE NOT NULL,
-  `password_hash` BINARY(64) NOT NULL,
-  `password_salt` BINARY(16) NOT NULL,
+  `password` BINARY(64) NOT NULL,
+  `salt` BINARY(16) NOT NULL,
   `pin` VARCHAR(16),
   `locked`  BOOLEAN NOT NULL,
   `created` TIMESTAMP NOT NULL,
@@ -33,5 +33,4 @@ CREATE TABLE `user_token`(
   `ip` VARCHAR(48) NOT NULL,
   `location` VARCHAR(64) NOT NULL,
   `hash` BINARY(64) NOT NULL,
-  `salt` BINARY(64) NOT NULL,
   `created` TIMESTAMP NOT NULL);

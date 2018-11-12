@@ -1,6 +1,4 @@
-#![feature(plugin, custom_derive, custom_attribute)]
-#![plugin(rocket_codegen)]
-/// AStAPrint - lib.rs
+/// AStAPrint-Backend - Journal Response
 /// Copyright (C) 2018  AStA der Universität Paderborn
 ///
 /// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
@@ -17,34 +15,29 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#[macro_use]
-extern crate log;
-extern crate serde;
-extern crate serde_json;
+use bigdecimal::ToPrimitive;
 
-#[macro_use]
-extern crate serde_derive;
+use crate::journal::*;
 
-#[macro_use]
-extern crate diesel;
+#[derive(Serialize, Deserialize, Debug)]
+pub struct JournalResponse
+{
+    pub value: f64,
+    // TODO: zip with journal_digest for credit
+    // pub credit: f64,
+    pub description: String,
+    pub created: String,
+}
 
-#[macro_use]
-extern crate rocket;
-extern crate rocket_contrib;
-
-extern crate redis;
-
-extern crate base64;
-extern crate bigdecimal;
-extern crate chrono;
-extern crate sha2;
-
-pub mod crypto;
-pub mod guards;
-
-// routes
-pub mod jobs;
-pub mod journal;
-pub mod manager;
-pub mod printers;
-pub mod user;
+impl<'a> From<&'a Journal> for JournalResponse
+{
+    fn from(journal: &Journal) -> JournalResponse
+    {
+        JournalResponse {
+            value: journal.value.to_f64().unwrap(),
+            // credit: journal.credit.to_f64().unwrap(),
+            description: journal.description.clone(),
+            created: format!("{}", journal.created),
+        }
+    }
+}

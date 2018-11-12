@@ -60,7 +60,7 @@ pub fn generichash(input: &[u8], key: &[u8]) -> Vec<u8>
     hash
 }
 
-pub fn generichash_create(input: &[u8]) -> (Vec<u8>, Vec<u8>)
+pub fn create(input: &[u8]) -> (Vec<u8>, Vec<u8>)
 {
     let mut key: Vec<u8> = Vec::with_capacity(KEY_BYTES);
     urandom(&mut key);
@@ -72,7 +72,7 @@ pub fn generichash_create(input: &[u8]) -> (Vec<u8>, Vec<u8>)
     (hash.to_vec(), key.to_vec())
 }
 
-pub fn generichash_verify(input: &[u8], output: &[u8], key: &[u8]) -> bool
+pub fn verify(input: &[u8], output: &[u8], key: &[u8]) -> bool
 {
     generichash(input, key)[..] == output[..]
 }
@@ -83,9 +83,9 @@ fn verify_generichash()
     let mut input: Vec<u8> = Vec::with_capacity(108);
     urandom(&mut input[..]);
 
-    let (hash, key) = generichash_create(&input[..]);
+    let (hash, key) = create(&input[..]);
 
-    assert!(generichash_verify(&input[..], &hash[..], &key[..]));
+    assert!(verify(&input[..], &hash[..], &key[..]));
 }
 
 #[test]

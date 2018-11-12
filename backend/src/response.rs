@@ -44,7 +44,6 @@ impl<'a> From<&'a Journal> for JournalResponse
 }
 
 #[derive(Serialize, Debug)]
-
 pub struct TokenResponse
 {
     pub token: String,

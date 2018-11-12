@@ -36,23 +36,24 @@ use diesel::{
     },
 };
 
-use astaprint::database::user::schema::*;
+use crate::user::*;
 
 use crypto::{
+    generichash,
+    pwhash,
     urandom,
-    verify_password,
 };
 
-pub struct Login
+pub struct LoginGuard
 {
     pub token: String,
 }
 
-impl<'a, 'r> FromRequest<'a, 'r> for Login
+impl<'a, 'r> FromRequest<'a, 'r> for LoginGuard
 {
     type Error = ();
 
-    fn from_request(request: &'a Request<'r>) -> request::Outcome<Login, ()>
+    fn from_request(request: &'a Request<'r>) -> request::Outcome<LoginGuard, ()>
     {
         let header = request.headers();
 
@@ -88,7 +89,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for Login
         let connection = pool.get().expect("retrieving connection from pool");
 
         let mut result: Vec<(bool, u32, Vec<u8>, Vec<u8>)> = user::table
-            .select((user::locked, user::id, user::password_hash, user::password_salt))
+            .select((user::locked, user::id, user::password, user::salt))
             .filter(user::name.eq(credentials[0]))
             .load(&connection)
             .expect("loading user status from table");
@@ -97,36 +98,44 @@ impl<'a, 'r> FromRequest<'a, 'r> for Login
             return Outcome::Failure((Status::Unauthorized, ()));
         }
 
-        let (locked, user_id, password_hash, password_salt) = result.pop().unwrap();
+        let (locked, user_id, password, salt) = result.pop().unwrap();
 
-        if locked || !verify_password(credentials[1], &password_hash, &password_salt) {
+        if locked || !pwhash::verify(credentials[1], &password, &salt) {
             return Outcome::Failure((Status::Unauthorized, ()));
         }
 
         // generate token
-        let mut buf: [u8; 64] = [0; 64];
+        let mut buf: [u8; 108] = [0; 108];
         urandom(&mut buf);
 
+        // encode for client
         let token = base64::encode_config(&buf[..], base64::URL_SAFE);
 
+        // using the password hash as key for performace reasons
+        // and so every token gets invalidated on password change
+        let hash = generichash::generichash(&buf, &password[..]);
+
+        // sanitize too large user agents
         let user_agent = if user_agent[0].len() > 128 {
             String::from(&user_agent[0][..128])
         } else {
             String::from(user_agent[0])
         };
-        match insert_into(token::table)
+
+        match insert_into(user_token::table)
             .values((
-                token::user_id.eq(user_id),
-                token::user_agent.eq(user_agent),
-                // FIXME: read city from geoip database
-                token::location.eq(format!("{}", remote)),
-                token::value.eq(Vec::from(&buf[..])),
+                user_token::user_id.eq(user_id),
+                user_token::user_agent.eq(user_agent),
+                user_token::ip.eq(format!("{}", remote)),
+                // TODO: read city from geoip database
+                user_token::location.eq("placeholder"),
+                user_token::hash.eq(hash),
             ))
             .execute(&connection)
         {
             Ok(_) => {
                 info!("{} logged in ", user_id);
-                Outcome::Success(Login {
+                Outcome::Success(LoginGuard {
                     token,
                 })
             },
