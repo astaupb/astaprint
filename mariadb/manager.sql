@@ -1,0 +1,39 @@
+--  AStAPrint - Database - Manager Tables
+--  Copyright (C) 2018  AStA der Universität Paderborn
+--
+--  Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
+--
+--  This program is free software: you can redistribute it and/or modify
+--  it under the terms of the GNU Affero General Public License as published by
+--  the Free Software Foundation, either version 3 of the License, or
+--  (at your option) any later version.
+--
+--  This program is distributed in the hope that it will be useful,
+--  but WITHOUT ANY WARRANTY; without even the implied warranty of
+--  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+--  GNU Affero General Public License for more details.
+--
+--  You should have received a copy of the GNU Affero General Public License
+--  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+CREATE TABLE `manager`(
+  `id` INT UNSIGNED UNIQUE PRIMARY KEY AUTO_INCREMENT,
+  `first_name` VARCHAR(64) NOT NULL,
+  `last_name` VARCHAR(64) NOT NULL,
+  `password_hash` BINARY(64) NOT NULL,
+  `password_salt` BINARY(16) NOT NULL,
+  `is_service` BOOLEAN NOT NULL,
+  `expires` DATE NOT NULL,
+  `created` TIMESTAMP NOT NULL,
+  `updated` TIMESTAMP NOT NULL ON UPDATE CURRENT_TIMESTAMP);
+
+CREATE TABLE `manager_token`(
+  `id` INT UNSIGNED UNIQUE PRIMARY KEY AUTO_INCREMENT,
+  `user_id` INT UNSIGNED NOT NULL,
+  `user_agent` VARCHAR(128) NOT NULL,
+  `ip` VARCHAR(48) NOT NULL,
+  `location` VARCHAR(64) NOT NULL,
+  `hash` BINARY(64) NOT NULL,
+  `salt` BINARY(64) NOT NULL,
+  `created` TIMESTAMP NOT NULL);
+

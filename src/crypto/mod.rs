@@ -1,4 +1,4 @@
-/// AStAPrint - lib.rs
+/// AStAPrint - Crypto
 /// Copyright (C) 2018  AStA der Universität Paderborn
 ///
 /// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
@@ -15,25 +15,17 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-extern crate log;
-extern crate serde;
-extern crate serde_json;
+use std::{
+    fs::File,
+    io::Read,
+};
 
-#[macro_use]
-extern crate serde_derive;
+pub fn urandom(buf: &mut [u8])
+{
+    let mut file = File::open("/dev/urandom").expect("opening /dev/urandom");
 
-#[macro_use]
-extern crate diesel;
+    file.read_exact(buf).expect("reading /dev/urandom to buffer");
+}
 
-extern crate redis;
-
-extern crate bigdecimal;
-extern crate chrono;
-extern crate sha2;
-
-pub mod crypto;
-pub mod jobs;
-pub mod journal;
-pub mod manager;
-pub mod printers;
-pub mod user;
+pub mod generichash;
+pub mod pwhash;

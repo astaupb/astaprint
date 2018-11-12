@@ -15,13 +15,16 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use redis::{Client, Connection, RedisResult, Value};
+use redis::{
+    Client,
+    Connection,
+    RedisResult,
+    Value,
+};
 
 use std::{
-    fs::{
-        File,
-    },
     env,
+    fs::File,
     io::Read,
     thread,
     time,
@@ -45,18 +48,17 @@ impl Lock
 {
     pub fn new(user_id: u32) -> Lock
     {
-        let url = env::var("ASTAPRINT_REDIS_URL")
-            .expect("reading redis url from environment");
-        let client = Client::open(&url[..])
-            .expect("creating redis client");
-        let connection = client.get_connection()
-            .expect("getting redis connection from client");
+        let url = env::var("ASTAPRINT_REDIS_URL").expect("reading redis url from environment");
+        let client = Client::open(&url[..]).expect("creating redis client");
+        let connection = client.get_connection().expect("getting redis connection from client");
 
         let mut value: Vec<u8> = Vec::with_capacity(20);
         urandom(&mut value);
 
         Lock {
-            user_id, connection, value,
+            user_id,
+            connection,
+            value,
         }
     }
 
@@ -69,8 +71,13 @@ impl Lock
     pub fn grab(&self)
     {
         loop {
-            if let Ok(Value::Okay) = redis::cmd("SET").arg(self.user_id).arg(self.value.clone())
-                .arg("NX").arg("PX").arg(420000).query(&self.connection)
+            if let Ok(Value::Okay) = redis::cmd("SET")
+                .arg(self.user_id)
+                .arg(self.value.clone())
+                .arg("NX")
+                .arg("PX")
+                .arg(420000)
+                .query(&self.connection)
             {
                 break;
             } else {

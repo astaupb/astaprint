@@ -3,9 +3,6 @@ name = "astaprint"
 version = "0.1.0"
 authors = ["Gerrit Pape <gerrit.pape@asta.upb.de>"]
 
-[workspace]
-members = ["dispatcher", "worker", "backend"]
-
 [dependencies]
 log = {version = "*", features = ["std", "max_level_debug", "release_max_level_info"]}
 chrono = "*"
