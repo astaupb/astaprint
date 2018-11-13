@@ -28,7 +28,6 @@ extern crate serde_derive;
 #[macro_use]
 extern crate diesel;
 
-#[macro_use]
 extern crate rocket;
 extern crate rocket_contrib;
 
@@ -39,8 +38,10 @@ extern crate bigdecimal;
 extern crate chrono;
 extern crate sha2;
 
-pub mod crypto;
+extern crate astacrypto;
+
 pub mod guards;
+pub mod logger;
 
 // routes
 pub mod jobs;

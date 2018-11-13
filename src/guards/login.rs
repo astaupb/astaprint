@@ -38,10 +38,10 @@ use diesel::{
 
 use crate::user::*;
 
-use crypto::{
-    generichash,
-    pwhash,
-    urandom,
+use astacrypto::{
+    GenericHash,
+    PasswordHash,
+    random_bytes,
 };
 
 pub struct LoginGuard
@@ -89,7 +89,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for LoginGuard
         let connection = pool.get().expect("retrieving connection from pool");
 
         let mut result: Vec<(bool, u32, Vec<u8>, Vec<u8>)> = user::table
-            .select((user::locked, user::id, user::password, user::salt))
+            .select((user::locked, user::id, user::hash, user::salt))
             .filter(user::name.eq(credentials[0]))
             .load(&connection)
             .expect("loading user status from table");
@@ -98,22 +98,21 @@ impl<'a, 'r> FromRequest<'a, 'r> for LoginGuard
             return Outcome::Failure((Status::Unauthorized, ()));
         }
 
-        let (locked, user_id, password, salt) = result.pop().unwrap();
+        let (locked, user_id, hash, salt) = result.pop().unwrap();
 
-        if locked || !pwhash::verify(credentials[1], &password, &salt) {
+        if locked || PasswordHash::with_salt(credentials[1], &salt[..]) != hash {
             return Outcome::Failure((Status::Unauthorized, ()));
         }
 
         // generate token
-        let mut buf: [u8; 108] = [0; 108];
-        urandom(&mut buf);
+        let buf = random_bytes(108);
 
         // encode for client
         let token = base64::encode_config(&buf[..], base64::URL_SAFE);
 
-        // using the password hash as key for performace reasons
+        // using the password hash as salt for performace reasons
         // and so every token gets invalidated on password change
-        let hash = generichash::generichash(&buf, &password[..]);
+        let hash = GenericHash::with_salt(&buf[..], &hash[..]);
 
         // sanitize too large user agents
         let user_agent = if user_agent[0].len() > 128 {

@@ -31,7 +31,7 @@ table! {
     user (id) {
         id -> Unsigned<Integer>,
         name -> Varchar,
-        password -> Binary,
+        hash -> Binary,
         salt -> Binary,
         pin -> Nullable<Varchar>,
         locked -> Bool,

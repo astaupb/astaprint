@@ -22,8 +22,6 @@ use diesel::{
 use rocket::response::status::Reset;
 use rocket_contrib::Json;
 
-use base64;
-
 use crate::{
     guards::UserGuard,
     user::response::UserTokenResponse,

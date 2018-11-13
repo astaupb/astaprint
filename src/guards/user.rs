@@ -38,6 +38,8 @@ use diesel::{
     },
 };
 
+use astacrypto::GenericHash;
+
 use crate::user::*;
 
 pub struct UserGuard
@@ -53,16 +55,36 @@ impl<'a, 'r> FromRequest<'a, 'r> for UserGuard
 
     fn from_request(request: &'a Request<'r>) -> request::Outcome<UserGuard, ()>
     {
-        let keys: Vec<_> = request.headers().get("x-api-key").collect();
+        let key: Vec<_> = request.headers().get("x-api-key").collect();
 
-        if keys.len() != 1 {
+        if key.len() != 1 {
+            info!("invalid {:?}", key);
             return Outcome::Failure((Status::BadRequest, ()));
         }
+        let key = key[0];
 
-        let buf: Vec<u8> = match base64::decode_config(keys[0], base64::URL_SAFE) {
+        let x_user_id: Vec<_> = request.headers().get("x-user-id").collect();
+
+        if x_user_id.len() != 1 {
+            info!("invalid: {:?}", x_user_id);
+            return Outcome::Failure((Status::BadRequest, ()));
+        }
+        let user_id: u32 = match x_user_id[0].parse() {
+            Ok(user_id) => user_id,
+            Err(_) => {
+                info!("could not parse {:?}", x_user_id);
+                return Outcome::Failure((Status::BadRequest, ()));
+            },
+        };
+
+        let buf: Vec<u8> = match base64::decode_config(key, base64::URL_SAFE) {
             Ok(buf) => buf,
             Err(_) => return Outcome::Failure((Status::BadRequest, ())),
         };
+
+        if buf.len() != 108 {
+            return Outcome::Failure((Status::BadRequest, ()));
+        }
 
         let pool = request.guard::<State<Pool<ConnectionManager<MysqlConnection>>>>()?;
 
@@ -71,18 +93,32 @@ impl<'a, 'r> FromRequest<'a, 'r> for UserGuard
             Err(_) => return Outcome::Failure((Status::InternalServerError, ())),
         };
 
-        let result: Result<(u32, u32), diesel::result::Error> = user_token::table
-            .select((user_token::user_id, user_token::id))
-            .filter(user_token::hash.eq(buf))
-            .first(&connection);
+        // select password hash of user which is used as salt
+        let result: Result<Vec<u8>, diesel::result::Error> =
+            user::table.select(user::hash).filter(user::id.eq(user_id)).first(&connection);
 
-        if let Ok((id, token_id)) = result {
-            Outcome::Success(UserGuard {
-                id,
-                token_id,
-                connection,
-            })
+        if let Ok(salt) = result {
+
+            let hash = GenericHash::with_salt(&buf[..], &salt[..]);
+
+            let result: Result<u32, diesel::result::Error> = user_token::table
+                .select(user_token::id)
+                .filter(user_token::user_id.eq(user_id))
+                .filter(user_token::hash.eq(hash))
+                .first(&connection);
+
+            if let Ok(token_id) = result {
+                Outcome::Success(UserGuard {
+                    id: user_id,
+                    token_id,
+                    connection,
+                })
+            } else {
+                info!("could not find token for user {}", user_id);
+                Outcome::Failure((Status::Unauthorized, ()))
+            }
         } else {
+            info!("could not find user {}", user_id);
             Outcome::Failure((Status::Unauthorized, ()))
         }
     }

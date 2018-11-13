@@ -38,7 +38,7 @@ pub struct PasswordHash;
 
 impl PasswordHash
 {
-    pub fn create(input: &[u8]) -> (Vec<u8>, Vec<u8>)
+    pub fn create(input: &str) -> (Vec<u8>, Vec<u8>)
     {
         init();
         let salt = random_bytes(SALTBYTES);
@@ -58,7 +58,7 @@ impl PasswordHash
         (hash, salt)
     }
 
-    pub fn with_salt(input: &[u8], salt: &[u8]) -> Vec<u8>
+    pub fn with_salt(input: &str, salt: &[u8]) -> Vec<u8>
     {
         init();
         assert_eq!(salt.len(), SALTBYTES);

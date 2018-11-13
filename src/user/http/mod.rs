@@ -35,13 +35,13 @@ use diesel::{
     update,
 };
 
+use astacrypto::PasswordHash;
+
 use crate::{
-    crypto::pwhash,
     guards::{
         LoginGuard,
         UserGuard,
     },
-    journal::*,
     user::*,
 };
 
@@ -122,15 +122,15 @@ fn change_password(
 ) -> Result<Result<NoContent, BadRequest<&'static str>>, diesel::result::Error>
 {
     let (hash, salt): (Vec<u8>, Vec<u8>) = user::table
-        .select((user::password, user::salt))
+        .select((user::hash, user::salt))
         .filter(user::id.eq(user.id))
         .first(&user.connection)?;
 
-    if pwhash::verify(&body.password.old, &hash[..], &salt[..]) {
-        let (hash, salt) = pwhash::create(&body.password.new);
+    if PasswordHash::with_salt(&body.password.old, &salt[..]) == hash {
+        let (hash, salt) = PasswordHash::create(&body.password.new);
 
         update(user::table.filter(user::id.eq(user.id)))
-            .set((user::password.eq(hash), user::salt.eq(salt)))
+            .set((user::hash.eq(hash), user::salt.eq(salt)))
             .execute(&user.connection)?;
 
         info!("{} changed password", user.id);

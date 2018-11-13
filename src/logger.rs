@@ -1,4 +1,4 @@
-/// AStAPrint-Common - Logger.rs
+/// AStAPrint - Logger
 /// Copyright (C) 2018  AStA der Universität Paderborn
 ///
 /// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
@@ -42,16 +42,6 @@ impl Log for Logger
 
     fn log(&self, record: &Record)
     {
-        // if record.level() == Level::Error {
-        // panic!(
-        // "{} {} {} {}",
-        // Local::now().format("%Y-%m-%d %H:%M:%S.%f"),
-        // self.name,
-        // record.level(),
-        // record.args()
-        // );
-        // }
-
         if self.enabled(record.metadata()) {
             println!(
                 "{} {} {} {}",
