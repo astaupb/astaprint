@@ -1,4 +1,4 @@
-/// AStAPrint-Common - Subprocesses.rs
+/// AStAPrint PDF - subprocesses.rs
 /// Copyright (C) 2018  AStA der Universität Paderborn
 ///
 /// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
@@ -15,7 +15,7 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use crate::pdf::pageinfo::{
+use jobs::pdf::pageinfo::{
     Is::Almost,
     PageInfo,
     PageOrientation,
@@ -23,13 +23,9 @@ use crate::pdf::pageinfo::{
 };
 
 use std::{
-    env,
     fs::{
         rename,
-        File,
-        OpenOptions,
     },
-    io::Write,
     process::{
         Command,
         Stdio,
@@ -88,25 +84,8 @@ pub fn create_pdf_from_ps(path_to_pdf: &str) -> bool
     ps2pdf.success() && rename(&outfile, path_to_pdf).is_ok()
 }
 
-fn log_gs_font_substitutions(lines: Vec<String>)
-{
-    let spooldir = env::var("ASTAPRINT_SPOOL_DIR").expect("reading ASTAPRINT_SPOOL_DIR from environment");
-
-    let path = format!("{}/dispatch/fonts.log", spooldir);
-
-    let mut file = match OpenOptions::new().append(true).open(&path) {
-        Ok(file) => file,
-        Err(_) => File::create(&path).expect("creating fonts.log file"),
-    };
-
-    for line in lines {
-        write!(file, "{}", line).expect("writing font substitution line to file");
-    }
-}
-
 /// returns pagecount of converted pdf, in case something failed 0 will be returned
 /// create temporary file and rename afterwards to convert in place
-
 pub fn create_greyscale_pdf(path_to_pdf: &str) -> u16
 {
     let outfile = format!("{}.grey", path_to_pdf);
@@ -123,8 +102,6 @@ pub fn create_greyscale_pdf(path_to_pdf: &str) -> u16
         path_to_pdf,
     ];
 
-    println!("{:?}", arguments);
-
     let gs_pdf = Command::new("gs")
         .args(&arguments)
         .stdout(Stdio::piped())
@@ -133,8 +110,6 @@ pub fn create_greyscale_pdf(path_to_pdf: &str) -> u16
         .expect("waiting for gs_pdf output");
 
     let mut pagecount = 0;
-
-    println!("{:?}", gs_pdf);
 
     if gs_pdf.status.success() {
         let mut substitutions: Vec<String> = Vec::new();
@@ -150,8 +125,6 @@ pub fn create_greyscale_pdf(path_to_pdf: &str) -> u16
                 pagecount += 1;
             }
         }
-
-        log_gs_font_substitutions(substitutions);
     }
 
     if rename(&outfile, &path_to_pdf).is_ok() {

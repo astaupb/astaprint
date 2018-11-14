@@ -98,7 +98,6 @@ impl<'a, 'r> FromRequest<'a, 'r> for UserGuard
             user::table.select(user::hash).filter(user::id.eq(user_id)).first(&connection);
 
         if let Ok(salt) = result {
-
             let hash = GenericHash::with_salt(&buf[..], &salt[..]);
 
             let result: Result<u32, diesel::result::Error> = user_token::table

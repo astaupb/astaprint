@@ -17,6 +17,8 @@
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use chrono::NaiveDateTime;
 
+pub mod pdf;
+
 table! {
     jobs (id) {
         id -> Unsigned<Integer>,

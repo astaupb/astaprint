@@ -39,9 +39,9 @@ use diesel::{
 use crate::user::*;
 
 use astacrypto::{
+    random_bytes,
     GenericHash,
     PasswordHash,
-    random_bytes,
 };
 
 pub struct LoginGuard

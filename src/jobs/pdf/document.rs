@@ -1,7 +1,3 @@
-use poppler::{
-    PopplerDocument,
-    PopplerPage,
-};
 /// AStAPrint PDF - document.rs
 /// Copyright (C) 2018  AStA der Universität Paderborn
 ///
@@ -19,7 +15,10 @@ use poppler::{
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use std::fs::File;
+use poppler::{
+    PopplerDocument,
+    PopplerPage,
+};
 
 use cairo::{
     enums::Format::ARgb32,
@@ -27,7 +26,7 @@ use cairo::{
     ImageSurface,
 };
 
-use crate::pdf::pageinfo::PageInfo;
+use jobs::pdf::pageinfo::PageInfo;
 
 #[derive(Debug)]
 
@@ -41,10 +40,10 @@ pub struct PDFDocument
 
 impl PDFDocument
 {
-    pub fn new(file: &str, password: &str) -> PDFDocument
+    pub fn new(data: &[u8], password: &str) -> PDFDocument
     {
         let data =
-            PopplerDocument::new_from_file(file, password).expect("getting poppler document from path");
+            PopplerDocument::new_from_data(data, password).expect("getting poppler document from path");
 
         let title = data.get_title();
 
@@ -81,7 +80,7 @@ impl PDFDocument
         PageInfo::from_multiple(self.get_full_pageinfo())
     }
 
-    fn render_page(&self, number: usize, path: &str)
+    fn render_preview(&self, number: usize) -> Vec<u8>
     {
         let (w, h) = self.pagesizes[number];
 
@@ -100,15 +99,19 @@ impl PDFDocument
 
         context.show_page();
 
-        let mut f: File = File::create(path).expect("opening file for writing preview");
+        let mut png: Vec<u8> = Vec::new();
 
-        surface.write_to_png(&mut f).expect("writing cairo surface to file");
+        surface.write_to_png(&mut png).expect("writing cairo surface to file");
+
+        png
     }
 
-    pub fn render_previews_up_to(&self, number: usize, base_path: &str)
+    pub fn render_previews_up_to(&self, number: usize) -> Vec<Vec<u8>>
     {
-        for i in (0..number).filter(|n| n < &self.pagecount) {
-            self.render_page(i, &format!("{}-{}", base_path, i));
-        }
+        (0..number)
+            .filter(|n| n < &self.pagecount)
+            .map(|i| 
+                self.render_preview(i)
+            ).collect()
     }
 }

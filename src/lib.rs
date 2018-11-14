@@ -38,6 +38,9 @@ extern crate bigdecimal;
 extern crate chrono;
 extern crate sha2;
 
+extern crate cairo;
+extern crate poppler;
+
 extern crate astacrypto;
 
 pub mod guards;

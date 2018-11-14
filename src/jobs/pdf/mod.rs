@@ -1,4 +1,4 @@
-/// AStAPrint-Dispatcher - lib.rs
+/// AStAPrint - Jobs - PDF
 /// Copyright (C) 2018  AStA der Universität Paderborn
 ///
 /// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
@@ -15,8 +15,6 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-extern crate cairo;
-extern crate poppler;
-
-pub mod pdf;
+pub mod document;
+pub mod pageinfo;
 pub mod subprocesses;
