@@ -13,7 +13,7 @@ serde_derive = "*"
 netsnmp-sys = "*"
 diesel = {version = "*", features = ["mysql", "r2d2", "chrono", "bigdecimal", "numeric"]}
 r2d2 = "*"
-bigdecimal = "*"
+bigdecimal = "0.0.11"
 sha2 = "*"
 redis = "*"
 rocket = "*"
@@ -21,3 +21,5 @@ rocket_contrib = "*"
 rocket_codegen = "*"
 rocket_cors = "*"
 base64 = "*"
+cairo-rs = { version= "0.3.0", features = ["png"]}
+poppler = {git = "https://git.uni-paderborn.de/asta/poppler-rs", rev="e2aea17"}
