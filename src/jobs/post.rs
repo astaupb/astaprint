@@ -38,27 +38,12 @@ use astacrypto::random_bytes;
 use jobs::{
     data::JobInfo,
     task::DispatcherTask,
+    uid::UID,
 };
 
 use taskqueue::TaskQueue;
 
 use guards::user::UserGuard;
-
-#[derive(Debug, Clone)]
-pub struct UID
-{
-    bytes: Vec<u8>,
-}
-
-impl From<Vec<u8>> for UID
-{
-    fn from(bytes: Vec<u8>) -> UID
-    {
-        UID {
-            bytes,
-        }
-    }
-}
 
 #[derive(FromForm, Debug)]
 pub struct UploadForm
@@ -76,6 +61,10 @@ fn upload_job<'a>(
     taskqueue: State<TaskQueue<DispatcherTask>>,
 ) -> Result<Result<Accepted<Json<String>>, BadRequest<&'a str>>, io::Error>
 {
+    // TODO check filetype
+    if data.len() == 0 {
+        return Ok(Err(BadRequest(Some("invalid pdf file")))); 
+    }
     let uid = UID::from(random_bytes(20));
 
     let info = JobInfo::new(
@@ -85,6 +74,7 @@ fn upload_job<'a>(
     );
 
     let task = DispatcherTask {
+        user_id: user.id,
         info,
         data,
     };

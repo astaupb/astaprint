@@ -1,4 +1,4 @@
-/// AStAPrin - Jobs - DispatcherTask
+/// AStAPrint - Dispatcher
 /// Copyright (C) 2018  AStA der Universität Paderborn
 ///
 /// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
@@ -15,12 +15,32 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use jobs::data::JobInfo;
+extern crate astaprint;
+extern crate taskqueue;
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct DispatcherTask
+use std::env;
+
+use taskqueue::{
+    create_pool,
+    TaskQueue,
+};
+
+use astaprint::jobs::{
+    pdf::dispatch,
+    task::DispatcherTask,
+};
+
+fn main()
 {
-    pub user_id: u32,
-    pub info: JobInfo,
-    pub data: Vec<u8>,
+    let url = env::var("ASTAPRINT_REDIS_URL").expect("reading redis url from environment");
+
+    let pool = create_pool(&url);
+
+    let taskqueue: TaskQueue<DispatcherTask> = TaskQueue::new("dispatcher", pool);
+
+    taskqueue
+        .listen(|task| {
+            dispatch(task);
+        })
+        .unwrap_or_else(|e| println!("{}", e));
 }

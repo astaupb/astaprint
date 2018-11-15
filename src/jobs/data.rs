@@ -15,6 +15,7 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+use bincode;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct JobInfo
@@ -38,6 +39,11 @@ impl JobInfo
             password: String::from(password),
         }
     }
+
+    pub fn serialize(&self) -> Vec<u8>
+    {
+        bincode::serialize(&self).expect("serializing JobInfo")
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -51,6 +57,14 @@ pub struct JobOptions
     pub nup: u8,
     pub nuppageorder: u8,
     pub range: String,
+}
+
+impl JobOptions
+{
+    pub fn serialize(&self) -> Vec<u8>
+    {
+        bincode::serialize(&self).expect("serializing JobOptions")
+    }
 }
 
 impl Default for JobOptions

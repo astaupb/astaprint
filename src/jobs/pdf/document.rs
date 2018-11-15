@@ -80,8 +80,11 @@ impl PDFDocument
         PageInfo::from_multiple(self.get_full_pageinfo())
     }
 
-    fn render_preview(&self, number: usize) -> Vec<u8>
+    pub fn render_preview(&self, number: usize) -> Option<Vec<u8>>
     {
+        if number >= self.pagecount {
+            return None;
+        }
         let (w, h) = self.pagesizes[number];
 
         let page = &self.pages[number];
@@ -103,11 +106,6 @@ impl PDFDocument
 
         surface.write_to_png(&mut png).expect("writing cairo surface to file");
 
-        png
-    }
-
-    pub fn render_previews_up_to(&self, number: usize) -> Vec<Vec<u8>>
-    {
-        (0..number).filter(|n| n < &self.pagecount).map(|i| self.render_preview(i)).collect()
+        Some(png)
     }
 }

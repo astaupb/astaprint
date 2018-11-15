@@ -1,4 +1,4 @@
-/// AStAPrin - Jobs - DispatcherTask
+/// AStAPrint PDF - document.rs
 /// Copyright (C) 2018  AStA der Universität Paderborn
 ///
 /// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
@@ -15,12 +15,31 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use jobs::data::JobInfo;
+use std::fmt;
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct DispatcherTask
+impl fmt::LowerHex for UID
 {
-    pub user_id: u32,
-    pub info: JobInfo,
-    pub data: Vec<u8>,
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+    {
+        for c in &self.bytes {
+            write!(f, "{:x}", c)?;
+        }
+        Ok(())
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct UID
+{
+    bytes: Vec<u8>,
+}
+
+impl From<Vec<u8>> for UID
+{
+    fn from(bytes: Vec<u8>) -> UID
+    {
+        UID {
+            bytes,
+        }
+    }
 }

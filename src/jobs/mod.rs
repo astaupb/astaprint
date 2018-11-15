@@ -27,6 +27,8 @@ pub mod data;
 pub mod pdf;
 pub mod post;
 pub mod task;
+pub mod tmp;
+pub mod uid;
 
 table! {
     jobs (id) {

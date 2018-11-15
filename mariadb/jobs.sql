@@ -22,10 +22,10 @@ CREATE TABLE `jobs`(
   `info` BINARY(128) NOT NULL,
   `options` BINARY(182) NOT NULL,
   `data` LONGBLOB NOT NULL,
-  `preview-0` MEDIUMBLOB NOT NULL,
-  `preview-1` MEDIUMBLOB,
-  `preview-2` MEDIUMBLOB,
-  `preview-3` MEDIUMBLOB,
+  `preview_0` MEDIUMBLOB NOT NULL,
+  `preview_1` MEDIUMBLOB,
+  `preview_2` MEDIUMBLOB,
+  `preview_3` MEDIUMBLOB,
   `created` TIMESTAMP NOT NULL,
   `updated` TIMESTAMP NOT NULL ON UPDATE CURRENT_TIMESTAMP);
 
