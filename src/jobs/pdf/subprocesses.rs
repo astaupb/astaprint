@@ -23,9 +23,7 @@ use jobs::pdf::pageinfo::{
 };
 
 use std::{
-    fs::{
-        rename,
-    },
+    fs::rename,
     process::{
         Command,
         Stdio,

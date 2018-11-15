@@ -26,6 +26,7 @@ extern crate base64;
 extern crate diesel;
 
 extern crate astaprint;
+extern crate taskqueue;
 
 use std::env;
 
@@ -43,7 +44,16 @@ use rocket_cors::{
     AllowedOrigins,
 };
 
+use taskqueue::{
+    create_pool,
+    TaskQueue,
+};
+
 use astaprint::{
+    jobs::{
+        post::*,
+        task::DispatcherTask,
+    },
     logger::Logger,
     user::http::{
         tokens::*,
@@ -90,30 +100,35 @@ fn rocket() -> rocket::Rocket
 
     let manager = ConnectionManager::<MysqlConnection>::new(url);
 
-    let pool = Pool::new(manager).expect("initiliasing MySQL Pool");
+    let mariadb_pool = Pool::new(manager).expect("initiliasing MySQL Pool");
+
+    let url = env::var("ASTAPRINT_REDIS_URL").expect("reading ASTAPRINT_REDIS_URL from environment");
+
+    let redis_pool = create_pool(&url);
+
+    let dispatcher_queue: TaskQueue<DispatcherTask> = TaskQueue::new("dispatcher", redis_pool);
 
     rocket::ignite()
-        .manage(pool)
+        .manage(mariadb_pool)
+        .manage(dispatcher_queue)
         .mount("/", routes![api_reference])
-        /*
         .mount(
             "/jobs/",
             routes![
-                jobs,
-                update_options,
-                update_single_option,
-                fetch_options,
-                fetch_single_option,
-                fetch_info,
-                fetch_single_info,
+                //jobs,
+                //update_options,
+                //update_single_option,
+                //fetch_options,
+                //fetch_single_option,
+                //fetch_info,
+                //fetch_single_info,
                 upload_job,
-                delete_job,
-                fetch_job,
-                fetch_pdf,
-                fetch_preview
+                //delete_job,
+                //fetch_job,
+                //fetch_pdf,
+                //fetch_preview
             ],
         )
-        */
         .mount(
             "/user",
             routes![get_user_info, login, logout, change_password, credit, fetch_username, change_username],

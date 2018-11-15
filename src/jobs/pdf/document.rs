@@ -108,10 +108,6 @@ impl PDFDocument
 
     pub fn render_previews_up_to(&self, number: usize) -> Vec<Vec<u8>>
     {
-        (0..number)
-            .filter(|n| n < &self.pagecount)
-            .map(|i| 
-                self.render_preview(i)
-            ).collect()
+        (0..number).filter(|n| n < &self.pagecount).map(|i| self.render_preview(i)).collect()
     }
 }

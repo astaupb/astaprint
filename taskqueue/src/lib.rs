@@ -9,7 +9,6 @@ use r2d2_redis::{
         Client,
         Commands,
         Connection,
-        FromRedisValue,
         RedisResult,
     },
     RedisConnectionManager,
@@ -50,7 +49,7 @@ pub struct TaskQueue<T>
 
 impl<T> TaskQueue<T>
 where
-    T: Serialize + DeserializeOwned + FromRedisValue + Debug,
+    T: Serialize + DeserializeOwned + Debug,
 {
     pub fn new(name: &str, pool: Pool<RedisConnectionManager>) -> TaskQueue<T>
     {
@@ -81,13 +80,14 @@ where
         }
     }
 
-    pub fn send(&self, value: &T) -> RedisResult<T>
+    pub fn send(&self, value: &T) -> RedisResult<()>
     {
         let encoded: Vec<u8> = bincode::serialize(value).expect("serializing value to bincode");
 
         let redis = self.pool.get().expect("getting connection from pool");
 
-        redis.lpush(&self.incoming, encoded)
+        redis.lpush(&self.incoming, encoded)?;
+        Ok(())
     }
 }
 

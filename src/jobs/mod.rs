@@ -1,3 +1,4 @@
+use bincode;
 /// AStAPrint - Jobs
 /// Copyright (C) 2018  AStA der Universität Paderborn
 ///
@@ -16,14 +17,15 @@
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use chrono::NaiveDateTime;
-use bincode;
 
 use crate::jobs::data::{
-    JobInfo, JobOptions,
+    JobInfo,
+    JobOptions,
 };
 
 pub mod data;
 pub mod pdf;
+pub mod post;
 pub mod task;
 
 table! {
@@ -62,24 +64,24 @@ impl Job
 {
     pub fn info(&self) -> JobInfo
     {
-        bincode::deserialize(&self.info[..])
-            .expect("deserialzing JobInfo")
+        bincode::deserialize(&self.info[..]).expect("deserialzing JobInfo")
     }
+
     pub fn options(&self) -> JobOptions
     {
-        bincode::deserialize(&self.info[..])
-            .expect("deserializing JobOptions")
+        bincode::deserialize(&self.info[..]).expect("deserializing JobOptions")
     }
+
     pub fn set_info(&mut self, info: JobInfo)
     {
-        self.info = bincode::serialize(&info)
-            .expect("serializing JobInfo");
+        self.info = bincode::serialize(&info).expect("serializing JobInfo");
     }
+
     pub fn set_options(&mut self, options: JobOptions)
     {
-        self.options = bincode::serialize(&options)
-            .expect("serializing JobOptions");
+        self.options = bincode::serialize(&options).expect("serializing JobOptions");
     }
+
     pub fn pages_to_print(&self) -> u16
     {
         let info = self.info();
