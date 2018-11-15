@@ -5,11 +5,13 @@ authors = ["Gerrit Pape <gerrit.pape@asta.upb.de>"]
 
 [dependencies]
 astacrypto = {path = "./crypto"}
+taskqueue = {path = "./taskqueue"}
 log = {version = "*", features = ["std", "max_level_debug", "release_max_level_info"]}
 chrono = "*"
 serde = "*"
 serde_json = "*"
 serde_derive = "*"
+bincode = "*"
 netsnmp-sys = "*"
 diesel = {version = "*", features = ["mysql", "r2d2", "chrono", "bigdecimal", "numeric"]}
 r2d2 = "*"
