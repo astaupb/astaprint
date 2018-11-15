@@ -16,8 +16,15 @@
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use chrono::NaiveDateTime;
+use bincode;
 
+use crate::jobs::data::{
+    JobInfo, JobOptions,
+};
+
+pub mod data;
 pub mod pdf;
+pub mod task;
 
 table! {
     jobs (id) {
@@ -49,4 +56,55 @@ pub struct Job
     pub preview_3: Option<Vec<u8>>,
     pub created: NaiveDateTime,
     pub updated: NaiveDateTime,
+}
+
+impl Job
+{
+    pub fn info(&self) -> JobInfo
+    {
+        bincode::deserialize(&self.info[..])
+            .expect("deserialzing JobInfo")
+    }
+    pub fn options(&self) -> JobOptions
+    {
+        bincode::deserialize(&self.info[..])
+            .expect("deserializing JobOptions")
+    }
+    pub fn set_info(&mut self, info: JobInfo)
+    {
+        self.info = bincode::serialize(&info)
+            .expect("serializing JobInfo");
+    }
+    pub fn set_options(&mut self, options: JobOptions)
+    {
+        self.options = bincode::serialize(&options)
+            .expect("serializing JobOptions");
+    }
+    pub fn pages_to_print(&self) -> u16
+    {
+        let info = self.info();
+        let options = self.options();
+        let mut count = info.pagecount;
+
+        count = (count / u16::from(options.nup))
+            + match info.pagecount % u16::from(options.nup) {
+                0 => 0,
+                _ => 1,
+            };
+
+        if options.a3 {
+            count *= 2;
+        }
+
+        count * options.copies
+    }
+}
+
+#[test]
+fn pages_to_print()
+{
+    let mut data = JobData::new("uid", 1, "filename", "password", true);
+    data.info.pagecount = 18;
+    data.options.nup = 4;
+    println!("{:?}, pages to print: {}", data, data.pages_to_print());
 }
