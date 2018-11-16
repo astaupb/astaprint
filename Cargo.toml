@@ -24,4 +24,4 @@ rocket_codegen = "*"
 rocket_cors = "*"
 base64 = "*"
 cairo-rs = { version= "0.3.0", features = ["png"]}
-poppler = {git = "https://git.uni-paderborn.de/asta/poppler-rs", rev="e2aea17"}
+poppler = {git = "https://git.uni-paderborn.de/asta/poppler-rs", rev="69ea0bc"}
