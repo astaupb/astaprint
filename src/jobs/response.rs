@@ -1,4 +1,4 @@
-/// AStAPrint-Backend - Printers
+/// AStAPrint-Backend - Jobs Response
 /// Copyright (C) 2018  AStA der Universität Paderborn
 ///
 /// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
@@ -15,37 +15,5 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use rocket::{
-    http::Status,
-    request::{
-        self,
-        FromRequest,
-    },
-    Outcome,
-    Request,
-    State,
-};
 
-use diesel::{
-    insert_into,
-    prelude::*,
-    r2d2::{
-        ConnectionManager,
-        Pool,
-    },
-};
 
-use astaprint::database::user::schema::*;
-
-pub struct Printer {
-    id: u16,
-    queue: String,
-}
-
-impl FromRequest for Printer {
-    type Error = ();
-
-    fn from_request(request: &'a Request<'r>) -> request::Outcome<Printer, ()> {
-        let  ff 
-    }
-}

@@ -22,14 +22,14 @@ pub mod subprocesses;
 use std::env;
 
 use diesel::{
-    prelude::*,
     insert_into,
+    prelude::*,
 };
 
 use jobs::*;
 
 use jobs::{
-    task::DispatcherTask,
+    data::JobOptions,
     pdf::{
         document::PDFDocument,
         pageinfo::{
@@ -43,7 +43,7 @@ use jobs::{
             pdfjam,
         },
     },
-    data::JobOptions,
+    task::DispatcherTask,
     tmp::TemporaryFile,
 };
 

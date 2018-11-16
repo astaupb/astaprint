@@ -38,10 +38,8 @@ use diesel::{
 use astacrypto::PasswordHash;
 
 use crate::{
-    guards::{
-        LoginGuard,
-        UserGuard,
-    },
+    user::guard::UserGuard,
+    user::login::LoginGuard,
     user::*,
 };
 

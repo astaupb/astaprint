@@ -41,9 +41,10 @@ use jobs::{
     uid::UID,
 };
 
+use user::guard::UserGuard;
+
 use taskqueue::TaskQueue;
 
-use guards::user::UserGuard;
 
 #[derive(FromForm, Debug)]
 pub struct UploadForm
@@ -63,7 +64,7 @@ fn upload_job<'a>(
 {
     // TODO check filetype
     if data.len() == 0 {
-        return Ok(Err(BadRequest(Some("invalid pdf file")))); 
+        return Ok(Err(BadRequest(Some("invalid pdf file"))));
     }
     let uid = UID::from(random_bytes(20));
 

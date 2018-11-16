@@ -21,6 +21,8 @@ use crate::journal::*;
 
 pub mod http;
 pub mod response;
+pub mod guard;
+pub mod login;
 
 allow_tables_to_appear_in_same_query!(user, user_token, journal, journal_digest,);
 

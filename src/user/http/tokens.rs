@@ -23,7 +23,7 @@ use rocket::response::status::Reset;
 use rocket_contrib::Json;
 
 use crate::{
-    guards::UserGuard,
+    user::guard::UserGuard,
     user::response::UserTokenResponse,
 };
 
