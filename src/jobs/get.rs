@@ -15,6 +15,12 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+use diesel::{
+    result::Error,
+    prelude::*,
+};
+
 use rocket::{
     response::{
         status::{
@@ -22,80 +28,64 @@ use rocket::{
             BadRequest,
             Reset,
         },
-        NamedFile,
+        Stream,
     },
     State,
 };
 use rocket_contrib::Json;
 
-#[get("/<uid>")]
-fn fetch_job(user: User, env: State<Environment>, uid: String) -> Option<Json<JobData>>
+use jobs::*;
+use jobs::response::JobResponse;
+use user::guard::UserGuard;
+
+#[get("/<id>")]
+fn fetch_job(user: UserGuard, id: u32) -> Result<Option<Json<JobResponse>>, diesel::result::Error>
 {
-    let path = format!("{}/{}/index/{}", env.userdir, user.id, uid);
+    let job: Option<(u32, u32, NaiveDateTime, Vec<u8>, Vec<u8>)> = jobs::table
+        .select((
+            jobs::id,
+            jobs::user_id,
+            jobs::created,
+            jobs::info,
+            jobs::options,
+        ))
+        .first(&user.connection)
+        .optional()?;
 
-    match File::open(&path) {
-        Ok(file) => {
-            println!("serializing");
+    Ok(job.map(|x| Json(JobResponse::from(x))))
 
-            match serde_json::from_reader::<File, PrintWorkerJSON>(file) {
-                Ok(json) => {
-                    match json {
-                        print(job) => {
-                            info!("{} fetched job {}", user.id, &uid[..8]);
-
-                            Some(Json(job))
-                        },
-                        cancel(_) => None,
-                    }
-                },
-                Err(_) => None,
-            }
-        },
-        Err(_) => None,
-    }
-}
-
-#[get("/<uid>/pdf")]
-fn fetch_pdf(user: User, env: State<Environment>, uid: String) -> Option<NamedFile>
-{
-    let path = format!("{}/{}/pdf/{}", env.userdir, user.id, uid);
-
-    info!("{} fetched pdf from {}", user.id, &uid[..8]);
-
-    NamedFile::open(&path).ok()
-}
-
-#[get("/<uid>/preview/<index>")]
-fn fetch_preview(user: User, env: State<Environment>, uid: String, index: String) -> Option<NamedFile>
-{
-    let path = format!("{}/{}/preview/{}-{}", env.userdir, user.id, uid, index);
-
-    info!("{} fetched preview #{} from {}", user.id, index, &uid[..8]);
-
-    NamedFile::open(&path).ok()
 }
 
 #[get("/")]
-fn jobs(user: User, env: State<Environment>) -> Json<Vec<JobData>>
+fn jobs(user: UserGuard) -> Result<Json<Vec<JobResponse>>, diesel::result::Error>
 {
-    let index_root = format!("{}/{}/index/", env.userdir, user.id);
+    let jobs: Vec<(u32, u32, NaiveDateTime, Vec<u8>, Vec<u8>)> = jobs::table
+        .select((
+            jobs::id,
+            jobs::user_id,
+            jobs::created,
+            jobs::info,
+            jobs::options,
+        ))
+        .load(&user.connection)?;
 
-    info!("{} fetched jobs", user.id);
-
-    Json(
-        read_dir(index_root)
-            .expect("reading job index directory")
-            .map(|read| read.unwrap().path())
-            .filter_map(|path| {
-                let f = File::open(path).unwrap();
-                serde_json::from_reader::<File, PrintWorkerJSON>(f).ok()
-            })
-            .filter_map(|json| {
-                match json {
-                    print(job) => Some(job),
-                    cancel(_) => None,
-                }
-            })
-            .collect(),
-    )
+    Ok(Json(jobs.iter().map(|x| JobResponse::from(x.clone())).collect()))
 }
+
+/*
+#[get("/<id>/pdf")]
+fn fetch_pdf<'a>(user: UserGuard, id: u32) -> diesel::result::QueryResult<Option<Stream<&'static [u8]>>>
+{
+    let pdf: Option<Vec<u8>> = jobs::table
+        .select(jobs::data)
+        .first(&user.connection)
+        .optional()?;
+
+}
+
+#[get("/<id>/preview/<index>")]
+fn fetch_preview(user: User, id: u32, index: u8) -> Option<NamedFile>
+{
+}
+
+*/

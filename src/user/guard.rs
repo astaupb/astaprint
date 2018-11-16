@@ -58,7 +58,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for UserGuard
         let key: Vec<_> = request.headers().get("x-api-key").collect();
 
         if key.len() != 1 {
-            info!("invalid {:?}", key);
+            info!("invalid x-api-key header {:?}", key);
             return Outcome::Failure((Status::BadRequest, ()));
         }
         let key = key[0];
@@ -66,7 +66,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for UserGuard
         let x_user_id: Vec<_> = request.headers().get("x-user-id").collect();
 
         if x_user_id.len() != 1 {
-            info!("invalid: {:?}", x_user_id);
+            info!("invalid x-user-user header {:?}", x_user_id);
             return Outcome::Failure((Status::BadRequest, ()));
         }
         let user_id: u32 = match x_user_id[0].parse() {

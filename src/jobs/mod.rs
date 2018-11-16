@@ -29,7 +29,9 @@ pub mod task;
 pub mod tmp;
 pub mod uid;
 
+pub mod get;
 pub mod post;
+pub mod response;
 
 table! {
     jobs (id) {

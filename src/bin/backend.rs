@@ -55,6 +55,7 @@ use logger::Logger;
 use astaprint::{
     jobs::{
         post::*,
+        get::*,
         task::DispatcherTask,
     },
     user::http::{
@@ -117,7 +118,7 @@ fn rocket() -> rocket::Rocket
         .mount(
             "/jobs/",
             routes![
-                //jobs,
+                jobs,
                 //update_options,
                 //update_single_option,
                 //fetch_options,
@@ -126,7 +127,7 @@ fn rocket() -> rocket::Rocket
                 //fetch_single_info,
                 upload_job,
                 //delete_job,
-                //fetch_job,
+                fetch_job,
                 //fetch_pdf,
                 //fetch_preview
             ],
