@@ -17,8 +17,11 @@
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 extern crate astaprint;
 extern crate taskqueue;
+extern crate logger;
 
 use std::env;
+
+use logger::Logger;
 
 use taskqueue::{
     create_pool,
@@ -37,6 +40,8 @@ fn main()
     let pool = create_pool(&url);
 
     let taskqueue: TaskQueue<DispatcherTask> = TaskQueue::new("dispatcher", pool);
+
+    Logger::init("dispatcher");
 
     taskqueue
         .listen(|task| {

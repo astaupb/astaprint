@@ -46,7 +46,6 @@ extern crate astacrypto;
 extern crate taskqueue;
 
 pub mod guards;
-pub mod logger;
 
 // routes
 pub mod jobs;

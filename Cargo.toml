@@ -6,6 +6,7 @@ authors = ["Gerrit Pape <gerrit.pape@asta.upb.de>"]
 [dependencies]
 astacrypto = {path = "./crypto"}
 taskqueue = {path = "./taskqueue"}
+logger = {path = "./logger"}
 log = {version = "*", features = ["std", "max_level_debug", "release_max_level_info"]}
 chrono = "*"
 serde = "*"

@@ -103,12 +103,3 @@ impl Job
         count * options.copies
     }
 }
-
-#[test]
-fn pages_to_print()
-{
-    let mut data = JobData::new("uid", 1, "filename", "password", true);
-    data.info.pagecount = 18;
-    data.options.nup = 4;
-    println!("{:?}, pages to print: {}", data, data.pages_to_print());
-}

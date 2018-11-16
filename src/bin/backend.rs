@@ -22,6 +22,7 @@ extern crate rocket_contrib;
 extern crate rocket_cors;
 
 extern crate base64;
+extern crate logger;
 
 extern crate diesel;
 
@@ -49,12 +50,13 @@ use taskqueue::{
     TaskQueue,
 };
 
+use logger::Logger;
+
 use astaprint::{
     jobs::{
         post::*,
         task::DispatcherTask,
     },
-    logger::Logger,
     user::http::{
         tokens::*,
         *,
