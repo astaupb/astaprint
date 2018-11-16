@@ -17,17 +17,6 @@
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use std::fmt;
 
-impl fmt::LowerHex for UID
-{
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
-    {
-        for c in &self.bytes {
-            write!(f, "{:x}", c)?;
-        }
-        Ok(())
-    }
-}
-
 #[derive(Debug, Clone)]
 pub struct UID
 {
@@ -41,5 +30,16 @@ impl From<Vec<u8>> for UID
         UID {
             bytes,
         }
+    }
+}
+
+impl fmt::LowerHex for UID
+{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+    {
+        for c in &self.bytes {
+            write!(f, "{:02x}", c)?;
+        }
+        Ok(())
     }
 }
