@@ -15,6 +15,9 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#[macro_use]
+extern crate log;
+
 extern crate astaprint;
 extern crate logger;
 extern crate r2d2_redis;
@@ -39,6 +42,7 @@ use taskqueue::{
 };
 
 use astaprint::printers::{
+    select_device_ids,
     queue::task::{
         work,
         WorkerCommand,
@@ -47,12 +51,16 @@ use astaprint::printers::{
     snmp::PrinterInterface,
 };
 
-fn spawn_worker(device_id: u16, pool: Pool<RedisConnectionManager>)
+use astaprint::establish_connection;
+
+fn spawn_worker(device_id: u16, pool: Pool<RedisConnectionManager>) -> thread::JoinHandle<()>
 {
     let interface = PrinterInterface::from_device_id(device_id);
+    let name = format!("worker::{}", device_id);
     let taskqueue: TaskQueue<HashMap<Vec<u8>, WorkerTask>, PrinterInterface> =
-        TaskQueue::new(&format!("worker::{}", device_id), interface, pool);
+        TaskQueue::new(&name, interface, pool);
     thread::spawn(move || {
+        info!("{} listening", device_id);
         taskqueue
             .listen(|map, interface| {
                 for (uid, task) in map {
@@ -66,20 +74,23 @@ fn spawn_worker(device_id: u16, pool: Pool<RedisConnectionManager>)
             })
             .expect("processing Worker Tasks");
     })
-    .join()
-    .expect("joining worker thread");
 }
 fn main()
 {
-    let device_id = env::args().nth(1).expect("device_id as first argument");
-
-    let device_id: u16 = device_id.parse().expect("parsing device_id from String");
-
     Logger::init("worker").expect("initializing Logger");
 
     let url = env::var("ASTAPRINT_REDIS_URL").expect("reading redis url from environment");
 
     let pool = create_pool(&url);
 
-    spawn_worker(device_id, pool.clone());
+    let mut handles: Vec<thread::JoinHandle<()>> = Vec::new();
+
+    for id in select_device_ids(&establish_connection()) {
+        handles.push(spawn_worker(id, pool.clone()));
+    }
+
+    for handle in handles {
+        handle.join().expect("joining thread");
+    }
+
 }
