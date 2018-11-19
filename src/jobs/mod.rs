@@ -18,18 +18,21 @@ use bincode;
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use chrono::NaiveDateTime;
 
-use crate::jobs::data::{
-    JobInfo,
-    JobOptions,
+use crate::jobs::{
+    info::JobInfo,
+    options::JobOptions,
 };
 
-pub mod data;
+pub mod options;
+pub mod info;
+
 pub mod pdf;
 pub mod task;
 pub mod tmp;
 pub mod uid;
 
 pub mod get;
+pub mod delete;
 pub mod post;
 pub mod response;
 

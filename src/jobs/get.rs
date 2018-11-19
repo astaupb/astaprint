@@ -17,7 +17,7 @@
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use diesel::{
-    result::Error,
+    result::{QueryResult, Error},
     prelude::*,
 };
 
@@ -49,6 +49,8 @@ fn fetch_job(user: UserGuard, id: u32) -> Result<Option<Json<JobResponse>>, dies
             jobs::info,
             jobs::options,
         ))
+        .filter(jobs::user_id.eq(user.id))
+        .filter(jobs::id.eq(id))
         .first(&user.connection)
         .optional()?;
 
@@ -57,7 +59,7 @@ fn fetch_job(user: UserGuard, id: u32) -> Result<Option<Json<JobResponse>>, dies
 }
 
 #[get("/")]
-fn jobs(user: UserGuard) -> Result<Json<Vec<JobResponse>>, diesel::result::Error>
+fn jobs(user: UserGuard) -> QueryResult<Json<Vec<JobResponse>>>
 {
     let jobs: Vec<(u32, u32, NaiveDateTime, Vec<u8>, Vec<u8>)> = jobs::table
         .select((
@@ -67,25 +69,71 @@ fn jobs(user: UserGuard) -> Result<Json<Vec<JobResponse>>, diesel::result::Error
             jobs::info,
             jobs::options,
         ))
+        .filter(jobs::user_id.eq(user.id))
         .load(&user.connection)?;
 
     Ok(Json(jobs.iter().map(|x| JobResponse::from(x.clone())).collect()))
 }
 
-/*
 #[get("/<id>/pdf")]
-fn fetch_pdf<'a>(user: UserGuard, id: u32) -> diesel::result::QueryResult<Option<Stream<&'static [u8]>>>
+fn fetch_pdf(user: UserGuard, id: u32) -> QueryResult<Option<Vec<u8>>>
 {
     let pdf: Option<Vec<u8>> = jobs::table
         .select(jobs::data)
+        .filter(jobs::user_id.eq(user.id))
+        .filter(jobs::id.eq(id))
         .first(&user.connection)
         .optional()?;
 
+    Ok(pdf)
+
 }
 
-#[get("/<id>/preview/<index>")]
-fn fetch_preview(user: User, id: u32, index: u8) -> Option<NamedFile>
+#[get("/<id>/preview/0")]
+fn fetch_preview_0(user: UserGuard, id: u32) -> QueryResult<Option<Vec<u8>>>
 {
+    let preview = jobs::table
+        .select(jobs::preview_0)
+        .filter(jobs::user_id.eq(user.id))
+        .filter(jobs::id.eq(id))
+        .first(&user.connection)
+        .optional()?;
+
+    Ok(preview)
 }
 
-*/
+#[get("/<id>/preview/1")]
+fn fetch_preview_1(user: UserGuard, id: u32) -> QueryResult<Option<Vec<u8>>>
+{
+    let preview = jobs::table
+        .select(jobs::preview_1)
+        .filter(jobs::user_id.eq(user.id))
+        .filter(jobs::id.eq(id))
+        .first(&user.connection)?;
+
+    Ok(preview)
+}
+
+#[get("/<id>/preview/2")]
+fn fetch_preview_2(user: UserGuard, id: u32) -> QueryResult<Option<Vec<u8>>>
+{
+    let preview = jobs::table
+        .select(jobs::preview_2)
+        .filter(jobs::user_id.eq(user.id))
+        .filter(jobs::id.eq(id))
+        .first(&user.connection)?;
+
+    Ok(preview)
+}
+
+#[get("/<id>/preview/3")]
+fn fetch_preview_3(user: UserGuard, id: u32) -> QueryResult<Option<Vec<u8>>>
+{
+    let preview = jobs::table
+        .select(jobs::preview_3)
+        .filter(jobs::user_id.eq(user.id))
+        .filter(jobs::id.eq(id))
+        .first(&user.connection)?;
+
+    Ok(preview)
+}

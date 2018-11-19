@@ -29,7 +29,7 @@ use diesel::{
 use jobs::*;
 
 use jobs::{
-    data::JobOptions,
+    options::JobOptions,
     pdf::{
         document::PDFDocument,
         pageinfo::{

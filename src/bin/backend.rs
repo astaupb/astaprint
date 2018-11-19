@@ -56,7 +56,15 @@ use astaprint::{
     jobs::{
         post::*,
         get::*,
+        delete::*,
         task::DispatcherTask,
+        options::{
+            get::*,
+            put::*,
+        },
+        info::{
+            get::*,
+        },
     },
     user::http::{
         tokens::*,
@@ -119,17 +127,21 @@ fn rocket() -> rocket::Rocket
             "/jobs/",
             routes![
                 jobs,
-                //update_options,
-                //update_single_option,
-                //fetch_options,
-                //fetch_single_option,
-                //fetch_info,
+                update_options,
+                update_single_option,
+                fetch_options,
+                fetch_single_option,
+                fetch_info,
                 //fetch_single_info,
+                // -> do we really need this?
                 upload_job,
-                //delete_job,
+                delete_job,
                 fetch_job,
-                //fetch_pdf,
-                //fetch_preview
+                fetch_pdf,
+                fetch_preview_0,
+                fetch_preview_1,
+                fetch_preview_2,
+                fetch_preview_3,
             ],
         )
         .mount(

@@ -1,4 +1,4 @@
-/// AStAPrint-Backend - Jobs Response
+/// AStAPrint Jobs - info GET
 /// Copyright (C) 2018  AStA der Universität Paderborn
 ///
 /// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
@@ -16,35 +16,36 @@
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use jobs::{
-    options::JobOptions,
-    info::JobInfo
+use diesel::{
+    prelude::*,
+    result::QueryResult,
 };
-use chrono::NaiveDateTime;
-use bincode;
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct JobResponse
+use rocket_contrib::Json;
+
+use jobs::{
+    *,
+    info::JobInfo,
+};
+
+use user::{
+    *, guard::UserGuard,
+};
+
+#[get("/<id>/info")]
+fn fetch_info(user: UserGuard, id: u32) -> QueryResult<Option<Json<JobInfo>>>
 {
-    id: u32,
-    user_id: u32,
-    timestamp: i64,
-    info: JobInfo,
-    options: JobOptions,
+    let result: Option<Vec<u8>> = jobs::table
+            .select(jobs::info)
+            .filter(jobs::user_id.eq(user.id))
+            .filter(jobs::id.eq(id))
+            .first(&user.connection)
+            .optional()?;
+
+    Ok(result.map(|serialized| {
+        let info: JobInfo = bincode::deserialize(&serialized[..])
+            .expect("deserializing JobInfo");
+        Json(info)
+    }))
 }
 
-impl From<(u32, u32, NaiveDateTime, Vec<u8>, Vec<u8>)> for JobResponse
-{
-    fn from(row: (u32, u32, NaiveDateTime, Vec<u8>, Vec<u8>)) -> JobResponse
-    {
-        JobResponse {
-            id: row.0,
-            user_id: row.1,
-            timestamp: row.2.timestamp(),
-            info: bincode::deserialize(&row.3[..])
-                .expect("deserializing JobInfo"),
-            options: bincode::deserialize(&row.4[..])
-                .expect("deserializing JobOptions"),
-        }
-    }
-}

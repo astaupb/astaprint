@@ -36,7 +36,7 @@ use rocket_contrib::Json;
 use astacrypto::random_bytes;
 
 use jobs::{
-    data::JobInfo,
+    info::JobInfo,
     task::DispatcherTask,
     uid::UID,
 };

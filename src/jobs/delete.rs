@@ -1,4 +1,4 @@
-/// AStAPrint-Backend - Jobs Response
+/// AStAPrint - Jobs
 /// Copyright (C) 2018  AStA der Universität Paderborn
 ///
 /// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
@@ -15,36 +15,36 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-use jobs::{
-    options::JobOptions,
-    info::JobInfo
+use diesel::{
+    delete,
+    result::QueryResult,
+    prelude::*,
 };
-use chrono::NaiveDateTime;
-use bincode;
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct JobResponse
-{
-    id: u32,
-    user_id: u32,
-    timestamp: i64,
-    info: JobInfo,
-    options: JobOptions,
-}
+use rocket::{
+    response::{
+        status::{
+            Reset,
+        },
+    },
+};
+use rocket_contrib::Json;
 
-impl From<(u32, u32, NaiveDateTime, Vec<u8>, Vec<u8>)> for JobResponse
+use jobs::*;
+use jobs::response::JobResponse;
+use user::guard::UserGuard;
+
+#[delete("/<id>")]
+pub fn delete_job(user: UserGuard, id: u32) -> QueryResult<Option<Reset>>
 {
-    fn from(row: (u32, u32, NaiveDateTime, Vec<u8>, Vec<u8>)) -> JobResponse
-    {
-        JobResponse {
-            id: row.0,
-            user_id: row.1,
-            timestamp: row.2.timestamp(),
-            info: bincode::deserialize(&row.3[..])
-                .expect("deserializing JobInfo"),
-            options: bincode::deserialize(&row.4[..])
-                .expect("deserializing JobOptions"),
-        }
-    }
+    let deleted = delete(jobs::table
+                        .filter(jobs::user_id.eq(user.id))
+                        .filter(jobs::id.eq(id)))
+                        .execute(&user.connection)?;
+
+    Ok(if deleted == 1 {
+        Some(Reset) 
+    } else {
+        None 
+    })
 }
