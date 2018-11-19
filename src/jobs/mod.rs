@@ -82,7 +82,7 @@ impl Job
 
     pub fn options(&self) -> JobOptions
     {
-        bincode::deserialize(&self.info[..]).expect("deserializing JobOptions")
+        bincode::deserialize(&self.options[..]).expect("deserializing JobOptions")
     }
 
     pub fn set_info(&mut self, info: JobInfo)

@@ -48,9 +48,9 @@ use establish_connection;
 #[derive(Serialize, Deserialize, Debug)]
 pub struct WorkerTask
 {
-    job_id: u32,
-    user_id: u32,
-    options: JobOptions,
+    pub job_id: u32,
+    pub user_id: u32,
+    pub options: JobOptions,
 }
 
 #[derive(PartialEq, Debug)]

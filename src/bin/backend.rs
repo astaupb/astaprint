@@ -73,6 +73,14 @@ use astaprint::{
         tokens::*,
         *,
     },
+    printers::{
+        select_device_ids,
+        queue::{
+            task::WorkerTask,
+            post::*,
+        },
+    },
+    establish_connection,
 };
 
 fn cors() -> rocket_cors::Cors
@@ -120,11 +128,21 @@ fn rocket() -> rocket::Rocket
 
     let redis_pool = create_pool(&url);
 
-    let dispatcher_queue: TaskQueue<HashMap<Vec<u8>, DispatcherTask>, ()> = TaskQueue::new("dispatcher", (), redis_pool);
+    let dispatcher_queue: TaskQueue<HashMap<Vec<u8>, DispatcherTask>, ()> = TaskQueue::new("dispatcher", (), redis_pool.clone());
+
+    let mut worker_queues: HashMap<u16, TaskQueue<HashMap<Vec<u8>, WorkerTask>, ()>> = HashMap::new();
+
+    let connection = establish_connection();
+
+    for device_id in select_device_ids(&connection) {
+        let pool = redis_pool.clone();
+        worker_queues.insert(device_id, TaskQueue::new(&format!("worker::{}", device_id), (), pool));
+    }
 
     rocket::ignite()
         .manage(mariadb_pool)
         .manage(dispatcher_queue)
+        .manage(worker_queues)
         .mount("/", routes![api_reference])
         .mount(
             "/jobs/",
@@ -155,8 +173,8 @@ fn rocket() -> rocket::Rocket
             "/user/tokens",
             routes![get_all_tokens, delete_all_tokens, get_single_token, delete_single_token],
         )
-        /*
         .mount("/printers", routes![print_job])
+        /*
         .mount("/register", routes![register])
         .mount("/journal", routes![journal])
         */
