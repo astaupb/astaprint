@@ -15,49 +15,37 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 use diesel::{
-    result::QueryResult,
     prelude::*,
+    result::QueryResult,
 };
 
 use rocket_contrib::Json;
 
-use jobs::*;
-use jobs::response::JobResponse;
+use jobs::{
+    response::JobResponse,
+    *,
+};
 use user::guard::UserGuard;
 
 #[get("/<id>")]
 fn fetch_job(user: UserGuard, id: u32) -> Result<Option<Json<JobResponse>>, diesel::result::Error>
 {
     let job: Option<(u32, u32, NaiveDateTime, Vec<u8>, Vec<u8>)> = jobs::table
-        .select((
-            jobs::id,
-            jobs::user_id,
-            jobs::created,
-            jobs::info,
-            jobs::options,
-        ))
+        .select((jobs::id, jobs::user_id, jobs::created, jobs::info, jobs::options))
         .filter(jobs::user_id.eq(user.id))
         .filter(jobs::id.eq(id))
         .first(&user.connection)
         .optional()?;
 
     Ok(job.map(|x| Json(JobResponse::from(x))))
-
 }
 
 #[get("/")]
 fn jobs(user: UserGuard) -> QueryResult<Json<Vec<JobResponse>>>
 {
     let jobs: Vec<(u32, u32, NaiveDateTime, Vec<u8>, Vec<u8>)> = jobs::table
-        .select((
-            jobs::id,
-            jobs::user_id,
-            jobs::created,
-            jobs::info,
-            jobs::options,
-        ))
+        .select((jobs::id, jobs::user_id, jobs::created, jobs::info, jobs::options))
         .filter(jobs::user_id.eq(user.id))
         .load(&user.connection)?;
 
@@ -75,7 +63,6 @@ fn fetch_pdf(user: UserGuard, id: u32) -> QueryResult<Option<Vec<u8>>>
         .optional()?;
 
     Ok(pdf)
-
 }
 
 #[get("/<id>/preview/0")]

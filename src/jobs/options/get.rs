@@ -15,7 +15,6 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 use diesel::{
     prelude::*,
     result::QueryResult,
@@ -24,20 +23,14 @@ use diesel::{
 use rocket_contrib::Json;
 
 use jobs::{
-    *,
     options::Value,
+    *,
 };
 
-use user::{
-    guard::UserGuard,
-};
+use user::guard::UserGuard;
 
 #[get("/<id>/options/<option>")]
-fn fetch_single_option(
-    user: UserGuard,
-    id: u32,
-    option: String,
-) -> QueryResult<Option<Json<Value>>>
+fn fetch_single_option(user: UserGuard, id: u32, option: String) -> QueryResult<Option<Json<Value>>>
 {
     let result: Option<Vec<u8>> = jobs::table
         .select(jobs::options)
@@ -47,8 +40,7 @@ fn fetch_single_option(
         .optional()?;
 
     Ok(result.and_then(|serialized| {
-        let options: JobOptions = bincode::deserialize(&serialized[..])
-            .expect("deserializing JobOptions");
+        let options: JobOptions = bincode::deserialize(&serialized[..]).expect("deserializing JobOptions");
 
         match option.as_ref() {
             "duplex" => Some(Json(Value::I(u16::from(options.duplex)))),
@@ -68,16 +60,14 @@ fn fetch_single_option(
 fn fetch_options(user: UserGuard, id: u32) -> QueryResult<Option<Json<JobOptions>>>
 {
     let result: Option<Vec<u8>> = jobs::table
-            .select(jobs::options)
-            .filter(jobs::user_id.eq(user.id))
-            .filter(jobs::id.eq(id))
-            .first(&user.connection)
-            .optional()?;
+        .select(jobs::options)
+        .filter(jobs::user_id.eq(user.id))
+        .filter(jobs::id.eq(id))
+        .first(&user.connection)
+        .optional()?;
 
     Ok(result.map(|serialized| {
-        let options: JobOptions = bincode::deserialize(&serialized[..])
-            .expect("deserializing JobOptions");
+        let options: JobOptions = bincode::deserialize(&serialized[..]).expect("deserializing JobOptions");
         Json(options)
     }))
 }
-

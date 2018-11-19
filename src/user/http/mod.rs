@@ -39,9 +39,11 @@ use astacrypto::PasswordHash;
 
 use crate::{
     journal::credit::get_credit,
-    user::guard::UserGuard,
-    user::login::LoginGuard,
-    user::*,
+    user::{
+        guard::UserGuard,
+        login::LoginGuard,
+        *,
+    },
 };
 
 pub mod tokens;

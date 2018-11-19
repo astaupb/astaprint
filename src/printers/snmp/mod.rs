@@ -21,10 +21,8 @@ pub mod session;
 use diesel::prelude::*;
 
 use self::counter::CounterOids;
-use printers::{
-    *,
-};
 use establish_connection;
+use printers::*;
 
 #[derive(Debug, Clone)]
 

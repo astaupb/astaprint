@@ -1,3 +1,5 @@
+use bincode;
+use chrono::NaiveDateTime;
 /// AStAPrint-Backend - Jobs Response
 /// Copyright (C) 2018  AStA der Universität Paderborn
 ///
@@ -15,13 +17,10 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 use jobs::{
+    info::JobInfo,
     options::JobOptions,
-    info::JobInfo
 };
-use chrono::NaiveDateTime;
-use bincode;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct JobResponse
@@ -41,10 +40,8 @@ impl From<(u32, u32, NaiveDateTime, Vec<u8>, Vec<u8>)> for JobResponse
             id: row.0,
             user_id: row.1,
             timestamp: row.2.timestamp(),
-            info: bincode::deserialize(&row.3[..])
-                .expect("deserializing JobInfo"),
-            options: bincode::deserialize(&row.4[..])
-                .expect("deserializing JobOptions"),
+            info: bincode::deserialize(&row.3[..]).expect("deserializing JobInfo"),
+            options: bincode::deserialize(&row.4[..]).expect("deserializing JobOptions"),
         }
     }
 }

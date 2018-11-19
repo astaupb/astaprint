@@ -25,13 +25,13 @@ use diesel::{
 };
 
 use journal::{
-    *,
     credit::get_credit,
     lock::Lock,
+    *,
 };
 
-use printers::snmp::counter::CounterValues;
 use crate::establish_connection;
+use printers::snmp::counter::CounterValues;
 
 pub struct Accounting
 {
@@ -62,8 +62,7 @@ impl Accounting
         let connection = establish_connection();
         lock.grab();
 
-        let credit = get_credit(user_id, &connection)
-            .expect("getting credit from journal");
+        let credit = get_credit(user_id, &connection).expect("getting credit from journal");
 
         let value = BigDecimal::from_u32(0).unwrap();
 

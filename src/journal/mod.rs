@@ -18,9 +18,9 @@
 use bigdecimal::BigDecimal;
 use chrono::NaiveDateTime;
 
-pub mod response;
-pub mod lock;
 pub mod credit;
+pub mod lock;
+pub mod response;
 
 table! {
     journal (id) {
@@ -61,4 +61,3 @@ pub struct JournalDigest
     pub credit: BigDecimal,
     pub created: NaiveDateTime,
 }
-

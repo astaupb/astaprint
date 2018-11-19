@@ -22,9 +22,9 @@ use diesel::{
 use rocket::response::status::Reset;
 use rocket_contrib::Json;
 
-use crate::{
-    user::guard::UserGuard,
-    user::response::UserTokenResponse,
+use crate::user::{
+    guard::UserGuard,
+    response::UserTokenResponse,
 };
 
 use crate::user::*;

@@ -21,11 +21,9 @@ use std::{
 };
 
 use rocket::{
-    response::{
-        status::{
-            Accepted,
-            BadRequest,
-        },
+    response::status::{
+        Accepted,
+        BadRequest,
     },
     State,
 };
@@ -74,14 +72,16 @@ fn upload_job<'a>(
 
     let mut task: HashMap<Vec<u8>, DispatcherTask> = HashMap::new();
 
-    task.insert(uid.get_bytes(), DispatcherTask {
-        user_id: user.id,
-        info,
-        data,
-    });
+    task.insert(
+        uid.get_bytes(),
+        DispatcherTask {
+            user_id: user.id,
+            info,
+            data,
+        },
+    );
 
-    taskqueue.send(&task)
-        .expect("sending task to queue");
+    taskqueue.send(&task).expect("sending task to queue");
 
     info!("{} uploaded job with uid {:?}", user.id, uid);
 

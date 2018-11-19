@@ -15,7 +15,6 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 use diesel::{
     prelude::*,
     result::QueryResult,
@@ -24,28 +23,24 @@ use diesel::{
 use rocket_contrib::Json;
 
 use jobs::{
-    *,
     info::JobInfo,
+    *,
 };
 
-use user::{
-    guard::UserGuard,
-};
+use user::guard::UserGuard;
 
 #[get("/<id>/info")]
 fn fetch_info(user: UserGuard, id: u32) -> QueryResult<Option<Json<JobInfo>>>
 {
     let result: Option<Vec<u8>> = jobs::table
-            .select(jobs::info)
-            .filter(jobs::user_id.eq(user.id))
-            .filter(jobs::id.eq(id))
-            .first(&user.connection)
-            .optional()?;
+        .select(jobs::info)
+        .filter(jobs::user_id.eq(user.id))
+        .filter(jobs::id.eq(id))
+        .first(&user.connection)
+        .optional()?;
 
     Ok(result.map(|serialized| {
-        let info: JobInfo = bincode::deserialize(&serialized[..])
-            .expect("deserializing JobInfo");
+        let info: JobInfo = bincode::deserialize(&serialized[..]).expect("deserializing JobInfo");
         Json(info)
     }))
 }
-

@@ -1,3 +1,7 @@
+use diesel::{
+    prelude::*,
+    result::QueryResult,
+};
 /// AStAPrint
 /// Copyright (C) 2018  AStA der Universität Paderborn
 ///
@@ -15,24 +19,19 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+use std::collections::HashMap;
 
-use std::collections::HashMap; 
-use diesel::{
-    prelude::*,
-    result::QueryResult,
-};
-
-use rocket::{
-    State,
-    response::status::Accepted,
-};
-use user::guard::UserGuard;
 use jobs::{
-    *,
     options::JobOptions,
     uid::UID,
+    *,
 };
 use printers::queue::task::WorkerTask;
+use rocket::{
+    response::status::Accepted,
+    State,
+};
+use user::guard::UserGuard;
 
 use taskqueue::TaskQueue;
 
@@ -67,25 +66,23 @@ pub fn print_job(
     let (job_id, job_options): (u32, JobOptions) = match result {
         None => return Ok(None),
         Some((job_id, job_options)) => {
-            (job_id, bincode::deserialize(&job_options)
-                .expect("deserializing JobOptions"))
-        }
+            (job_id, bincode::deserialize(&job_options).expect("deserializing JobOptions"))
+        },
     };
-    
+
     let uid = UID::from(random_bytes(20));
 
     let mut task: HashMap<Vec<u8>, WorkerTask> = HashMap::new();
     task.insert(
         uid.get_bytes(),
         WorkerTask {
-           job_id,
-           user_id: user.id,
-           options: job_options,
-        }
+            job_id,
+            user_id: user.id,
+            options: job_options,
+        },
     );
 
-    queue.send(&task)
-        .expect("sending job to worker queue");
+    queue.send(&task).expect("sending job to worker queue");
 
     Ok(Some(Accepted(Some(format!("{:x}", uid)))))
 }

@@ -15,7 +15,6 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 use std::{
     sync::mpsc,
     thread,
@@ -23,24 +22,24 @@ use std::{
 };
 
 use diesel::{
-    prelude::*,
     delete,
+    prelude::*,
 };
 
 use lpr::LprConnection;
 
 use jobs::{
-    *,
     options::JobOptions,
     uid::UID,
+    *,
 };
 
 use printers::{
-    snmp::{
-        PrinterInterface,
-        session::SnmpSession,
-    },
     accounting::Accounting,
+    snmp::{
+        session::SnmpSession,
+        PrinterInterface,
+    },
 };
 
 use establish_connection;
@@ -60,7 +59,12 @@ pub enum WorkerCommand
     Cancel,
 }
 
-pub fn work(cmd_receiver: mpsc::Receiver<WorkerCommand>, uid: Vec<u8>, task: WorkerTask, mut interface: PrinterInterface)
+pub fn work(
+    cmd_receiver: mpsc::Receiver<WorkerCommand>,
+    uid: Vec<u8>,
+    task: WorkerTask,
+    mut interface: PrinterInterface,
+)
 {
     let uid = UID::from(uid);
     thread::Builder::new()
@@ -101,9 +105,9 @@ pub fn work(cmd_receiver: mpsc::Receiver<WorkerCommand>, uid: Vec<u8>, task: Wor
 
             debug!("counter_base: {:?}", counter_base);
 
-            let mut lpr_connection = LprConnection::new(&interface.ip, 20000 /* socket timeout in ms */);
-            lpr_connection.print(&mut buf)
-                .expect("printing job with lpr");
+            let mut lpr_connection =
+                LprConnection::new(&interface.ip, 20000 /* socket timeout in ms */);
+            lpr_connection.print(&mut buf).expect("printing job with lpr");
 
             let print_count = job.pages_to_print();
 
@@ -176,12 +180,9 @@ pub fn work(cmd_receiver: mpsc::Receiver<WorkerCommand>, uid: Vec<u8>, task: Wor
 
             debug!("{:x} keep: {} - completed: {}", uid, options.keep, completed);
             if !options.keep && completed {
-                delete(jobs::table
-                       .filter(jobs::id.eq(task.job_id))
-                       .filter(jobs::user_id.eq(task.user_id))
-                   )
-                   .execute(&connection)
-                   .expect("deleting job from table");
+                delete(jobs::table.filter(jobs::id.eq(task.job_id)).filter(jobs::user_id.eq(task.user_id)))
+                    .execute(&connection)
+                    .expect("deleting job from table");
             }
 
             info!("{:x} finished", uid);

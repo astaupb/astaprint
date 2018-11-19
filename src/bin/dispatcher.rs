@@ -45,8 +45,7 @@ fn main()
 
     let taskqueue: TaskQueue<HashMap<Vec<u8>, DispatcherTask>, ()> = TaskQueue::new("dispatcher", (), pool);
 
-    Logger::init("dispatcher")
-        .expect("initialising logger");
+    Logger::init("dispatcher").expect("initialising logger");
 
     taskqueue
         .listen(|map, _| {

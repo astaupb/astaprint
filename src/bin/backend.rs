@@ -56,31 +56,29 @@ use taskqueue::{
 use logger::Logger;
 
 use astaprint::{
+    establish_connection,
     jobs::{
-        post::*,
-        get::*,
         delete::*,
-        task::DispatcherTask,
+        get::*,
+        info::get::*,
         options::{
             get::*,
             put::*,
         },
-        info::{
-            get::*,
+        post::*,
+        task::DispatcherTask,
+    },
+    printers::{
+        queue::{
+            post::*,
+            task::WorkerTask,
         },
+        select_device_ids,
     },
     user::http::{
         tokens::*,
         *,
     },
-    printers::{
-        select_device_ids,
-        queue::{
-            task::WorkerTask,
-            post::*,
-        },
-    },
-    establish_connection,
 };
 
 fn cors() -> rocket_cors::Cors
@@ -128,7 +126,8 @@ fn rocket() -> rocket::Rocket
 
     let redis_pool = create_pool(&url);
 
-    let dispatcher_queue: TaskQueue<HashMap<Vec<u8>, DispatcherTask>, ()> = TaskQueue::new("dispatcher", (), redis_pool.clone());
+    let dispatcher_queue: TaskQueue<HashMap<Vec<u8>, DispatcherTask>, ()> =
+        TaskQueue::new("dispatcher", (), redis_pool.clone());
 
     let mut worker_queues: HashMap<u16, TaskQueue<HashMap<Vec<u8>, WorkerTask>, ()>> = HashMap::new();
 
