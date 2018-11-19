@@ -24,8 +24,6 @@ use redis::{
 
 use std::{
     env,
-    fs::File,
-    io::Read,
     thread,
     time,
 };

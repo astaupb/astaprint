@@ -51,3 +51,12 @@ pub mod journal;
 pub mod manager;
 pub mod printers;
 pub mod user;
+
+use diesel::prelude::*;
+use std::env;
+pub fn establish_connection() -> MysqlConnection
+{
+    let url = env::var("ASTAPRINT_DATABASE_URL").expect("reading ASTAPRINT_DATABASE_URL from environment");
+
+    MysqlConnection::establish(&url).expect("establishing MysqlConnection")
+}

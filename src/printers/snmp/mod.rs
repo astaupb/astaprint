@@ -1,11 +1,13 @@
 pub mod counter;
 pub mod session;
 
+use diesel::prelude::*;
+
 use self::counter::CounterOids;
-use astaprint::database::printer::{
-    representation::*,
-    select_printer_interface_information,
+use printers::{
+    *,
 };
+use establish_connection;
 
 #[derive(Debug, Clone)]
 
@@ -93,4 +95,34 @@ fn vec_from_oid_str(oid: &str) -> Vec<u64>
     use std::str::FromStr;
 
     oid.split(".").map(|x| u64::from_str(x).expect("converting oid str to u64")).collect()
+}
+
+pub fn select_printer_interface_information(
+    device_id: u16,
+) -> (Counter, QueueCtl, EnergyCtl, String, String)
+{
+    let result: (Counter, QueueCtl, EnergyCtl, String, String) = printer_counter::table
+        .inner_join(
+            printer_model::table
+                .inner_join(printers::table)
+                .inner_join(printer_energy_ctl::table)
+                .inner_join(printer_queue_ctl::table),
+        )
+        .select((
+            printer_counter::all_columns,
+            printer_queue_ctl::all_columns,
+            printer_energy_ctl::all_columns,
+            printers::community,
+            printers::ip,
+        ))
+        .filter(printers::device_id.eq(device_id))
+        .first(&establish_connection())
+        .expect("fetching printer interface information");
+
+    result
+}
+
+pub fn select_device_ids() -> Vec<u16>
+{
+    printers::table.select(printers::device_id).load(&establish_connection()).expect("fetching device ids")
 }

@@ -85,5 +85,5 @@ fn upload_job<'a>(
 
     info!("{} uploaded job with uid {:?}", user.id, uid);
 
-    Ok(Ok(Accepted(Some(Json(format!("{:?}", uid))))))
+    Ok(Ok(Accepted(Some(Json(format!("{:x}", uid))))))
 }

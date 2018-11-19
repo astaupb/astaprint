@@ -24,15 +24,14 @@ use diesel::{
     prelude::*,
 };
 
-use astaprint::{
-    database::{
-        establish_connection,
-        user::schema::*,
-    },
+use journal::{
+    *,
+    credit::get_credit,
     lock::Lock,
 };
 
-use super::snmp::counter::CounterValues;
+use printers::snmp::counter::CounterValues;
+use crate::establish_connection;
 
 pub struct Accounting
 {
@@ -63,14 +62,8 @@ impl Accounting
         let connection = establish_connection();
         lock.grab();
 
-        let credit: BigDecimal = user::table
-            .inner_join(journal::table)
-            .select(journal::credit)
-            .filter(user::id.eq(journal::user_id))
-            .filter(user::id.eq(user_id))
-            .order(journal::id.desc())
-            .first(&connection)
-            .expect("fetching last credit from journal");
+        let credit = get_credit(user_id, &connection)
+            .expect("getting credit from journal");
 
         let value = BigDecimal::from_u32(0).unwrap();
 
@@ -112,7 +105,6 @@ impl Accounting
                 .values((
                     journal::user_id.eq(&self.user_id),
                     journal::value.eq(&self.value),
-                    journal::credit.eq(&credit),
                     journal::description.eq("Print Job"),
                 ))
                 .execute(&self.connection)

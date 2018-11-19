@@ -44,10 +44,12 @@ use jobs::{
     },
     task::DispatcherTask,
     tmp::TemporaryFile,
+    uid::UID,
 };
 
 pub fn dispatch(uid: Vec<u8>, mut task: DispatcherTask)
 {
+    let uid = UID::from(uid);
     let mut pdf_document = PDFDocument::new(&task.data[..], &task.info.password);
 
     // swap filename with pdf title if filename is empty
@@ -139,5 +141,5 @@ pub fn dispatch(uid: Vec<u8>, mut task: DispatcherTask)
         .execute(&connection)
         .expect("inserting new job into database");
 
-    info!("finished");
+    info!("{:x} finished", uid);
 }

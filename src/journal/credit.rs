@@ -1,5 +1,4 @@
-pub mod representation;
-/// AStAPrint-Database - Printer
+/// AStAPrint
 /// Copyright (C) 2018  AStA der Universität Paderborn
 ///
 /// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
@@ -16,15 +15,34 @@ pub mod representation;
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-pub mod schema;
 
-use self::{
-    representation::*,
-    schema::*,
+use bigdecimal::BigDecimal;
+
+use diesel::{
+    result::QueryResult,
+    prelude::*,
 };
 
-use diesel::prelude::*;
+use journal::*;
+use user::*;
 
-use super::establish_connection;
+pub fn get_credit(user_id: u32, connection: &MysqlConnection) -> QueryResult<BigDecimal>
+{
+    let mut credit_id: u32 = user::table
+        .inner_join(journal::table)
+        .select(journal::id)
+        .filter(user::id.eq(journal::user_id))
+        .filter(user::id.eq(user_id))
+        .order(journal::id.desc())
+        .first(connection)?;
 
+    // calculated credit has offset of one from journal
+    credit_id += 1;
 
+    let credit: BigDecimal = journal_digest::table
+        .select(journal_digest::credit)
+        .filter(journal_digest::id.eq(credit_id))
+        .first(connection)?;
+
+    Ok(credit)
+}

@@ -2,7 +2,7 @@ extern crate netsnmp_sys;
 
 use self::netsnmp_sys::*;
 
-use snmp::counter::{
+use printers::snmp::counter::{
     CounterOids,
     CounterValues,
 };

@@ -15,6 +15,10 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+pub mod snmp;
+pub mod accounting;
+
 use chrono::NaiveDateTime;
 
 table! {
@@ -139,3 +143,5 @@ pub struct EnergyCtl
     pub wake: i32,
     pub sleep: i32,
 }
+
+allow_tables_to_appear_in_same_query!(printers, printer_model, printer_counter, printer_energy_ctl, printer_queue_ctl,);

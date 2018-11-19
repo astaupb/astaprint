@@ -38,6 +38,7 @@ use diesel::{
 use astacrypto::PasswordHash;
 
 use crate::{
+    journal::credit::get_credit,
     user::guard::UserGuard,
     user::login::LoginGuard,
     user::*,
@@ -65,27 +66,6 @@ struct UserInfo
     name: String,
     credit: f64,
     tokens: usize,
-}
-
-fn get_credit(user_id: u32, connection: &MysqlConnection) -> Result<BigDecimal, diesel::result::Error>
-{
-    let mut credit_id: u32 = user::table
-        .inner_join(journal::table)
-        .select(journal::id)
-        .filter(user::id.eq(journal::user_id))
-        .filter(user::id.eq(user_id))
-        .order(journal::id.desc())
-        .first(connection)?;
-
-    // calculated credit has offset of one from journal
-    credit_id += 1;
-
-    let credit: BigDecimal = journal_digest::table
-        .select(journal_digest::credit)
-        .filter(journal_digest::id.eq(credit_id))
-        .first(connection)?;
-
-    Ok(credit)
 }
 
 #[get("/")]
