@@ -42,6 +42,8 @@ extern crate sha2;
 extern crate cairo;
 extern crate poppler;
 
+extern crate lpr;
+
 extern crate astacrypto;
 extern crate taskqueue;
 

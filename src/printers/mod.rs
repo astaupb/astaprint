@@ -18,6 +18,7 @@
 
 pub mod snmp;
 pub mod accounting;
+pub mod queue;
 
 use chrono::NaiveDateTime;
 
