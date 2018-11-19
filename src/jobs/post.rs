@@ -57,7 +57,7 @@ fn upload_job<'a>(
     user: UserGuard,
     data: Vec<u8>,
     options: UploadForm,
-    taskqueue: State<TaskQueue<HashMap<Vec<u8>, DispatcherTask>>>,
+    taskqueue: State<TaskQueue<HashMap<Vec<u8>, DispatcherTask>, ()>>,
 ) -> Result<Result<Accepted<Json<String>>, BadRequest<&'a str>>, io::Error>
 {
     // TODO check filetype

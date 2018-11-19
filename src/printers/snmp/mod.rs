@@ -138,8 +138,3 @@ pub fn select_printer_interface_information(
 
     result
 }
-
-pub fn select_device_ids() -> Vec<u16>
-{
-    printers::table.select(printers::device_id).load(&establish_connection()).expect("fetching device ids")
-}

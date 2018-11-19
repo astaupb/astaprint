@@ -54,6 +54,7 @@ dependencies = [
  "netsnmp-sys 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "poppler 0.2.3 (git+https://git.uni-paderborn.de/asta/poppler-rs?rev=69ea0bc)",
  "r2d2 0.8.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "r2d2_redis 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "redis 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "rocket 0.3.17 (registry+https://github.com/rust-lang/crates.io-index)",
  "rocket_codegen 0.3.17 (registry+https://github.com/rust-lang/crates.io-index)",

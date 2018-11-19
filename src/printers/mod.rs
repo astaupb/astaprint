@@ -20,6 +20,8 @@ pub mod snmp;
 pub mod accounting;
 pub mod queue;
 
+use diesel::prelude::*;
+
 use chrono::NaiveDateTime;
 
 table! {
@@ -146,3 +148,8 @@ pub struct EnergyCtl
 }
 
 allow_tables_to_appear_in_same_query!(printers, printer_model, printer_counter, printer_energy_ctl, printer_queue_ctl,);
+
+pub fn select_device_ids(connection: &MysqlConnection) -> Vec<u16>
+{
+    printers::table.select(printers::device_id).load(connection).expect("fetching device ids")
+}

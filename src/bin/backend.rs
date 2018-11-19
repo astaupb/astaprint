@@ -120,7 +120,7 @@ fn rocket() -> rocket::Rocket
 
     let redis_pool = create_pool(&url);
 
-    let dispatcher_queue: TaskQueue<HashMap<Vec<u8>, DispatcherTask>> = TaskQueue::new("dispatcher", redis_pool);
+    let dispatcher_queue: TaskQueue<HashMap<Vec<u8>, DispatcherTask>, ()> = TaskQueue::new("dispatcher", (), redis_pool);
 
     rocket::ignite()
         .manage(mariadb_pool)

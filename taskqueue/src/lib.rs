@@ -38,23 +38,26 @@ pub fn create_pool(url: &str) -> Pool<RedisConnectionManager>
 }
 
 #[derive(Clone, Debug)]
-pub struct TaskQueue<T>
+pub struct TaskQueue<T, U>
 {
     pool: Pool<RedisConnectionManager>,
+    data: U,
     marker: PhantomData<T>,
     name: String,
     incoming: String,
     processing: String,
 }
 
-impl<T> TaskQueue<T>
+impl<T, U> TaskQueue<T, U>
 where
     T: Serialize + DeserializeOwned + Debug,
+    U: Clone + Debug
 {
-    pub fn new(name: &str, pool: Pool<RedisConnectionManager>) -> TaskQueue<T>
+    pub fn new(name: &str, data: U, pool: Pool<RedisConnectionManager>) -> TaskQueue<T, U>
     {
         TaskQueue {
             pool,
+            data,
             marker: PhantomData::<T>,
             name: String::from(name),
             incoming: format!("{}::incoming", name),
@@ -62,14 +65,14 @@ where
         }
     }
 
-    pub fn listen(self, handle: fn(T)) -> RedisResult<()>
+    pub fn listen(self, handle: fn(T, U)) -> RedisResult<()>
     {
         loop {
             if let Ok(redis) = self.pool.get() {
                 let val: Vec<u8> = redis.brpoplpush(&self.incoming, &self.processing, 0)?;
 
                 if let Ok(decoded) = bincode::deserialize(&val[..]) {
-                    handle(decoded);
+                    handle(decoded, self.data.clone());
                     redis.lrem(&self.processing, 0, &val[..])?;
                 } else {
                     error!("coudl not decode task"); 

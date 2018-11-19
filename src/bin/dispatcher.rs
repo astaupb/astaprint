@@ -43,13 +43,13 @@ fn main()
 
     let pool = create_pool(&url);
 
-    let taskqueue: TaskQueue<HashMap<Vec<u8>, DispatcherTask>> = TaskQueue::new("dispatcher", pool);
+    let taskqueue: TaskQueue<HashMap<Vec<u8>, DispatcherTask>, ()> = TaskQueue::new("dispatcher", (), pool);
 
     Logger::init("dispatcher")
         .expect("initialising logger");
 
     taskqueue
-        .listen(|map| {
+        .listen(|map, _| {
             for (uid, task) in map {
                 dispatch(uid, task);
             }
