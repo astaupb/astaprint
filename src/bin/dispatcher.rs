@@ -19,7 +19,11 @@ extern crate astaprint;
 extern crate logger;
 extern crate taskqueue;
 
-use std::env;
+use std::{
+    collections::HashMap,
+    env,
+};
+
 
 use logger::Logger;
 
@@ -39,14 +43,16 @@ fn main()
 
     let pool = create_pool(&url);
 
-    let taskqueue: TaskQueue<DispatcherTask> = TaskQueue::new("dispatcher", pool);
+    let taskqueue: TaskQueue<HashMap<Vec<u8>, DispatcherTask>> = TaskQueue::new("dispatcher", pool);
 
     Logger::init("dispatcher")
         .expect("initialising logger");
 
     taskqueue
-        .listen(|task| {
-            dispatch(task);
+        .listen(|map| {
+            for (uid, task) in map {
+                dispatch(uid, task);
+            }
         })
         .unwrap_or_else(|e| println!("{}", e));
 }

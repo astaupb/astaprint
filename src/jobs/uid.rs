@@ -23,6 +23,14 @@ pub struct UID
     bytes: Vec<u8>,
 }
 
+impl UID
+{
+    pub fn get_bytes(&self) -> Vec<u8>
+    {
+        self.bytes.clone()
+    }
+}
+
 impl From<Vec<u8>> for UID
 {
     fn from(bytes: Vec<u8>) -> UID

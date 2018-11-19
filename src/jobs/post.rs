@@ -57,7 +57,7 @@ fn upload_job<'a>(
     user: UserGuard,
     data: Vec<u8>,
     options: UploadForm,
-    taskqueue: State<TaskQueue<DispatcherTask>>,
+    taskqueue: State<TaskQueue<HashMap<Vec<u8>, DispatcherTask>>>,
 ) -> Result<Result<Accepted<Json<String>>, BadRequest<&'a str>>, io::Error>
 {
     // TODO check filetype
@@ -72,11 +72,13 @@ fn upload_job<'a>(
         options.color.unwrap_or(false),
     );
 
-    let task = DispatcherTask {
+    let mut task: HashMap<Vec<u8>, DispatcherTask> = HashMap::new();
+
+    task.insert(uid.get_bytes(), DispatcherTask {
         user_id: user.id,
         info,
         data,
-    };
+    });
 
     taskqueue.send(&task)
         .expect("sending task to queue");

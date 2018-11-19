@@ -46,7 +46,7 @@ use jobs::{
     tmp::TemporaryFile,
 };
 
-pub fn dispatch(mut task: DispatcherTask)
+pub fn dispatch(uid: Vec<u8>, mut task: DispatcherTask)
 {
     let mut pdf_document = PDFDocument::new(&task.data[..], &task.info.password);
 
