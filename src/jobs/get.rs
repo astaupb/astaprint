@@ -17,21 +17,10 @@
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use diesel::{
-    result::{QueryResult, Error},
+    result::QueryResult,
     prelude::*,
 };
 
-use rocket::{
-    response::{
-        status::{
-            Accepted,
-            BadRequest,
-            Reset,
-        },
-        Stream,
-    },
-    State,
-};
 use rocket_contrib::Json;
 
 use jobs::*;

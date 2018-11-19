@@ -40,7 +40,7 @@ use jobs::{
 };
 
 use user::{
-    *, guard::UserGuard,
+    guard::UserGuard,
 };
 
 #[put("/<id>/options/<option>", data = "<value>")]

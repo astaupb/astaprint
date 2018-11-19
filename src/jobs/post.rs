@@ -25,9 +25,7 @@ use rocket::{
         status::{
             Accepted,
             BadRequest,
-            Reset,
         },
-        NamedFile,
     },
     State,
 };
@@ -80,7 +78,8 @@ fn upload_job<'a>(
         data,
     };
 
-    taskqueue.send(&task);
+    taskqueue.send(&task)
+        .expect("sending task to queue");
 
     info!("{} uploaded job with uid {:?}", user.id, uid);
 

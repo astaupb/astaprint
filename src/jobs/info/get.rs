@@ -29,7 +29,7 @@ use jobs::{
 };
 
 use user::{
-    *, guard::UserGuard,
+    guard::UserGuard,
 };
 
 #[get("/<id>/info")]

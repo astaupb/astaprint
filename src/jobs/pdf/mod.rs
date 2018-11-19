@@ -38,7 +38,6 @@ use jobs::{
         },
         subprocesses::{
             create_greyscale_pdf,
-            create_pdf_from_ps,
             decrypt_pdf,
             pdfjam,
         },

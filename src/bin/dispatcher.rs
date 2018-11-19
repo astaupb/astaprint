@@ -41,7 +41,8 @@ fn main()
 
     let taskqueue: TaskQueue<DispatcherTask> = TaskQueue::new("dispatcher", pool);
 
-    Logger::init("dispatcher");
+    Logger::init("dispatcher")
+        .expect("initialising logger");
 
     taskqueue
         .listen(|task| {

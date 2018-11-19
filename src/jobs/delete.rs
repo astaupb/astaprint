@@ -28,10 +28,8 @@ use rocket::{
         },
     },
 };
-use rocket_contrib::Json;
 
 use jobs::*;
-use jobs::response::JobResponse;
 use user::guard::UserGuard;
 
 #[delete("/<id>")]
