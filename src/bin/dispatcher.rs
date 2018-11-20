@@ -15,6 +15,8 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#[macro_use]
+extern crate log;
 extern crate astaprint;
 extern crate logger;
 extern crate taskqueue;
@@ -46,6 +48,8 @@ fn main()
     let taskqueue: TaskQueue<HashMap<Vec<u8>, DispatcherTask>, ()> = TaskQueue::new("dispatcher", (), pool);
 
     Logger::init("dispatcher").expect("initialising logger");
+
+    info!("listening");
 
     taskqueue
         .listen(|map, _| {

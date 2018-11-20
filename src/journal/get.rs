@@ -1,4 +1,4 @@
-/// AStAPrint-Backend - Journal Response
+/// AStAPrint
 /// Copyright (C) 2018  AStA der Universität Paderborn
 ///
 /// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
@@ -15,27 +15,34 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use bigdecimal::ToPrimitive;
-use chrono::{FixedOffset};
 
-use crate::journal::*;
+use diesel::{
+    prelude::*,
+    result::QueryResult,
+};
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct JournalResponse
+use rocket_contrib::Json;
+
+use user::{
+    guard::UserGuard,
+};
+
+use journal::{
+    response::JournalResponse,
+    *,
+};
+
+#[get("/")]
+fn journal(user: UserGuard) -> QueryResult<Json<Vec<JournalResponse>>>
 {
-    pub value: f64,
-    pub description: String,
-    pub created: String,
-}
+    let journal: Vec<Journal> = journal::table
+        .select(journal::all_columns)
+        .filter(journal::user_id.eq(user.id))
+        .order(journal::id.desc())
+        .load(&user.connection)?;
 
-impl<'a> From<&'a Journal> for JournalResponse
-{
-    fn from(journal: &'a Journal) -> JournalResponse
-    {
-        JournalResponse {
-            value: journal.value.to_f64().unwrap(),
-            description: journal.description.clone(),
-            created: format!("{}", journal.created + FixedOffset::east(3600)),
-        }
-    }
+
+    info!("{} fetched journal", user.id);
+
+    Ok(Json(journal.iter().map(|row| JournalResponse::from(row)).collect()))
 }

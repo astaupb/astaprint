@@ -21,6 +21,7 @@ use chrono::NaiveDateTime;
 pub mod credit;
 pub mod lock;
 pub mod response;
+pub mod get;
 
 table! {
     journal (id) {
@@ -60,4 +61,54 @@ pub struct JournalDigest
     pub digest: Vec<u8>,
     pub credit: BigDecimal,
     pub created: NaiveDateTime,
+}
+
+#[cfg(test)]
+mod tests
+{
+    use diesel::prelude::*;
+    use establish_connection;
+    use journal::*;
+    extern crate sha2;
+    use chrono::FixedOffset;
+    use sha2::{
+        Digest,
+        Sha512,
+    };
+    #[test]
+    fn verify()
+    {
+        let connection = establish_connection();
+        let journal: Vec<Journal> =
+            journal::table.select(journal::all_columns).load(&connection).expect("selecting journal");
+        println!("{:?}", journal);
+
+        let digests: Vec<JournalDigest> = journal_digest::table
+            .select(journal_digest::all_columns)
+            .load(&connection)
+            .expect("selecting journal digests");
+
+        for (i, entry) in journal.iter().enumerate() {
+            let mut input = digests[i].digest.clone();
+
+            let datetime = entry.created + FixedOffset::west(-3600);
+
+            let concat = format!(
+                "{}{}{}{}{}",
+                &entry.id, &entry.user_id, &entry.value, &entry.description, datetime,
+            );
+
+            println!("{}", concat);
+
+            input.append(&mut concat.as_bytes().to_owned());
+            println!("{:x?}", input);
+
+            let mut hasher = Sha512::new();
+            hasher.input(&input[..]);
+            let result = hasher.result();
+
+            println!("{:x?} == {:x?}", result.as_slice(), &digests[i].digest[..]);
+            assert_eq!(result.as_slice(), &digests[i].digest[..]);
+        }
+    }
 }

@@ -54,6 +54,8 @@ pub mod manager;
 pub mod printers;
 pub mod user;
 
+pub mod register;
+
 use diesel::prelude::*;
 use std::env;
 pub fn establish_connection() -> MysqlConnection

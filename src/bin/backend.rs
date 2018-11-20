@@ -79,6 +79,8 @@ use astaprint::{
         tokens::*,
         *,
     },
+    journal::get::*,
+    register::*,
 };
 
 fn cors() -> rocket_cors::Cors
@@ -173,10 +175,8 @@ fn rocket() -> rocket::Rocket
             routes![get_all_tokens, delete_all_tokens, get_single_token, delete_single_token],
         )
         .mount("/printers", routes![print_job])
-        /*
-        .mount("/register", routes![register])
         .mount("/journal", routes![journal])
-        */
+        .mount("/register", routes![register])
         .attach(cors())
 }
 
