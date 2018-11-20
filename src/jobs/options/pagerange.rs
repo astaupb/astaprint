@@ -37,7 +37,7 @@ impl<'a> FromStr for PageDifference
             return Err(());
         }
 
-        let minuend: u32 = match split[0].parse() {
+        let mut minuend: u32 = match split[0].parse() {
             Ok(int) => int,
             Err(_) => return Err(()),
         };
@@ -47,7 +47,7 @@ impl<'a> FromStr for PageDifference
         };
 
         if minuend > subtrahend {
-            return Err(());
+            minuend = subtrahend;
         }
         Ok(PageDifference {
             minuend,
@@ -78,7 +78,7 @@ impl<'a> FromStr for PageRange
             steps.iter().filter_map(|s| PageDifference::from_str(s).ok()).collect();
 
         for diff in page_differences.iter() {
-            for page in diff.minuend..diff.subtrahend {
+            for page in diff.minuend..=diff.subtrahend {
                 page_singles.push(page);
             }
         }
@@ -87,9 +87,9 @@ impl<'a> FromStr for PageRange
             None => return Err(()),
         };
 
-        let mut pages: Vec<bool> = Vec::with_capacity(pagecount);
+        let mut pages: Vec<bool> = vec![false; pagecount];
         for page in page_singles.iter() {
-            pages[*page as usize] = true;
+            pages[*page as usize - 1] = true;
         }
         Ok(PageRange {
             pages,
@@ -101,13 +101,23 @@ impl<'a> FromStr for PageRange
 #[test]
 pub fn pagerange_is_valid()
 {
-    assert!(PageRange::from_str("1,2-3,7-20,21-29").is_ok());
+    let range = PageRange::from_str("1,2-3,7-20,21-29");
+    println!("{:?}", range);
+    assert!(range.is_ok());
 
-    assert!(PageRange::from_str("1,3-4,7-10").is_ok());
+    let range = PageRange::from_str("1,3-4,7-10");
+    println!("{:?}", range);
+    assert!(range.is_ok());
 
-    assert!(PageRange::from_str("1, 3 -2,7-10").is_err());
+    let range = PageRange::from_str("1, 3 -2,7-10");
+    println!("{:?}", range);
+    assert!(range.is_ok());
 
-    assert!(PageRange::from_str("1df3-4,7-10").is_err());
+    let range = PageRange::from_str("1df3-4,7-10");
+    println!("{:?}", range);
+    assert!(range.is_ok());
 
-    assert!(PageRange::from_str("1-2-4,7-10, 11-12").is_err());
+    let range = PageRange::from_str("1-2-4,7-10, 11-12");
+    println!("{:?}", range);
+    assert!(range.is_ok());
 }
