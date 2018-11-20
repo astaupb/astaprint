@@ -40,7 +40,10 @@ use diesel::{
 
 use astacrypto::GenericHash;
 
-use crate::user::*;
+use crate::user::{
+    *,
+    key::split_x_api_key,
+};
 
 pub struct UserGuard
 {
@@ -61,23 +64,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for UserGuard
             info!("invalid x-api-key header {:?}", key);
             return Outcome::Failure((Status::BadRequest, ()));
         }
-        let key = key[0];
-
-        let x_user_id: Vec<_> = request.headers().get("x-user-id").collect();
-
-        if x_user_id.len() != 1 {
-            info!("invalid x-user-user header {:?}", x_user_id);
-            return Outcome::Failure((Status::BadRequest, ()));
-        }
-        let user_id: u32 = match x_user_id[0].parse() {
-            Ok(user_id) => user_id,
-            Err(_) => {
-                info!("could not parse {:?}", x_user_id);
-                return Outcome::Failure((Status::BadRequest, ()));
-            },
-        };
-
-        let buf: Vec<u8> = match base64::decode_config(key, base64::URL_SAFE) {
+        let buf: Vec<u8> = match base64::decode_config(key[0], base64::URL_SAFE) {
             Ok(buf) => buf,
             Err(_) => return Outcome::Failure((Status::BadRequest, ())),
         };
@@ -85,6 +72,10 @@ impl<'a, 'r> FromRequest<'a, 'r> for UserGuard
         if buf.len() != 108 {
             return Outcome::Failure((Status::BadRequest, ()));
         }
+        let (user_id, token) = match split_x_api_key(buf) {
+            Ok((user_id, token)) => (user_id, token),
+            Err(_) => return Outcome::Failure((Status::BadRequest, ())),
+        };
 
         let pool = request.guard::<State<Pool<ConnectionManager<MysqlConnection>>>>()?;
 
@@ -98,7 +89,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for UserGuard
             user::table.select(user::hash).filter(user::id.eq(user_id)).first(&connection);
 
         if let Ok(salt) = result {
-            let hash = GenericHash::with_salt(&buf[..], &salt[..]);
+            let hash = GenericHash::with_salt(&token[..], &salt[..]);
 
             let result: Result<u32, diesel::result::Error> = user_token::table
                 .select(user_token::id)

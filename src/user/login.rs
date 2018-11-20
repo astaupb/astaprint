@@ -36,13 +36,16 @@ use diesel::{
     },
 };
 
-use crate::user::*;
+use crate::user::{
+    *, key::merge_x_api_key,
+};
 
 use astacrypto::{
     random_bytes,
     GenericHash,
     PasswordHash,
 };
+
 
 pub struct LoginGuard
 {
@@ -105,14 +108,19 @@ impl<'a, 'r> FromRequest<'a, 'r> for LoginGuard
         }
 
         // generate token
-        let buf = random_bytes(108);
-
-        // encode for client
-        let token = base64::encode_config(&buf[..], base64::URL_SAFE);
+        let token = random_bytes(104);
 
         // using the password hash as salt for performace reasons
         // and so every token gets invalidated on password change
-        let hash = GenericHash::with_salt(&buf[..], &hash[..]);
+        let hash = GenericHash::with_salt(&token[..], &hash[..]);
+
+        let x_api_key = match merge_x_api_key(user_id, token) {
+            Ok(key) => key,
+            Err(_) => return Outcome::Failure((Status::Unauthorized, ())),
+        };
+
+        // encode for client
+        let x_api_key = base64::encode_config(&x_api_key[..], base64::URL_SAFE);
 
         // sanitize too large user agents
         let user_agent = if user_agent[0].len() > 128 {
@@ -135,7 +143,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for LoginGuard
             Ok(_) => {
                 info!("{} logged in ", user_id);
                 Outcome::Success(LoginGuard {
-                    token,
+                    token: x_api_key,
                 })
             },
             Err(_) => {

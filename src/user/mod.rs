@@ -23,6 +23,7 @@ pub mod guard;
 pub mod http;
 pub mod login;
 pub mod response;
+pub mod key;
 
 allow_tables_to_appear_in_same_query!(user, user_token, journal, journal_digest,);
 
