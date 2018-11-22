@@ -20,7 +20,7 @@ use std::fmt;
 #[derive(Debug, Clone)]
 pub struct UID
 {
-    bytes: Vec<u8>,
+    pub bytes: Vec<u8>,
 }
 
 impl UID

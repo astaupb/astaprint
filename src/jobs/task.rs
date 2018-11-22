@@ -18,9 +18,18 @@
 use jobs::info::JobInfo;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+pub enum DispatchType
+{
+    PDF,
+    XPS,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct DispatcherTask
 {
     pub user_id: u32,
+    pub uid: Vec<u8>,
     pub info: JobInfo,
     pub data: Vec<u8>,
+    pub content: DispatchType,
 }

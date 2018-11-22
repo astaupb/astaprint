@@ -47,9 +47,9 @@ use jobs::{
     uid::UID,
 };
 
-pub fn dispatch(uid: Vec<u8>, mut task: DispatcherTask)
+pub fn dispatch(mut task: DispatcherTask)
 {
-    let uid = UID::from(uid);
+    let uid = UID::from(task.uid);
     let mut pdf_document = PDFDocument::new(&task.data[..], &task.info.password);
 
     // swap filename with pdf title if filename is empty

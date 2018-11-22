@@ -22,7 +22,6 @@ extern crate logger;
 extern crate taskqueue;
 
 use std::{
-    collections::HashMap,
     env,
 };
 
@@ -45,17 +44,15 @@ fn main()
 
     let pool = create_pool(&url);
 
-    let taskqueue: TaskQueue<HashMap<Vec<u8>, DispatcherTask>, ()> = TaskQueue::new("dispatcher", (), pool);
+    let taskqueue: TaskQueue<DispatcherTask, ()> = TaskQueue::new("dispatcher", (), pool);
 
     Logger::init("dispatcher").expect("initialising logger");
 
     info!("listening");
 
     taskqueue
-        .listen(|map, _| {
-            for (uid, task) in map {
-                dispatch(uid, task);
-            }
+        .listen(|task, _| {
+                dispatch(task);
         })
         .unwrap_or_else(|e| println!("{}", e));
 }

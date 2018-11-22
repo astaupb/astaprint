@@ -16,7 +16,6 @@
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use std::{
-    collections::HashMap,
     io,
 };
 
@@ -25,15 +24,21 @@ use rocket::{
         Accepted,
         BadRequest,
     },
+    http::{
+        ContentType,
+        uncased::UncasedStr,
+    },
     State,
 };
-use rocket_contrib::Json;
 
 use astacrypto::random_bytes;
 
 use jobs::{
     info::JobInfo,
-    task::DispatcherTask,
+    task::{
+        DispatcherTask,
+        DispatchType,
+    },
     uid::UID,
 };
 
@@ -50,18 +55,35 @@ pub struct UploadForm
     pub color: Option<bool>,
 }
 
-#[post("/?<options>", data = "<data>", format = "application/pdf")]
+#[post("/?<options>", data = "<data>")]
 fn upload_job<'a>(
     user: UserGuard,
     data: Vec<u8>,
     options: UploadForm,
-    taskqueue: State<TaskQueue<HashMap<Vec<u8>, DispatcherTask>, ()>>,
-) -> Result<Result<Accepted<Json<String>>, BadRequest<&'a str>>, io::Error>
+    content_type: &ContentType,
+    taskqueue: State<TaskQueue<DispatcherTask, ()>>,
+) -> Result<Result<Accepted<String>, BadRequest<&'a str>>, io::Error>
 {
-    // TODO check filetype
     if data.len() == 0 {
-        return Ok(Err(BadRequest(Some("invalid pdf file"))));
+        return Ok(Err(BadRequest(Some("empty body"))));
     }
+    if content_type.top() != UncasedStr::new("application") {
+        return Ok(Err(BadRequest(Some("invalid top mime type"))));
+    }
+    let content = match content_type.sub().as_str() {
+        "pdf" => {
+            // TODO  check body data for valid header
+            DispatchType::PDF
+        },
+        "zip" => {
+            // TODO check for valid zip file ?!
+            DispatchType::XPS
+        }
+        _ => {
+            return Ok(Err(BadRequest(Some("invalid sub mime type"))));
+        },
+    };
+
     let uid = UID::from(random_bytes(20));
 
     let info = JobInfo::new(
@@ -70,20 +92,19 @@ fn upload_job<'a>(
         options.color.unwrap_or(false),
     );
 
-    let mut task: HashMap<Vec<u8>, DispatcherTask> = HashMap::new();
+    let uid_response = format!("{:x}", uid);
 
-    task.insert(
-        uid.get_bytes(),
-        DispatcherTask {
-            user_id: user.id,
-            info,
-            data,
-        },
-    );
+    let task = DispatcherTask {
+        user_id: user.id,
+        info,
+        data,
+        uid: uid.bytes,
+        content,
+    };
 
     taskqueue.send(&task).expect("sending task to queue");
 
-    info!("{} uploaded job with uid {:?}", user.id, uid);
+    info!("{} uploaded job with uid {}", user.id, uid_response);
 
-    Ok(Ok(Accepted(Some(Json(format!("{:x}", uid))))))
+    Ok(Ok(Accepted(Some(uid_response))))
 }

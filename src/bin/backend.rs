@@ -128,7 +128,7 @@ fn rocket() -> rocket::Rocket
 
     let redis_pool = create_pool(&url);
 
-    let dispatcher_queue: TaskQueue<HashMap<Vec<u8>, DispatcherTask>, ()> =
+    let dispatcher_queue: TaskQueue<DispatcherTask, ()> =
         TaskQueue::new("dispatcher", (), redis_pool.clone());
 
     let mut worker_queues: HashMap<u16, TaskQueue<HashMap<Vec<u8>, WorkerTask>, ()>> = HashMap::new();
