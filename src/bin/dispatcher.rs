@@ -20,13 +20,15 @@ extern crate log;
 extern crate astaprint;
 extern crate logger;
 extern crate taskqueue;
+extern crate threadpool;
 
 use std::{
     env,
 };
 
-
 use logger::Logger;
+
+use threadpool::ThreadPool;
 
 use taskqueue::{
     create_pool,
@@ -42,17 +44,21 @@ fn main()
 {
     let url = env::var("ASTAPRINT_REDIS_URL").expect("reading redis url from environment");
 
-    let pool = create_pool(&url);
+    let redis_pool = create_pool(&url);
 
-    let taskqueue: TaskQueue<DispatcherTask, ()> = TaskQueue::new("dispatcher", (), pool);
+    let thread_pool = ThreadPool::new(20);
+
+    let taskqueue: TaskQueue<DispatcherTask, ThreadPool> = TaskQueue::new("dispatcher", thread_pool, redis_pool);
 
     Logger::init("dispatcher").expect("initialising logger");
 
     info!("listening");
 
     taskqueue
-        .listen(|task, _| {
+        .listen(|task, thread_pool| {
+            thread_pool.execute(move || {
                 dispatch(task);
+            });
         })
         .unwrap_or_else(|e| println!("{}", e));
 }
