@@ -24,10 +24,6 @@ use rocket::{
         Accepted,
         BadRequest,
     },
-    http::{
-        ContentType,
-        uncased::UncasedStr,
-    },
     State,
 };
 
@@ -35,10 +31,7 @@ use astacrypto::random_bytes;
 
 use jobs::{
     info::JobInfo,
-    task::{
-        DispatcherTask,
-        DispatchType,
-    },
+    task::DispatcherTask,
     uid::UID,
 };
 
@@ -55,34 +48,21 @@ pub struct UploadForm
     pub color: Option<bool>,
 }
 
-#[post("/?<options>", data = "<data>")]
+#[post("/?<options>", data = "<data>", format = "application/pdf")]
 fn upload_job<'a>(
     user: UserGuard,
     data: Vec<u8>,
     options: UploadForm,
-    content_type: &ContentType,
     taskqueue: State<TaskQueue<DispatcherTask, ()>>,
 ) -> Result<Result<Accepted<String>, BadRequest<&'a str>>, io::Error>
 {
-    if data.len() == 0 {
-        return Ok(Err(BadRequest(Some("empty body"))));
+    if data.len() < 64 {
+        return Ok(Err(BadRequest(Some("body too small"))));
     }
-    if content_type.top() != UncasedStr::new("application") {
-        return Ok(Err(BadRequest(Some("invalid top mime type"))));
+
+    if !&String::from_utf8_lossy(&data[..64]).contains("%PDF-1") {
+        return Ok(Err(BadRequest(Some("could not find %PDF-1 in first 64 bytes of body"))));
     }
-    let content = match content_type.sub().as_str() {
-        "pdf" => {
-            // TODO  check body data for valid header
-            DispatchType::PDF
-        },
-        "zip" => {
-            // TODO check for valid zip file ?!
-            DispatchType::XPS
-        }
-        _ => {
-            return Ok(Err(BadRequest(Some("invalid sub mime type"))));
-        },
-    };
 
     let uid = UID::from(random_bytes(20));
 
@@ -99,7 +79,6 @@ fn upload_job<'a>(
         info,
         data,
         uid: uid.bytes,
-        content,
     };
 
     taskqueue.send(&task).expect("sending task to queue");
