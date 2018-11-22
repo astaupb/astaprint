@@ -16,15 +16,17 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use rocket::response::status::{
-    BadRequest,
-    NoContent,
-    Reset,
+use rocket::response::{
+    status::{
+        BadRequest,
+        NoContent,
+        Reset,
+    },
+    Redirect,
 };
 use rocket_contrib::Json;
 
 use bigdecimal::{
-    BigDecimal,
     ToPrimitive,
 };
 
@@ -147,13 +149,9 @@ fn change_username(user: UserGuard, new_username: Json<String>) -> Result<Reset,
 }
 
 #[get("/credit")]
-pub fn credit(user: UserGuard) -> Result<Json<f64>, diesel::result::Error>
+pub fn credit_redirect() -> Redirect
 {
-    let credit: BigDecimal = get_credit(user.id, &user.connection)?;
-
-    info!("{} fetched credit", user.id);
-
-    Ok(Json(credit.to_f64().unwrap()))
+    Redirect::to("/astaprint/journal/credit")
 }
 
 #[post("/login")]

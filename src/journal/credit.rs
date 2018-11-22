@@ -15,15 +15,34 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use bigdecimal::BigDecimal;
+use bigdecimal::{
+    BigDecimal,
+    ToPrimitive,
+};
 
 use diesel::{
     prelude::*,
     result::QueryResult,
 };
 
+use rocket_contrib::Json;
+
 use journal::*;
-use user::*;
+
+use user::{
+    *,
+    guard::UserGuard,
+};
+
+#[get("/credit")]
+pub fn credit(user: UserGuard) -> QueryResult<Json<f64>>
+{
+    let credit: BigDecimal = get_credit(user.id, &user.connection)?;
+
+    info!("{} fetched credit {}", user.id, credit);
+
+    Ok(Json(credit.to_f64().unwrap()))
+}
 
 pub fn get_credit(user_id: u32, connection: &MysqlConnection) -> QueryResult<BigDecimal>
 {
