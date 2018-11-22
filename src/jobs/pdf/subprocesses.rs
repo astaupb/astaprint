@@ -15,14 +15,19 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use jobs::pdf::pageinfo::{
-    Is::Almost,
-    PageInfo,
-    PageOrientation,
-    PageSize,
+
+use jobs::{
+    pdf::pageinfo::{
+        Is::Almost,
+        PageInfo,
+        PageOrientation,
+        PageSize,
+    },
+    tmp::TemporaryFile,
 };
 
 use std::{
+    io,
     fs::rename,
     process::{
         Command,
@@ -30,26 +35,30 @@ use std::{
     },
 };
 
-pub fn decrypt_pdf(path_to_pdf: &str, password: &str) -> bool
+pub fn decrypt_pdf(data: Vec<u8>, password: &str) -> io::Result<Vec<u8>>
 {
+    let path = TemporaryFile::create(data)?;
     // input and output file can not be the same
     // create tmp outfile and rename afterwards to decrypt in place
-    let outfile = format!("{}.encr", path_to_pdf);
+    let outfile = format!("{}.decr", path);
 
     Command::new("qpdf")
-        .args(&["--decrypt", &format!("--password={}", password), path_to_pdf, &outfile])
+        .args(&["--decrypt", &format!("--password={}", password), &path, &outfile])
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
-        .status()
-        .expect(&format!("decrypting {}", path_to_pdf));
+        .status()?;
 
-    rename(&outfile, path_to_pdf).is_ok()
+    rename(&outfile, &path)?;
+
+    Ok(TemporaryFile::remove(&path)?)
 }
 
-pub fn pdfjam(path_to_pdf: &str, info: &PageInfo) -> bool
+pub fn pdfjam(data: Vec<u8>, info: &PageInfo) -> io::Result<Vec<u8>>
 {
+    let path = TemporaryFile::create(data)?;
+
     let mut arguments =
-        ["--a4paper", "--no-landscape", "--checkfiles", "--outfile", path_to_pdf, path_to_pdf];
+        ["--a4paper", "--no-landscape", "--checkfiles", "--outfile", &path, &path];
 
     if info.size == Almost(PageSize::A3) {
         arguments[0] = "--a3paper";
@@ -63,30 +72,17 @@ pub fn pdfjam(path_to_pdf: &str, info: &PageInfo) -> bool
         .args(&arguments)
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
-        .status()
-        .expect(&format!("jamming {} to a4", path_to_pdf))
-        .success()
+        .status()?;
+
+    Ok(TemporaryFile::remove(&path)?)
 }
 
-pub fn create_pdf_from_ps(path_to_pdf: &str) -> bool
+pub fn create_greyscale_pdf(data: Vec<u8>) -> io::Result<Vec<u8>>
 {
-    let outfile = format!("{}.tmp", path_to_pdf);
-
-    let ps2pdf = Command::new("ps2pdf14")
-        .args(&[path_to_pdf, &outfile])
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .status()
-        .expect(&format!("creating pdf from ps: {}", path_to_pdf));
-
-    ps2pdf.success() && rename(&outfile, path_to_pdf).is_ok()
-}
-
-/// returns pagecount of converted pdf, in case something failed 0 will be returned
-/// create temporary file and rename afterwards to convert in place
-pub fn create_greyscale_pdf(path_to_pdf: &str) -> u16
-{
-    let outfile = format!("{}.grey", path_to_pdf);
+    let path = TemporaryFile::create(data)?;
+    // input and output file can not be the same
+    // create tmp outfile and rename afterwards to decrypt in place
+    let outfile = format!("{}.grey", path);
 
     let arguments: [&str; 9] = [
         "-dSAFER",
@@ -97,37 +93,23 @@ pub fn create_greyscale_pdf(path_to_pdf: &str) -> u16
         "-sColorConversionStrategy=Gray",
         "-dProcessColorModel=/DeviceGray",
         &format!("-sOutputFile={}", outfile),
-        path_to_pdf,
+        &path,
     ];
 
     let gs_pdf = Command::new("gs")
         .args(&arguments)
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
-        .output()
-        .expect("waiting for gs_pdf output");
+        .output()?;
 
-    let mut pagecount = 0;
-
-    if gs_pdf.status.success() {
-        let mut substitutions: Vec<String> = Vec::new();
-
-        for line in String::from_utf8_lossy(&gs_pdf.stdout).lines() {
-            if line.contains("Substituting") || line.contains("Loading") {
-                substitutions.push(String::from(line));
-
-                continue;
-            }
-
-            if line.contains("Page") && !line.contains("LastPage") {
-                pagecount += 1;
-            }
+    for line in String::from_utf8_lossy(&gs_pdf.stdout).lines() {
+        if line.contains("Substituting") || line.contains("Loading") {
+            warn!("{:?}", line);
+            continue;
         }
     }
 
-    if rename(&outfile, &path_to_pdf).is_ok() {
-        pagecount
-    } else {
-        0
-    }
+    rename(&outfile, &path)?;
+
+    Ok(TemporaryFile::remove(&path)?)
 }

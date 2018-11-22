@@ -20,44 +20,45 @@ use astacrypto::random_bytes;
 use jobs::uid::UID;
 
 use std::{
-    fs::File,
+    fs::{
+        File,
+        remove_file,
+    },
     io::{
         Read,
         Write,
+        self,
     },
 };
 
 #[derive(Clone, Debug)]
-pub struct TemporaryFile
-{
-    pub path: String,
-}
+pub struct TemporaryFile;
 
 impl TemporaryFile
 {
-    pub fn new(data: &[u8]) -> TemporaryFile
+    pub fn create(data: Vec<u8>) -> io::Result<String>
     {
         let uid = UID::from(random_bytes(20));
 
         let path = format!("/tmp/{:x}", uid);
 
-        let mut file = File::create(&path).expect("creating temporary file");
+        let mut file = File::create(&path)?;
 
-        file.write_all(data).expect("writing data to file");
+        file.write_all(&data[..])?;
 
-        TemporaryFile {
-            path,
-        }
+        Ok(path)
     }
 
-    pub fn close(self) -> Vec<u8>
+    pub fn remove(path: &str) -> io::Result<Vec<u8>>
     {
-        let mut file = File::open(&self.path).expect("opening temporary file");
+        let mut file = File::open(path)?;
 
         let mut buf: Vec<u8> = Vec::new();
 
-        file.read_to_end(&mut buf).expect("reading file into buffer");
+        file.read_to_end(&mut buf)?;
 
-        buf
+        remove_file(path)?;
+
+        Ok(buf)
     }
 }

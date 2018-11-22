@@ -43,13 +43,13 @@ use jobs::{
         },
     },
     task::DispatcherTask,
-    tmp::TemporaryFile,
     uid::UID,
 };
 
 pub fn dispatch(mut task: DispatcherTask)
 {
     let uid = UID::from(task.uid);
+
     let mut pdf_document = PDFDocument::new(&task.data[..], &task.info.password);
 
     // swap filename with pdf title if filename is empty
@@ -57,21 +57,10 @@ pub fn dispatch(mut task: DispatcherTask)
         task.info.filename = pdf_document.title.clone().unwrap_or(String::from("Anonymous"));
     }
 
-    let mut tmp_file: Option<TemporaryFile> = None;
-
     if task.info.password != "" {
-        if tmp_file.is_none() {
-            tmp_file = Some(TemporaryFile::new(&task.data[..]));
-        }
-        let path = tmp_file.clone().unwrap().path;
-        if !decrypt_pdf(&path, &task.info.password) {
-            error!("could not decrypt pdf with user password");
-
-            panic!();
-        } else {
-            task.data = tmp_file.clone().unwrap().close();
-            pdf_document = PDFDocument::new(&task.data, &task.info.password);
-        }
+        task.data = decrypt_pdf(task.data, &task.info.password)
+            .expect("decrypting pdf");;
+        pdf_document = PDFDocument::new(&task.data[..], "");
     }
 
     task.info.pagecount = pdf_document.get_pagecount();
@@ -81,47 +70,19 @@ pub fn dispatch(mut task: DispatcherTask)
     if page_info.size != Valid(PageSize::A3) && page_info.size != Valid(PageSize::A4) {
         info!("invalid pageformat, using pdfjam to fix it");
 
-        if tmp_file.is_none() {
-            tmp_file = Some(TemporaryFile::new(&task.data[..]));
-        }
-        let path = tmp_file.clone().unwrap().path;
+        task.data = pdfjam(task.data, &page_info)
+            .expect("jamming pdf to valid format");
 
-        if !pdfjam(&path, &page_info) {
-            error!("could not jam pdf to a4");
-
-            panic!();
-        } else {
-            task.data = tmp_file.clone().unwrap().close();
-            pdf_document = PDFDocument::new(&task.data, &task.info.password);
-        }
+        pdf_document = PDFDocument::new(&task.data, "");
     }
 
     if !task.info.color {
-        if tmp_file.is_none() {
-            tmp_file = Some(TemporaryFile::new(&task.data[..]));
-        }
-        let path = tmp_file.clone().unwrap().path;
-        task.info.pagecount = create_greyscale_pdf(&path);
+        task.data = create_greyscale_pdf(task.data)
+            .expect("creating greyscale pdf with gs");
 
-        if task.info.pagecount != pdf_document.get_pagecount() {
-            error!(
-                "what the fuck, pdfinfo: {}, gs pagecount: {}",
-                pdf_document.get_pagecount(),
-                task.info.pagecount
-            );
-
-            panic!();
-        }
-
-        if task.info.pagecount == 0 {
-            error!("could not convert pdf to greyscale");
-
-            panic!();
-        }
-
-        task.data = tmp_file.clone().unwrap().close();
-        pdf_document = PDFDocument::new(&task.data, &task.info.password);
+        pdf_document = PDFDocument::new(&task.data, "");
     }
+
     // FIXME no connection pooling here
     let url = env::var("ASTAPRINT_DATABASE_URL").expect("reading ASTAPRINT_DATABASE_URL from environment");
 
