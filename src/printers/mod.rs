@@ -19,7 +19,12 @@ pub mod queue;
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 pub mod snmp;
 
-use diesel::prelude::*;
+use diesel::{
+    r2d2::{
+        ConnectionManager, PooledConnection,
+    },
+    prelude::*,
+};
 
 use chrono::NaiveDateTime;
 
@@ -154,7 +159,7 @@ allow_tables_to_appear_in_same_query!(
     printer_queue_ctl,
 );
 
-pub fn select_device_ids(connection: &MysqlConnection) -> Vec<u16>
+pub fn select_device_ids(connection: &PooledConnection<ConnectionManager<MysqlConnection>>) -> Vec<u16>
 {
     printers::table.select(printers::device_id).load(connection).expect("fetching device ids")
 }

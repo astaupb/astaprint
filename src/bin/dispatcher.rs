@@ -30,34 +30,46 @@ use logger::Logger;
 
 use threadpool::ThreadPool;
 
-use taskqueue::{
-    create_pool,
-    TaskQueue,
-};
+use taskqueue::TaskQueue;
 
-use astaprint::jobs::{
-    pdf::dispatch,
-    task::DispatcherTask,
+use astaprint::{
+    jobs::{
+        pdf::dispatch,
+        task::{
+            DispatcherTask, DispatcherState,
+        },
+    },
+    pool::{
+        create_redis_pool, create_mysql_pool,
+    },
 };
 
 fn main()
 {
-    let url = env::var("ASTAPRINT_REDIS_URL").expect("reading redis url from environment");
+    let redis_url = env::var("ASTAPRINT_REDIS_URL").expect("reading redis url from environment");
 
-    let redis_pool = create_pool(&url);
+    let redis_pool = create_redis_pool(&redis_url, 10);
+
+    let mysql_url = env::var("ASTAPRINT_DATABASE_URL").expect("reading database url from environment");
+
+    let mysql_pool = create_mysql_pool(&mysql_url, 10);
 
     let thread_pool = ThreadPool::new(20);
 
-    let taskqueue: TaskQueue<DispatcherTask, ThreadPool> = TaskQueue::new("dispatcher", thread_pool, redis_pool);
+    let state = DispatcherState {
+        thread_pool, mysql_pool,
+    };
+    let taskqueue: TaskQueue<DispatcherTask, DispatcherState> = TaskQueue::new("dispatcher", state, redis_pool);
 
     Logger::init("dispatcher").expect("initialising logger");
 
     info!("listening");
 
     taskqueue
-        .listen(|task, thread_pool| {
-            thread_pool.execute(move || {
-                dispatch(task);
+        .listen(|task, state| {
+            let mysql_pool = state.mysql_pool.clone();
+            state.thread_pool.execute(move || {
+                dispatch(task, mysql_pool);
             });
         })
         .unwrap_or_else(|e| println!("{}", e));

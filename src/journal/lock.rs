@@ -57,6 +57,7 @@ impl Lock
     pub fn is_grabbed(&self) -> bool
     {
         let result: RedisResult<Vec<u8>> = redis::cmd("GET").arg(self.user_id).query(&self.connection);
+        debug!("{:?}", result);
         result.is_ok()
     }
 

@@ -19,10 +19,7 @@ use serde::{
     Serialize,
 };
 
-use std::{
-    fmt::Debug,
-    marker::PhantomData,
-};
+use std::marker::PhantomData;
 
 pub fn connect(url: &str) -> RedisResult<Connection>
 {
@@ -30,14 +27,8 @@ pub fn connect(url: &str) -> RedisResult<Connection>
     Ok(client.get_connection()?)
 }
 
-pub fn create_pool(url: &str) -> Pool<RedisConnectionManager>
-{
-    Pool::builder()
-        .build(RedisConnectionManager::new(url).expect("creating Connection Manager"))
-        .expect("creating Connection Pool")
-}
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct TaskQueue<T, U>
 {
     pool: Pool<RedisConnectionManager>,
@@ -50,8 +41,8 @@ pub struct TaskQueue<T, U>
 
 impl<T, U> TaskQueue<T, U>
 where
-    T: Serialize + DeserializeOwned + Debug,
-    U: Clone + Debug
+    T: Serialize + DeserializeOwned,
+    U: Clone
 {
     pub fn new(name: &str, data: U, pool: Pool<RedisConnectionManager>) -> TaskQueue<T, U>
     {

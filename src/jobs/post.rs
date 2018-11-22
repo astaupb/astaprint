@@ -69,7 +69,7 @@ fn upload_job<'a>(
     let info = JobInfo::new(
         &options.filename.unwrap_or_else(|| String::from("")),
         &options.password.unwrap_or_else(|| String::from("")),
-        options.color.unwrap_or(false),
+        options.color.unwrap_or(true),
     );
 
     let uid_response = format!("{:x}", uid);

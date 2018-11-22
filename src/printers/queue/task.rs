@@ -22,6 +22,9 @@ use std::{
 };
 
 use diesel::{
+    r2d2::{
+        Pool, ConnectionManager,
+    },
     delete,
     prelude::*,
 };
@@ -42,14 +45,20 @@ use printers::{
     },
 };
 
-use establish_connection;
-
 #[derive(Serialize, Deserialize, Debug)]
 pub struct WorkerTask
 {
     pub job_id: u32,
     pub user_id: u32,
+    pub uid: Vec<u8>,
     pub options: JobOptions,
+}
+
+#[derive(Clone)]
+pub struct WorkerState
+{
+    pub printer_interface: PrinterInterface,
+    pub mysql_pool: Pool<ConnectionManager<MysqlConnection>>,
 }
 
 #[derive(PartialEq, Debug)]
@@ -61,17 +70,19 @@ pub enum WorkerCommand
 
 pub fn work(
     cmd_receiver: mpsc::Receiver<WorkerCommand>,
-    uid: Vec<u8>,
     task: WorkerTask,
-    mut interface: PrinterInterface,
+    mut state: WorkerState,
 )
 {
-    let uid = UID::from(uid);
+    let uid = UID::from(task.uid.clone());
     thread::Builder::new()
         .name(format!("{:x}", uid))
         .spawn(move || {
             info!("{:x} print thread spawned for {}", uid, task.user_id);
-            let connection = establish_connection();
+
+            let connection = state.mysql_pool.get()
+                .expect("getting connection from mysql pool");
+
             let mut job: Job = jobs::table
                 .select(jobs::all_columns)
                 .filter(jobs::id.eq(task.job_id))
@@ -83,7 +94,7 @@ pub fn work(
             let info = job.info();
             let options = job.options();
 
-            let snmp_session = SnmpSession::new(&interface.ip, &interface.community);
+            let snmp_session = SnmpSession::new(&state.printer_interface.ip, &state.printer_interface.community);
 
             let command = cmd_receiver.recv().expect("receiving command from queue reader");
 
@@ -92,7 +103,7 @@ pub fn work(
                 return;
             }
 
-            let mut accounting = Accounting::new(task.user_id, info.color);
+            let mut accounting = Accounting::new(task.user_id, info.color, &state.mysql_pool);
 
             if accounting.not_enough_credit() {
                 info!("not enough credit for one page, aborting");
@@ -100,13 +111,13 @@ pub fn work(
             }
 
             let counter_base = snmp_session
-                .get_counter_values(&mut interface.counter)
+                .get_counter_values(&mut state.printer_interface.counter)
                 .expect("reading base counter value");
 
             debug!("counter_base: {:?}", counter_base);
 
             let mut lpr_connection =
-                LprConnection::new(&interface.ip, 20000 /* socket timeout in ms */);
+                LprConnection::new(&state.printer_interface.ip, 20000 /* socket timeout in ms */);
             lpr_connection.print(&mut buf).expect("printing job with lpr");
 
             let print_count = job.pages_to_print();
@@ -114,14 +125,14 @@ pub fn work(
             // check energy status before initial waiting
             // 1 == ready
             let energy_stat = snmp_session
-                .get_integer(&mut interface.energy_ctl.oid[..])
+                .get_integer(&mut state.printer_interface.energy_ctl.oid[..])
                 .expect("getting energy status of device");
             debug!("energy stat: {}", &energy_stat);
             thread::sleep(time::Duration::from_millis(match energy_stat {
                 1 => 2000,
                 _ => {
                     match snmp_session
-                        .set_integer(&mut interface.energy_ctl.oid[..], interface.energy_ctl.wake)
+                        .set_integer(&mut state.printer_interface.energy_ctl.oid[..], state.printer_interface.energy_ctl.wake)
                     {
                         Ok(_) => 10000,
                         Err(_) => 12000,
@@ -134,7 +145,7 @@ pub fn work(
             let completed = loop {
                 thread::sleep(time::Duration::from_millis(20));
                 let current = snmp_session
-                    .get_counter_values(&mut interface.counter)
+                    .get_counter_values(&mut state.printer_interface.counter)
                     .expect("getting counter values");
 
                 // reset loop count if another page is printed
@@ -173,7 +184,7 @@ pub fn work(
 
             // clear jobqueue on every outcome in case printer wants to print more than expected
             snmp_session
-                .set_integer(&mut interface.queue_ctl.oid[..], interface.queue_ctl.clear)
+                .set_integer(&mut state.printer_interface.queue_ctl.oid[..], state.printer_interface.queue_ctl.clear)
                 .expect("clearing jobqueue");
 
             accounting.finish();

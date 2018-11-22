@@ -33,6 +33,9 @@ extern crate rocket;
 extern crate rocket_contrib;
 
 extern crate redis;
+extern crate r2d2_redis;
+
+extern crate threadpool;
 
 extern crate base64;
 extern crate bigdecimal;
@@ -53,14 +56,6 @@ pub mod journal;
 pub mod manager;
 pub mod printers;
 pub mod user;
-
 pub mod register;
 
-use diesel::prelude::*;
-use std::env;
-pub fn establish_connection() -> MysqlConnection
-{
-    let url = env::var("ASTAPRINT_DATABASE_URL").expect("reading ASTAPRINT_DATABASE_URL from environment");
-
-    MysqlConnection::establish(&url).expect("establishing MysqlConnection")
-}
+pub mod pool;

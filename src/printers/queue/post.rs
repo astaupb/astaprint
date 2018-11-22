@@ -47,7 +47,7 @@ pub struct QueuePostQuery
 pub fn print_job(
     user: UserGuard,
     device_id: u16,
-    queues: State<HashMap<u16, TaskQueue<HashMap<Vec<u8>, WorkerTask>, ()>>>,
+    queues: State<HashMap<u16, TaskQueue<WorkerTask, ()>>>,
     query: QueuePostQuery,
 ) -> QueryResult<Option<Accepted<String>>>
 {
@@ -71,18 +71,16 @@ pub fn print_job(
     };
 
     let uid = UID::from(random_bytes(20));
+    let uid_response = format!("{:x}", uid);
 
-    let mut task: HashMap<Vec<u8>, WorkerTask> = HashMap::new();
-    task.insert(
-        uid.get_bytes(),
-        WorkerTask {
-            job_id,
-            user_id: user.id,
-            options: job_options,
-        },
-    );
+    let task = WorkerTask {
+        job_id,
+        uid: uid.bytes,
+        user_id: user.id,
+        options: job_options,
+    };
 
     queue.send(&task).expect("sending job to worker queue");
 
-    Ok(Some(Accepted(Some(format!("{:x}", uid)))))
+    Ok(Some(Accepted(Some(uid_response))))
 }

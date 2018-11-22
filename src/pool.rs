@@ -1,4 +1,4 @@
-/// AStAPrin - Jobs - DispatcherTask
+/// AStAPrint
 /// Copyright (C) 2018  AStA der Universität Paderborn
 ///
 /// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
@@ -15,29 +15,35 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use jobs::info::JobInfo;
 
-use threadpool::ThreadPool;
+
+use r2d2_redis::{
+    r2d2::Pool as RedisPool,
+    RedisConnectionManager,
+};
 
 use diesel::{
     mysql::MysqlConnection,
     r2d2::{
-        Pool, ConnectionManager,
+        ConnectionManager,
+        Pool as MysqlPool,
     },
 };
 
-#[derive(Clone)]
-pub struct DispatcherState
+pub fn create_redis_pool(url: &str, max_size: u32) -> RedisPool<RedisConnectionManager>
 {
-    pub thread_pool: ThreadPool,
-    pub mysql_pool: Pool<ConnectionManager<MysqlConnection>>,
+    RedisPool::builder()
+        .max_size(max_size)
+        .build(RedisConnectionManager::new(url)
+               .expect("creating Connection Manager")
+        )
+        .expect("creating Redis Connection Pool")
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct DispatcherTask
+pub fn create_mysql_pool(url: &str, max_size: u32) -> MysqlPool<ConnectionManager<MysqlConnection>>
 {
-    pub user_id: u32,
-    pub uid: Vec<u8>,
-    pub info: JobInfo,
-    pub data: Vec<u8>,
+    MysqlPool::builder()
+        .max_size(max_size)
+        .build(ConnectionManager::<MysqlConnection>::new(url))
+        .expect("creating Mysql Connection Pool")
 }

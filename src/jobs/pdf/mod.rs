@@ -19,9 +19,10 @@ pub mod document;
 pub mod pageinfo;
 pub mod subprocesses;
 
-use std::env;
-
 use diesel::{
+    r2d2::{
+        Pool, ConnectionManager,
+    },
     insert_into,
     prelude::*,
 };
@@ -46,7 +47,7 @@ use jobs::{
     uid::UID,
 };
 
-pub fn dispatch(mut task: DispatcherTask)
+pub fn dispatch(mut task: DispatcherTask, pool: Pool<ConnectionManager<MysqlConnection>>)
 {
     let uid = UID::from(task.uid);
 
@@ -83,10 +84,8 @@ pub fn dispatch(mut task: DispatcherTask)
         pdf_document = PDFDocument::new(&task.data, "");
     }
 
-    // FIXME no connection pooling here
-    let url = env::var("ASTAPRINT_DATABASE_URL").expect("reading ASTAPRINT_DATABASE_URL from environment");
-
-    let connection = MysqlConnection::establish(&url).expect("establishing MysqlConnection");
+    let connection = pool.get()
+        .expect("getting mysql connection from pool");
 
     insert_into(jobs::table)
         .values((

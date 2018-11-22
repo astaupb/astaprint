@@ -18,10 +18,14 @@
 pub mod counter;
 pub mod session;
 
-use diesel::prelude::*;
+use diesel::{
+    r2d2::{
+        PooledConnection, ConnectionManager,
+    },
+    prelude::*,
+};
 
 use self::counter::CounterOids;
-use establish_connection;
 use printers::*;
 
 #[derive(Debug, Clone)]
@@ -37,7 +41,7 @@ pub struct PrinterInterface
 
 impl PrinterInterface
 {
-    pub fn from_device_id(device_id: u16) -> PrinterInterface
+    pub fn from_device_id(device_id: u16, connection: &PooledConnection<ConnectionManager<MysqlConnection>>) -> PrinterInterface
     {
         let (row, queue_ctl, energy_ctl, community, ip): (
             Counter,
@@ -45,7 +49,7 @@ impl PrinterInterface
             EnergyCtl,
             String,
             String,
-        ) = select_printer_interface_information(device_id);
+        ) = select_printer_interface_information(device_id, connection);
 
         PrinterInterface {
             ip,
@@ -113,7 +117,7 @@ fn vec_from_oid_str(oid: &str) -> Vec<u64>
 }
 
 pub fn select_printer_interface_information(
-    device_id: u16,
+    device_id: u16, connection: &PooledConnection<ConnectionManager<MysqlConnection>>,
 ) -> (Counter, QueueCtl, EnergyCtl, String, String)
 {
     let result: (Counter, QueueCtl, EnergyCtl, String, String) = printer_counter::table
@@ -131,7 +135,7 @@ pub fn select_printer_interface_information(
             printers::ip,
         ))
         .filter(printers::device_id.eq(device_id))
-        .first(&establish_connection())
+        .first(connection)
         .expect("fetching printer interface information");
 
     result

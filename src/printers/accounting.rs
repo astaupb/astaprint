@@ -20,6 +20,9 @@ use bigdecimal::{
     FromPrimitive,
 };
 use diesel::{
+    r2d2::{
+        Pool, ConnectionManager,
+    },
     insert_into,
     prelude::*,
 };
@@ -30,22 +33,21 @@ use journal::{
     *,
 };
 
-use crate::establish_connection;
 use printers::snmp::counter::CounterValues;
 
-pub struct Accounting
+pub struct Accounting<'a>
 {
     user_id: u32,
     pub lock: Lock,
     baseprice_cent: u32,
     credit: BigDecimal,
     value: BigDecimal,
-    connection: MysqlConnection,
+    pool: &'a Pool<ConnectionManager<MysqlConnection>>,
 }
 
-impl Accounting
+impl<'a> Accounting<'a>
 {
-    pub fn new(user_id: u32, color: bool) -> Accounting
+    pub fn new(user_id: u32, color: bool, pool: &Pool<ConnectionManager<MysqlConnection>>) -> Accounting
     {
         let lock = Lock::new(user_id);
 
@@ -59,10 +61,13 @@ impl Accounting
             2
         };
 
-        let connection = establish_connection();
         lock.grab();
 
-        let credit = get_credit(user_id, &connection).expect("getting credit from journal");
+        let connection = pool.get()
+            .expect("gettting connection from pool");
+
+        let credit = get_credit(user_id, &connection)
+            .expect("getting credit from journal");
 
         let value = BigDecimal::from_u32(0).unwrap();
 
@@ -72,7 +77,7 @@ impl Accounting
             baseprice_cent,
             credit,
             value,
-            connection,
+            pool,
         }
     }
 
@@ -99,6 +104,9 @@ impl Accounting
     pub fn finish(self)
     {
         if self.value < BigDecimal::from_u32(0).unwrap() {
+            let connection = self.pool.get()
+                .expect("getting mysql connection from pool");
+
             let credit = &self.credit + &self.value;
             insert_into(journal::table)
                 .values((
@@ -106,7 +114,7 @@ impl Accounting
                     journal::value.eq(&self.value),
                     journal::description.eq("Print Job"),
                 ))
-                .execute(&self.connection)
+                .execute(&connection)
                 .expect("inserting new journal entry");
 
             info!("inserted new credit for {}: {}", &self.user_id, &credit);

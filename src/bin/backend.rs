@@ -34,14 +34,6 @@ use std::{
     env,
 };
 
-use diesel::{
-    prelude::MysqlConnection,
-    r2d2::{
-        ConnectionManager,
-        Pool,
-    },
-};
-
 use rocket::http::Method;
 use rocket_cors::{
     AllowedHeaders,
@@ -49,14 +41,12 @@ use rocket_cors::{
 };
 
 use taskqueue::{
-    create_pool,
     TaskQueue,
 };
 
 use logger::Logger;
 
 use astaprint::{
-    establish_connection,
     jobs::{
         delete::*,
         get::*,
@@ -81,6 +71,9 @@ use astaprint::{
     },
     journal::get::*,
     register::*,
+    pool::{
+        create_redis_pool, create_mysql_pool, 
+    },
 };
 
 fn cors() -> rocket_cors::Cors
@@ -120,20 +113,19 @@ fn rocket() -> rocket::Rocket
 {
     let url = env::var("ASTAPRINT_DATABASE_URL").expect("reading ASTAPRINT_DATABASE_URL from environment");
 
-    let manager = ConnectionManager::<MysqlConnection>::new(url);
-
-    let mariadb_pool = Pool::new(manager).expect("initiliasing MySQL Pool");
+    let mysql_pool = create_mysql_pool(&url, 10);
 
     let url = env::var("ASTAPRINT_REDIS_URL").expect("reading ASTAPRINT_REDIS_URL from environment");
 
-    let redis_pool = create_pool(&url);
+    let redis_pool = create_redis_pool(&url, 10);
 
     let dispatcher_queue: TaskQueue<DispatcherTask, ()> =
         TaskQueue::new("dispatcher", (), redis_pool.clone());
 
-    let mut worker_queues: HashMap<u16, TaskQueue<HashMap<Vec<u8>, WorkerTask>, ()>> = HashMap::new();
+    let mut worker_queues: HashMap<u16, TaskQueue<WorkerTask, ()>> = HashMap::new();
 
-    let connection = establish_connection();
+    let connection = mysql_pool.get()
+        .expect("getting mysql connection from pool");
 
     for device_id in select_device_ids(&connection) {
         let pool = redis_pool.clone();
@@ -141,7 +133,7 @@ fn rocket() -> rocket::Rocket
     }
 
     rocket::ignite()
-        .manage(mariadb_pool)
+        .manage(mysql_pool)
         .manage(dispatcher_queue)
         .manage(worker_queues)
         .mount("/", routes![api_reference])
