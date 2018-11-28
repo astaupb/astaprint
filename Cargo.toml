@@ -23,6 +23,7 @@ rocket = "*"
 rocket_contrib = "*"
 rocket_codegen = "*"
 rocket_cors = "*"
+maxminddb = "*"
 base64 = "*"
 lpr = "0.1.4"
 cairo-rs = { version= "0.3.0", features = ["png"]}

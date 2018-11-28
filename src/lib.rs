@@ -31,6 +31,7 @@ extern crate diesel;
 
 extern crate rocket;
 extern crate rocket_contrib;
+extern crate maxminddb;
 
 extern crate redis;
 extern crate r2d2_redis;

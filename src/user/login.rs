@@ -46,6 +46,8 @@ use astacrypto::{
     PasswordHash,
 };
 
+use maxminddb::geoip2;
+
 
 pub struct LoginGuard
 {
@@ -60,7 +62,8 @@ impl<'a, 'r> FromRequest<'a, 'r> for LoginGuard
     {
         let header = request.headers();
 
-        let remote = request.remote().expect("reading remote address");
+        let remote = request.remote()
+            .expect("reading remote address");
 
         let user_agent: Vec<_> = header.get("user-agent").collect();
 
@@ -136,13 +139,28 @@ impl<'a, 'r> FromRequest<'a, 'r> for LoginGuard
             String::from(user_agent[0])
         };
 
+        // FIXME: read geoip database from memory
+        let mmdb_reader = maxminddb::Reader::open("GeoLite2-City_20181127/GeoLite2-City.mmdb")
+            .expect("opening maxminddb reader");
+
+        let city: geoip2::City = mmdb_reader.lookup(remote.ip())
+            .expect("looking up ip");
+
+        let names_map = city.city
+            .expect("getting city entry from city record")
+            .names
+            .expect("getting names from city entry");
+
+        let city = names_map.get("en")
+            .expect("getting english entry from names_map");
+
+
         match insert_into(user_token::table)
             .values((
                 user_token::user_id.eq(user_id),
                 user_token::user_agent.eq(user_agent),
-                user_token::ip.eq(format!("{}", remote)),
-                // TODO: read city from geoip database
-                user_token::location.eq("placeholder"),
+                user_token::ip.eq(format!("{}", remote.ip())),
+                user_token::location.eq(city),
                 user_token::hash.eq(hash),
             ))
             .execute(&connection)

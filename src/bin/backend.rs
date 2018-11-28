@@ -135,6 +135,7 @@ fn rocket() -> rocket::Rocket
         worker_queues.insert(device_id, TaskQueueClient::new(&format!("worker::{}", device_id), pool));
     }
 
+
     rocket::ignite()
         .manage(mysql_pool)
         .manage(dispatcher_queue)
