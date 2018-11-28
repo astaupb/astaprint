@@ -1,6 +1,7 @@
 use r2d2_redis::{
     r2d2::Pool,
     redis::{
+        Value,
         Commands,
         RedisResult,
     },
@@ -65,8 +66,7 @@ where
             if let Ok(decoded) = bincode::deserialize(&bincode[..]) {
                 handle(decoded, data);
                 if let Ok(redis) = redis_pool.get() {
-                    let _finished: Vec<u8> =
-                        redis.lrem(queue, 0, &bincode[..]).expect("removing task from queue");
+                    let _removed: Value = redis.lrem(queue, 0, bincode).expect("removing task from queue");
                 } else {
                     error!("getting connection from pool");
                 }
