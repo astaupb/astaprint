@@ -20,6 +20,8 @@ use std::collections::HashMap;
 
 use printers::queue::task::WorkerTask;
 
+use jobs::uid::UID;
+
 use rocket::{
     State,
 };
@@ -30,17 +32,31 @@ use user::guard::UserGuard;
 
 use redis::queue::TaskQueueClient;
 
+#[allow(non_camel_case_types)]
+#[derive(Serialize, Deserialize, Debug)]
+pub enum QueueElement
+{
+    own(WorkerTask),
+    foreign(String),
+}
+
 #[get("/<device_id>/queue")]
 pub fn get_queue(
-    _user: UserGuard,
+    user: UserGuard,
     device_id: u16,
     queues: State<HashMap<u16, TaskQueueClient<WorkerTask>>>,
-) -> Option<Json<Vec<WorkerTask>>>
+) -> Option<Json<Vec<QueueElement>>>
 {
     let queue = match queues.get(&device_id) {
         Some(queue) => queue,
         None => return None,
     };
 
-    Some(Json(queue.get()))
+    Some(Json(queue.get().iter().map(|element| {
+        if element.user_id == user.id {
+            QueueElement::own((*element).clone())
+        } else {
+            QueueElement::foreign(format!("{:x}", UID::from(element.uid.clone())))
+        }
+    }).collect()))
 }

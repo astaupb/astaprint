@@ -44,7 +44,7 @@ use printers::{
     },
 };
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct WorkerTask
 {
     pub job_id: u32,
