@@ -20,11 +20,11 @@ use std::mem::transmute;
 
 pub fn merge_x_api_key(user_id: u32, token: Vec<u8>) -> Result<Vec<u8>, ()>
 {
-    if token.len() != 104 {
+    if token.len() != 128 {
         warn!("invalid token length: {}", token.len()); 
         return Err(());
     }
-    let mut key = Vec::with_capacity(112);
+    let mut key = Vec::with_capacity(132);
     let user_id_buf: [u8; 4] = unsafe {
         transmute::<u32, [u8; 4]>(user_id)
     };
@@ -34,7 +34,7 @@ pub fn merge_x_api_key(user_id: u32, token: Vec<u8>) -> Result<Vec<u8>, ()>
 }
 
 pub fn split_x_api_key(mut key: Vec<u8>) -> Result<(u32, Vec<u8>), ()> {
-    if key.len() != 108 {
+    if key.len() != 132 {
         warn!("invalid key length: {}", key.len());
         return Err(()); 
     }

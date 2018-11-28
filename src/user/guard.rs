@@ -69,7 +69,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for UserGuard
             Err(_) => return Outcome::Failure((Status::BadRequest, ())),
         };
 
-        if buf.len() != 108 {
+        if buf.len() != 132 {
             return Outcome::Failure((Status::BadRequest, ()));
         }
         let (user_id, token) = match split_x_api_key(buf) {

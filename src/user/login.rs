@@ -115,7 +115,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for LoginGuard
         }
 
         // generate token
-        let token = random_bytes(104);
+        let token = random_bytes(128);
 
         // using the password hash as salt for performace reasons
         // and so every token gets invalidated on password change
