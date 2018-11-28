@@ -64,7 +64,14 @@ impl<'a, 'r> FromRequest<'a, 'r> for LoginGuard
 
         let user_agent: Vec<_> = header.get("user-agent").collect();
 
+        if user_agent.len() == 0 {
+            return Outcome::Failure((Status::BadRequest, ()));
+        }
         let header: Vec<_> = header.get("authorization").collect();
+
+        if header.len() == 0 {
+            return Outcome::Failure((Status::BadRequest, ()));
+        }
 
         let auth: Vec<&str> = header[0].split(' ').collect();
 
