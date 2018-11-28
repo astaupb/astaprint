@@ -15,6 +15,32 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-pub mod task;
-pub mod post;
-pub mod get;
+
+use std::collections::HashMap;
+
+use printers::queue::task::WorkerTask;
+
+use rocket::{
+    State,
+};
+
+use rocket_contrib::Json;
+
+use user::guard::UserGuard;
+
+use redis::queue::TaskQueueClient;
+
+#[get("/<device_id>/queue")]
+pub fn get_queue(
+    _user: UserGuard,
+    device_id: u16,
+    queues: State<HashMap<u16, TaskQueueClient<WorkerTask>>>,
+) -> Option<Json<Vec<WorkerTask>>>
+{
+    let queue = match queues.get(&device_id) {
+        Some(queue) => queue,
+        None => return None,
+    };
+
+    Some(Json(queue.get()))
+}

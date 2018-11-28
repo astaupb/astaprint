@@ -125,6 +125,19 @@ where
         }
     }
 
+    pub fn get(&self) -> Vec<T>
+    {
+        let redis = self.redis_pool.get()
+            .expect("getting connection from pool");
+
+        let list: Vec<Vec<u8>> = redis.lrange(&self.processing, 0, -1)
+            .expect("getting processing list");
+
+        list.iter().map(|binary| {
+            bincode::deserialize(&binary[..])
+                .expect("deserialing list element from bincode")
+        }).collect()
+    }
 
     pub fn send(&self, value: &T) -> RedisResult<()>
     {

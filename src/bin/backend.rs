@@ -61,6 +61,7 @@ use astaprint::{
     printers::{
         queue::{
             post::*,
+            get::*,
             task::WorkerTask,
         },
         select_device_ids,
@@ -170,7 +171,7 @@ fn rocket() -> rocket::Rocket
             "/user/tokens",
             routes![get_all_tokens, delete_all_tokens, get_single_token, delete_single_token],
         )
-        .mount("/printers", routes![print_job])
+        .mount("/printers", routes![print_job, get_queue])
         .mount("/journal", routes![journal, credit])
         .mount("/register", routes![register])
         .attach(cors())

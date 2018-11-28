@@ -28,7 +28,6 @@ extern crate redis;
 
 use std::{
     env,
-    sync::mpsc,
     thread,
 };
 
@@ -55,7 +54,6 @@ use redis::queue::{
 use astaprint::printers::{
     queue::task::{
         work,
-        WorkerCommand,
         WorkerTask,
         WorkerState,
     },
@@ -85,14 +83,7 @@ fn spawn_worker(device_id: u16, redis_pool: RedisPool<RedisConnectionManager>, m
         info!("{} listening", device_id);
         taskqueue
             .listen(|task, state| {
-                let (sender, receiver): (
-                    mpsc::Sender<WorkerCommand>,
-                    mpsc::Receiver<WorkerCommand>,
-                ) = mpsc::channel();
-
-                work(receiver, task, state.clone());
-
-                sender.send(WorkerCommand::Print).expect("sending Print Command");
+                work(task, state.clone());
             });
     })
 }
