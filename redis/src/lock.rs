@@ -59,7 +59,7 @@ impl Lock
     {
         let result: RedisResult<Vec<u8>> = redis::cmd("GET").arg(self.user_id).query(&self.connection);
         debug!("{:?}", result);
-        result.is_ok()
+        result.is_ok() && result.unwrap().len() > 0
     }
 
     pub fn grab(&self)
