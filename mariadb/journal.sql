@@ -37,24 +37,20 @@ CREATE TRIGGER `journal_insert`
 AFTER INSERT ON `journal`
 FOR EACH ROW BEGIN
 
-SET @current_id := (SELECT `auto_increment`
-						FROM INFORMATION_SCHEMA.TABLES
-						WHERE table_name = "journal_digest") - 1;
-
 SET @digest := UNHEX((SELECT
 					SHA2(CONCAT(
 						jd.digest, j.id, j.user_id, j.value, j.description, j.created), 512)
 				FROM journal j
 				INNER JOIN journal_digest jd
 				ON j.id = jd.id
-				WHERE j.id = @current_id));
+				WHERE j.id = NEW.id));
 
 SET @credit := IFNULL(
                   (SELECT credit FROM journal_digest WHERE id =
                     (SELECT id from journal WHERE user_id = NEW.user_id ORDER BY id DESC LIMIT 1 OFFSET 1) + 1
                   ),
                 0.0)
-             + (SELECT value FROM journal WHERE id = @current_id);
+             + (SELECT value FROM journal WHERE id = NEW.id);
 
 INSERT INTO journal_digest(digest, credit) VALUES (@digest, @credit);
 

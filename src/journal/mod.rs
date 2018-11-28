@@ -66,7 +66,7 @@ pub struct JournalDigest
 mod tests
 {
     use diesel::prelude::*;
-    use establish_connection;
+    use pool::create_mysql_pool;
     use journal::*;
     extern crate sha2;
     use chrono::FixedOffset;
@@ -74,10 +74,12 @@ mod tests
         Digest,
         Sha512,
     };
+    use std::env;
     #[test]
     fn verify()
     {
-        let connection = establish_connection();
+        let url = env::var("ASTAPRINT_DATABASE_URL").unwrap();
+        let connection = create_mysql_pool(&url, 1).get().unwrap();
         let journal: Vec<Journal> =
             journal::table.select(journal::all_columns).load(&connection).expect("selecting journal");
         println!("{:?}", journal);
@@ -106,8 +108,8 @@ mod tests
             hasher.input(&input[..]);
             let result = hasher.result();
 
-            println!("{:x?} == {:x?}", result.as_slice(), &digests[i].digest[..]);
-            assert_eq!(result.as_slice(), &digests[i].digest[..]);
+            println!("{:x?} == {:x?}", result.as_slice(), &digests[i+1].digest[..]);
+            assert_eq!(result.as_slice(), &digests[i+1].digest[..]);
         }
     }
 }
