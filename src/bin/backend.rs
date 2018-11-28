@@ -55,7 +55,10 @@ use astaprint::{
             get::*,
             put::*,
         },
-        post::*,
+        queue::{
+            post::*,
+            get::*,
+        },
         task::DispatcherTask,
     },
     printers::{
@@ -153,6 +156,7 @@ fn rocket() -> rocket::Rocket
                 fetch_info,
                 //fetch_single_info,
                 // -> do we really need this?
+                get_dispatcher_queue,
                 upload_job,
                 delete_job,
                 fetch_job,

@@ -35,10 +35,10 @@ pub mod pdf;
 pub mod task;
 pub mod tmp;
 pub mod uid;
+pub mod queue;
 
 pub mod get;
 pub mod delete;
-pub mod post;
 pub mod response;
 
 table! {
