@@ -1,0 +1,13 @@
+[package]
+name = "redis"
+version = "0.1.0"
+authors = ["Gerrit Pape <papeg@mail.upb.de>"]
+edition = "2018"
+
+[dependencies]
+log = "*"
+r2d2_redis = "*"
+bincode = "*"
+serde = "*"
+threadpool = "*"
+astacrypto = {path = "../crypto"}

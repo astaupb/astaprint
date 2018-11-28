@@ -33,7 +33,7 @@ use rocket::{
 };
 use user::guard::UserGuard;
 
-use taskqueue::TaskQueue;
+use redis::queue::TaskQueueClient;
 
 use astacrypto::random_bytes;
 
@@ -47,7 +47,7 @@ pub struct QueuePostQuery
 pub fn print_job(
     user: UserGuard,
     device_id: u16,
-    queues: State<HashMap<u16, TaskQueue<WorkerTask, ()>>>,
+    queues: State<HashMap<u16, TaskQueueClient<WorkerTask>>>,
     query: QueuePostQuery,
 ) -> QueryResult<Option<Accepted<String>>>
 {

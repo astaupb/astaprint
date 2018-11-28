@@ -27,7 +27,7 @@ extern crate logger;
 extern crate diesel;
 
 extern crate astaprint;
-extern crate taskqueue;
+extern crate redis;
 
 use std::{
     collections::HashMap,
@@ -40,8 +40,8 @@ use rocket_cors::{
     AllowedOrigins,
 };
 
-use taskqueue::{
-    TaskQueue,
+use redis::queue::{
+    TaskQueueClient,
 };
 
 use logger::Logger;
@@ -122,17 +122,17 @@ fn rocket() -> rocket::Rocket
 
     let redis_pool = create_redis_pool(&url, 10);
 
-    let dispatcher_queue: TaskQueue<DispatcherTask, ()> =
-        TaskQueue::new("dispatcher", (), redis_pool.clone());
+    let dispatcher_queue: TaskQueueClient<DispatcherTask> =
+        TaskQueueClient::new("dispatcher", redis_pool.clone());
 
-    let mut worker_queues: HashMap<u16, TaskQueue<WorkerTask, ()>> = HashMap::new();
+    let mut worker_queues: HashMap<u16, TaskQueueClient<WorkerTask>> = HashMap::new();
 
     let connection = mysql_pool.get()
         .expect("getting mysql connection from pool");
 
     for device_id in select_device_ids(&connection) {
         let pool = redis_pool.clone();
-        worker_queues.insert(device_id, TaskQueue::new(&format!("worker::{}", device_id), (), pool));
+        worker_queues.insert(device_id, TaskQueueClient::new(&format!("worker::{}", device_id), pool));
     }
 
     rocket::ignite()

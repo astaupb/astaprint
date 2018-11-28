@@ -48,7 +48,6 @@ extern crate poppler;
 extern crate lpr;
 
 extern crate astacrypto;
-extern crate taskqueue;
 
 // routes
 pub mod jobs;

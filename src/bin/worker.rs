@@ -19,11 +19,12 @@
 extern crate log;
 
 extern crate diesel;
+extern crate threadpool;
 
 extern crate astaprint;
 extern crate logger;
 extern crate r2d2_redis;
-extern crate taskqueue;
+extern crate redis;
 
 use std::{
     env,
@@ -39,13 +40,15 @@ use diesel::{
     },
 };
 
+use threadpool::ThreadPool;
+
 use r2d2_redis::{
     r2d2::Pool as RedisPool,
     RedisConnectionManager,
 };
 
 use logger::Logger;
-use taskqueue::{
+use redis::queue::{
     TaskQueue,
 };
 
@@ -74,8 +77,9 @@ fn spawn_worker(device_id: u16, redis_pool: RedisPool<RedisConnectionManager>, m
 
     let printer_interface = PrinterInterface::from_device_id(device_id, &connection);
     let name = format!("worker::{}", device_id);
+    let thread_pool = ThreadPool::new(8);
     let taskqueue: TaskQueue<WorkerTask, WorkerState> =
-        TaskQueue::new(&name, WorkerState {printer_interface, mysql_pool}, redis_pool);
+        TaskQueue::new(&name, WorkerState {printer_interface, mysql_pool}, redis_pool, thread_pool);
 
     thread::spawn(move || {
         info!("{} listening", device_id);
@@ -89,8 +93,7 @@ fn spawn_worker(device_id: u16, redis_pool: RedisPool<RedisConnectionManager>, m
                 work(receiver, task, state.clone());
 
                 sender.send(WorkerCommand::Print).expect("sending Print Command");
-            })
-            .expect("processing Worker Tasks");
+            });
     })
 }
 fn main()

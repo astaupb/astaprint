@@ -5,7 +5,7 @@ authors = ["Gerrit Pape <gerrit.pape@asta.upb.de>"]
 
 [dependencies]
 astacrypto = {path = "./crypto"}
-taskqueue = {path = "./taskqueue"}
+redis = {path = "./redis"}
 logger = {path = "./logger"}
 log = {version = "*", features = ["std", "max_level_debug", "release_max_level_info"]}
 chrono = "*"
@@ -15,12 +15,10 @@ serde_derive = "*"
 bincode = "*"
 netsnmp-sys = "*"
 diesel = {version = "*", features = ["mysql", "r2d2", "chrono", "bigdecimal", "numeric"]}
-r2d2 = "*"
 r2d2_redis = "*"
 threadpool = "*"
 bigdecimal = "0.0.11"
 sha2 = "*"
-redis = "*"
 rocket = "*"
 rocket_contrib = "*"
 rocket_codegen = "*"

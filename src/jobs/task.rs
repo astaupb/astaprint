@@ -17,8 +17,6 @@
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use jobs::info::JobInfo;
 
-use threadpool::ThreadPool;
-
 use diesel::{
     mysql::MysqlConnection,
     r2d2::{
@@ -29,7 +27,6 @@ use diesel::{
 #[derive(Clone)]
 pub struct DispatcherState
 {
-    pub thread_pool: ThreadPool,
     pub mysql_pool: Pool<ConnectionManager<MysqlConnection>>,
 }
 

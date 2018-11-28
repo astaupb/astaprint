@@ -29,9 +29,10 @@ use diesel::{
 
 use journal::{
     credit::get_credit,
-    lock::Lock,
     *,
 };
+
+use redis::lock::Lock;
 
 use printers::snmp::counter::CounterValues;
 

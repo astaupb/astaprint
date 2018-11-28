@@ -19,7 +19,6 @@ use bigdecimal::BigDecimal;
 use chrono::NaiveDateTime;
 
 pub mod credit;
-pub mod lock;
 pub mod response;
 pub mod get;
 

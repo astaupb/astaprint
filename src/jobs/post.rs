@@ -37,7 +37,7 @@ use jobs::{
 
 use user::guard::UserGuard;
 
-use taskqueue::TaskQueue;
+use redis::queue::TaskQueueClient;
 
 
 #[derive(FromForm, Debug)]
@@ -53,7 +53,7 @@ fn upload_job<'a>(
     user: UserGuard,
     data: Vec<u8>,
     options: UploadForm,
-    taskqueue: State<TaskQueue<DispatcherTask, ()>>,
+    taskqueue: State<TaskQueueClient<DispatcherTask>>,
 ) -> Result<Result<Accepted<String>, BadRequest<&'a str>>, io::Error>
 {
     if data.len() < 64 {

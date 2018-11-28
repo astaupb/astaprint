@@ -15,7 +15,8 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use redis::{
+use r2d2_redis::redis::{
+    self,
     Client,
     Connection,
     RedisResult,
