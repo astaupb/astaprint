@@ -27,6 +27,8 @@ use rocket::{
     State,
 };
 
+use rocket_contrib::Json;
+
 use astacrypto::random_bytes;
 
 use jobs::{
@@ -44,7 +46,6 @@ use redis::queue::TaskQueueClient;
 pub struct UploadForm
 {
     pub filename: Option<String>,
-    pub password: Option<String>,
     pub color: Option<bool>,
 }
 
@@ -54,7 +55,7 @@ fn upload_job<'a>(
     data: Vec<u8>,
     options: UploadForm,
     taskqueue: State<TaskQueueClient<DispatcherTask>>,
-) -> Result<Result<Accepted<String>, BadRequest<&'a str>>, io::Error>
+) -> Result<Result<Accepted<Json<String>>, BadRequest<&'a str>>, io::Error>
 {
     if data.len() < 64 {
         return Ok(Err(BadRequest(Some("body too small"))));
@@ -68,7 +69,7 @@ fn upload_job<'a>(
 
     let info = JobInfo::new(
         &options.filename.unwrap_or_else(|| String::from("")),
-        &options.password.unwrap_or_else(|| String::from("")),
+        "",
         options.color.unwrap_or(true),
     );
 
@@ -85,5 +86,5 @@ fn upload_job<'a>(
 
     info!("{} uploaded job with uid {}", user.id, uid_response);
 
-    Ok(Ok(Accepted(Some(uid_response))))
+    Ok(Ok(Accepted(Some(Json(uid_response)))))
 }
