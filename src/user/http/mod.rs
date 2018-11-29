@@ -125,7 +125,7 @@ fn change_password(
     }
 }
 
-#[get("/username")]
+#[get("/name")]
 fn fetch_username(user: UserGuard) -> Result<Json<String>, diesel::result::Error>
 {
     let username: String =
@@ -136,7 +136,7 @@ fn fetch_username(user: UserGuard) -> Result<Json<String>, diesel::result::Error
     Ok(Json(username))
 }
 
-#[put("/username", data = "<new_username>")]
+#[put("/name", data = "<new_username>")]
 fn change_username(user: UserGuard, new_username: Json<String>) -> Result<Reset, diesel::result::Error>
 {
     update(user::table.filter(user::id.eq(user.id)))
@@ -154,7 +154,7 @@ pub fn credit_redirect() -> Redirect
     Redirect::to("/astaprint/journal/credit")
 }
 
-#[post("/login")]
+#[post("/tokens")]
 pub fn login(login: LoginGuard) -> String
 {
     login.token
