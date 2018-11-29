@@ -18,6 +18,7 @@
 
 use jobs::task::DispatcherTask;
 
+use jobs::uid::UID;
 use rocket::{
     State,
 };
@@ -27,16 +28,36 @@ use rocket_contrib::Json;
 use user::guard::UserGuard;
 
 use redis::queue::TaskQueueClient;
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct DispatcherTaskResponse
+{
+    pub uid: String,
+    pub filename: String,
+    pub color: bool,
+}
+impl<'a> From<&'a DispatcherTask> for DispatcherTaskResponse
+{
+    fn from(task: &'a DispatcherTask) -> DispatcherTaskResponse
+    {
+        DispatcherTaskResponse {
+            uid: format!("{:x}", UID::from(task.uid.clone())),
+            filename: task.info.filename.clone(),
+            color: task.info.color,
+        }
+    }
+}
 
 #[get("/queue")]
 pub fn get_dispatcher_queue(
     user: UserGuard,
     queue: State<TaskQueueClient<DispatcherTask>>,
-) -> Option<Json<Vec<DispatcherTask>>>
+) -> Option<Json<Vec<DispatcherTaskResponse>>>
 {
     Some(Json(queue.get().iter().filter(|element| {
         element.user_id == user.id
     }).map(|element|{
         (*element).clone()
+    }).map(|task| {
+        DispatcherTaskResponse::from(&task)
     }).collect()))
 }
