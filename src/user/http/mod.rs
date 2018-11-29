@@ -26,9 +26,7 @@ use rocket::response::{
 };
 use rocket_contrib::Json;
 
-use bigdecimal::{
-    ToPrimitive,
-};
+use bigdecimal::ToPrimitive;
 
 use diesel::{
     self,

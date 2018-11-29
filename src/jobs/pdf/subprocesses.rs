@@ -15,7 +15,6 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 use jobs::{
     pdf::pageinfo::{
         Is::Almost,
@@ -27,8 +26,8 @@ use jobs::{
 };
 
 use std::{
-    io,
     fs::rename,
+    io,
     process::{
         Command,
         Stdio,
@@ -57,8 +56,7 @@ pub fn pdfjam(data: Vec<u8>, info: &PageInfo) -> io::Result<Vec<u8>>
 {
     let path = TemporaryFile::create(data)?;
 
-    let mut arguments =
-        ["--a4paper", "--no-landscape", "--checkfiles", "--outfile", &path, &path];
+    let mut arguments = ["--a4paper", "--no-landscape", "--checkfiles", "--outfile", &path, &path];
 
     if info.size == Almost(PageSize::A3) {
         arguments[0] = "--a3paper";
@@ -68,11 +66,7 @@ pub fn pdfjam(data: Vec<u8>, info: &PageInfo) -> io::Result<Vec<u8>>
         arguments[1] = "--landscape";
     }
 
-    Command::new("pdfjam")
-        .args(&arguments)
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .status()?;
+    Command::new("pdfjam").args(&arguments).stdout(Stdio::piped()).stderr(Stdio::piped()).status()?;
 
     Ok(TemporaryFile::remove(&path)?)
 }
@@ -96,11 +90,8 @@ pub fn create_greyscale_pdf(data: Vec<u8>) -> io::Result<Vec<u8>>
         &path,
     ];
 
-    let gs_pdf = Command::new("gs")
-        .args(&arguments)
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .output()?;
+    let gs_pdf =
+        Command::new("gs").args(&arguments).stdout(Stdio::piped()).stderr(Stdio::piped()).output()?;
 
     for line in String::from_utf8_lossy(&gs_pdf.stdout).lines() {
         if line.contains("Substituting") || line.contains("Loading") {

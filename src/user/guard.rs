@@ -41,8 +41,8 @@ use diesel::{
 use astacrypto::GenericHash;
 
 use crate::user::{
-    *,
     key::split_x_api_key,
+    *,
 };
 
 pub struct UserGuard

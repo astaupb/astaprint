@@ -34,8 +34,8 @@ use std::{
 use diesel::{
     mysql::MysqlConnection,
     r2d2::{
-        Pool as MysqlPool,
         ConnectionManager,
+        Pool as MysqlPool,
     },
 };
 
@@ -47,44 +47,50 @@ use r2d2_redis::{
 };
 
 use logger::Logger;
-use redis::queue::{
-    TaskQueue,
-};
+use redis::queue::TaskQueue;
 
 use astaprint::printers::{
     queue::task::{
         work,
-        WorkerTask,
         WorkerState,
+        WorkerTask,
     },
     select_device_ids,
     snmp::PrinterInterface,
 };
 
-use astaprint::{
-    pool::{
-        create_redis_pool, create_mysql_pool,
-    },
+use astaprint::pool::{
+    create_mysql_pool,
+    create_redis_pool,
 };
 
 
-fn spawn_worker(device_id: u16, redis_pool: RedisPool<RedisConnectionManager>, mysql_pool: MysqlPool<ConnectionManager<MysqlConnection>>) -> thread::JoinHandle<()>
+fn spawn_worker(
+    device_id: u16,
+    redis_pool: RedisPool<RedisConnectionManager>,
+    mysql_pool: MysqlPool<ConnectionManager<MysqlConnection>>,
+) -> thread::JoinHandle<()>
 {
-    let connection = mysql_pool.get()
-        .expect("getting connection from pool");
+    let connection = mysql_pool.get().expect("getting connection from pool");
 
     let printer_interface = PrinterInterface::from_device_id(device_id, &connection);
     let name = format!("worker::{}", device_id);
     let thread_pool = ThreadPool::new(8);
-    let taskqueue: TaskQueue<WorkerTask, WorkerState> =
-        TaskQueue::new(&name, WorkerState {printer_interface, mysql_pool}, redis_pool, thread_pool);
+    let taskqueue: TaskQueue<WorkerTask, WorkerState> = TaskQueue::new(
+        &name,
+        WorkerState {
+            printer_interface,
+            mysql_pool,
+        },
+        redis_pool,
+        thread_pool,
+    );
 
     thread::spawn(move || {
         info!("{} listening", device_id);
-        taskqueue
-            .listen(|task, state| {
-                work(task, state.clone());
-            });
+        taskqueue.listen(|task, state| {
+            work(task, state.clone());
+        });
     })
 }
 fn main()
@@ -99,8 +105,7 @@ fn main()
 
     let mysql_pool = create_mysql_pool(&mysql_url, 10);
 
-    let connection = mysql_pool.get()
-        .expect("getting mysql connection from pool");
+    let connection = mysql_pool.get().expect("getting mysql connection from pool");
 
     for id in select_device_ids(&connection) {
         let redis_pool = create_redis_pool(&redis_url, 3);

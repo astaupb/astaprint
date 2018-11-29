@@ -19,11 +19,12 @@ use chrono::NaiveDateTime;
 
 use crate::journal::*;
 
+pub mod add;
 pub mod guard;
 pub mod http;
+pub mod key;
 pub mod login;
 pub mod response;
-pub mod key;
 
 allow_tables_to_appear_in_same_query!(user, user_token, journal, journal_digest,);
 
@@ -52,7 +53,8 @@ pub struct User
     pub locked: bool,
     pub hash: Vec<u8>,
     pub salt: Vec<u8>,
-    pub pin: Option<String>,
+    pub card: Vec<u8>,
+    pub pin: u32,
     pub created: NaiveDateTime,
     pub updated: NaiveDateTime,
 }

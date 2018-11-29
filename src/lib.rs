@@ -29,12 +29,12 @@ extern crate bincode;
 #[macro_use]
 extern crate diesel;
 
+extern crate maxminddb;
 extern crate rocket;
 extern crate rocket_contrib;
-extern crate maxminddb;
 
-extern crate redis;
 extern crate r2d2_redis;
+extern crate redis;
 
 extern crate threadpool;
 
@@ -55,7 +55,7 @@ pub mod jobs;
 pub mod journal;
 pub mod manager;
 pub mod printers;
-pub mod user;
 pub mod register;
+pub mod user;
 
 pub mod pool;

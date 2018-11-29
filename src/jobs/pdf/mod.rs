@@ -20,11 +20,12 @@ pub mod pageinfo;
 pub mod subprocesses;
 
 use diesel::{
-    r2d2::{
-        Pool, ConnectionManager,
-    },
     insert_into,
     prelude::*,
+    r2d2::{
+        ConnectionManager,
+        Pool,
+    },
 };
 
 use jobs::*;
@@ -59,8 +60,7 @@ pub fn dispatch(mut task: DispatcherTask, pool: Pool<ConnectionManager<MysqlConn
     }
 
     if task.info.password != "" {
-        task.data = decrypt_pdf(task.data, &task.info.password)
-            .expect("decrypting pdf");;
+        task.data = decrypt_pdf(task.data, &task.info.password).expect("decrypting pdf");;
         pdf_document = PDFDocument::new(&task.data[..], "");
     }
 
@@ -71,21 +71,18 @@ pub fn dispatch(mut task: DispatcherTask, pool: Pool<ConnectionManager<MysqlConn
     if page_info.size != Valid(PageSize::A3) && page_info.size != Valid(PageSize::A4) {
         info!("invalid pageformat, using pdfjam to fix it");
 
-        task.data = pdfjam(task.data, &page_info)
-            .expect("jamming pdf to valid format");
+        task.data = pdfjam(task.data, &page_info).expect("jamming pdf to valid format");
 
         pdf_document = PDFDocument::new(&task.data, "");
     }
 
     if !task.info.color {
-        task.data = create_greyscale_pdf(task.data)
-            .expect("creating greyscale pdf with gs");
+        task.data = create_greyscale_pdf(task.data).expect("creating greyscale pdf with gs");
 
         pdf_document = PDFDocument::new(&task.data, "");
     }
 
-    let connection = pool.get()
-        .expect("getting mysql connection from pool");
+    let connection = pool.get().expect("getting mysql connection from pool");
 
     insert_into(jobs::table)
         .values((

@@ -19,10 +19,11 @@ pub mod counter;
 pub mod session;
 
 use diesel::{
-    r2d2::{
-        PooledConnection, ConnectionManager,
-    },
     prelude::*,
+    r2d2::{
+        ConnectionManager,
+        PooledConnection,
+    },
 };
 
 use self::counter::CounterOids;
@@ -41,7 +42,10 @@ pub struct PrinterInterface
 
 impl PrinterInterface
 {
-    pub fn from_device_id(device_id: u16, connection: &PooledConnection<ConnectionManager<MysqlConnection>>) -> PrinterInterface
+    pub fn from_device_id(
+        device_id: u16,
+        connection: &PooledConnection<ConnectionManager<MysqlConnection>>,
+    ) -> PrinterInterface
     {
         let (row, queue_ctl, energy_ctl, community, ip): (
             Counter,
@@ -117,7 +121,8 @@ fn vec_from_oid_str(oid: &str) -> Vec<u64>
 }
 
 pub fn select_printer_interface_information(
-    device_id: u16, connection: &PooledConnection<ConnectionManager<MysqlConnection>>,
+    device_id: u16,
+    connection: &PooledConnection<ConnectionManager<MysqlConnection>>,
 ) -> (Counter, QueueCtl, EnergyCtl, String, String)
 {
     let result: (Counter, QueueCtl, EnergyCtl, String, String) = printer_counter::table

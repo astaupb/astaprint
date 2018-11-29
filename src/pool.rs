@@ -15,8 +15,6 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-
 use r2d2_redis::{
     r2d2::Pool as RedisPool,
     RedisConnectionManager,
@@ -34,9 +32,7 @@ pub fn create_redis_pool(url: &str, max_size: u32) -> RedisPool<RedisConnectionM
 {
     RedisPool::builder()
         .max_size(max_size)
-        .build(RedisConnectionManager::new(url)
-               .expect("creating Connection Manager")
-        )
+        .build(RedisConnectionManager::new(url).expect("creating Connection Manager"))
         .expect("creating Redis Connection Pool")
 }
 

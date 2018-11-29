@@ -21,11 +21,12 @@ use std::{
 };
 
 use diesel::{
-    r2d2::{
-        Pool, ConnectionManager,
-    },
     delete,
     prelude::*,
+    r2d2::{
+        ConnectionManager,
+        Pool,
+    },
 };
 
 use lpr::LprConnection;
@@ -67,16 +68,12 @@ pub enum WorkerCommand
     Cancel,
 }
 
-pub fn work(
-    task: WorkerTask,
-    mut state: WorkerState,
-)
+pub fn work(task: WorkerTask, mut state: WorkerState)
 {
     let uid = UID::from(task.uid.clone());
     info!("{:x} print thread spawned for {}", uid, task.user_id);
 
-    let connection = state.mysql_pool.get()
-        .expect("getting connection from mysql pool");
+    let connection = state.mysql_pool.get().expect("getting connection from mysql pool");
 
     let mut job: Job = jobs::table
         .select(jobs::all_columns)
@@ -119,9 +116,10 @@ pub fn work(
     thread::sleep(time::Duration::from_millis(match energy_stat {
         1 => 2000,
         _ => {
-            match snmp_session
-                .set_integer(&mut state.printer_interface.energy_ctl.oid[..], state.printer_interface.energy_ctl.wake)
-            {
+            match snmp_session.set_integer(
+                &mut state.printer_interface.energy_ctl.oid[..],
+                state.printer_interface.energy_ctl.wake,
+            ) {
                 Ok(_) => 10000,
                 Err(_) => 12000,
             }
@@ -162,12 +160,14 @@ pub fn work(
             warn!("{:x} {} timeout", uid, task.user_id);
             break false;
         }
-
     };
 
     // clear jobqueue on every outcome in case printer wants to print more than expected
     snmp_session
-        .set_integer(&mut state.printer_interface.queue_ctl.oid[..], state.printer_interface.queue_ctl.clear)
+        .set_integer(
+            &mut state.printer_interface.queue_ctl.oid[..],
+            state.printer_interface.queue_ctl.clear,
+        )
         .expect("clearing jobqueue");
 
     accounting.finish();

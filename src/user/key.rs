@@ -15,37 +15,33 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 use std::mem::transmute;
 
 pub fn merge_x_api_key(user_id: u32, token: Vec<u8>) -> Result<Vec<u8>, ()>
 {
     if token.len() != 128 {
-        warn!("invalid token length: {}", token.len()); 
+        warn!("invalid token length: {}", token.len());
         return Err(());
     }
     let mut key = Vec::with_capacity(132);
-    let user_id_buf: [u8; 4] = unsafe {
-        transmute::<u32, [u8; 4]>(user_id)
-    };
+    let user_id_buf: [u8; 4] = unsafe { transmute::<u32, [u8; 4]>(user_id) };
     key.extend_from_slice(&user_id_buf[..]);
     key.extend(token);
     Ok(key)
 }
 
-pub fn split_x_api_key(mut key: Vec<u8>) -> Result<(u32, Vec<u8>), ()> {
+pub fn split_x_api_key(mut key: Vec<u8>) -> Result<(u32, Vec<u8>), ()>
+{
     if key.len() != 132 {
         warn!("invalid key length: {}", key.len());
-        return Err(()); 
+        return Err(());
     }
-    let token = key.split_off(4); 
+    let token = key.split_off(4);
 
     let mut user_id: [u8; 4] = [0; 4];
     user_id.copy_from_slice(&key[..4]);
 
-    let user_id = unsafe {
-        transmute::<[u8; 4], u32>(user_id)
-    };
+    let user_id = unsafe { transmute::<[u8; 4], u32>(user_id) };
 
     Ok((user_id, token))
 }
@@ -60,6 +56,4 @@ fn transmuting()
     let (user_id_splitted, token_splitted) = split_x_api_key(merged).unwrap();
     assert_eq!(user_id, user_id_splitted);
     assert_eq!(token, token_splitted);
-
 }
-

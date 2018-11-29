@@ -19,12 +19,10 @@
 extern crate log;
 extern crate astaprint;
 extern crate logger;
-extern crate threadpool;
 extern crate redis;
+extern crate threadpool;
 
-use std::{
-    env,
-};
+use std::env;
 
 use logger::Logger;
 
@@ -36,11 +34,13 @@ use astaprint::{
     jobs::{
         pdf::dispatch,
         task::{
-            DispatcherTask, DispatcherState,
+            DispatcherState,
+            DispatcherTask,
         },
     },
     pool::{
-        create_redis_pool, create_mysql_pool,
+        create_mysql_pool,
+        create_redis_pool,
     },
 };
 
@@ -59,14 +59,14 @@ fn main()
     let state = DispatcherState {
         mysql_pool,
     };
-    let taskqueue: TaskQueue<DispatcherTask, DispatcherState> = TaskQueue::new("dispatcher", state, redis_pool, thread_pool);
+    let taskqueue: TaskQueue<DispatcherTask, DispatcherState> =
+        TaskQueue::new("dispatcher", state, redis_pool, thread_pool);
 
     Logger::init("dispatcher").expect("initialising logger");
 
     info!("listening");
 
-    taskqueue
-        .listen(|task, state| {
-            dispatch(task, state.mysql_pool);
-        });
+    taskqueue.listen(|task, state| {
+        dispatch(task, state.mysql_pool);
+    });
 }

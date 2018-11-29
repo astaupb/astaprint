@@ -16,27 +16,18 @@
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 extern crate bigdecimal;
-use bigdecimal::{
-    BigDecimal,
-    FromPrimitive,
-};
-
-extern crate diesel;
-use diesel::{
-    insert_into,
-    prelude::*,
-};
-
-extern crate astacrypto;
-use astacrypto::PasswordHash;
+use bigdecimal::BigDecimal;
 
 extern crate astaprint;
 use astaprint::{
-    journal::*,
-    user::*,
+    pool::create_mysql_pool,
+    user::add::add_user,
 };
 
-use std::env;
+use std::{
+    env,
+    str::FromStr,
+};
 
 fn main()
 {
@@ -45,37 +36,15 @@ fn main()
         panic!("expecting username password");
     }
     let url = env::var("ASTAPRINT_DATABASE_URL").expect("reading ASTAPRINT_DATABASE_URL from environment");
+    let connection = create_mysql_pool(&url, 1).get().unwrap();
 
-    let connection = MysqlConnection::establish(&url).expect("establishing MysqlConnection");
-
-    let user_id: Option<u32> = user::table
-        .select(user::id)
-        .filter(user::name.eq(arg[1].clone()))
-        .first(&connection)
-        .optional()
-        .expect("getting username");
-
-    if user_id.is_some() {
-        panic!("username already taken");
-    }
-    let (hash, salt) = PasswordHash::create(&arg[2]);
-    insert_into(user::table)
-        .values((user::name.eq(arg[1].clone()), user::hash.eq(hash), user::salt.eq(salt)))
-        .execute(&connection)
-        .expect("adding user");
-
-    let user_id: u32 = user::table
-        .select(user::id)
-        .filter(user::name.eq(arg[1].clone()))
-        .first(&connection)
-        .expect("getting user id");
-
-    insert_into(journal::table)
-        .values((
-            journal::user_id.eq(user_id),
-            journal::value.eq(BigDecimal::from_u32(0).unwrap()),
-            journal::description.eq("from example".to_string()),
-        ))
-        .execute(&connection)
-        .expect("inserting into journal");
+    add_user(
+        &arg[1],
+        &arg[2],
+        false,
+        BigDecimal::from_str("0.00").unwrap(),
+        "created from example/useradd.rs",
+        connection,
+    )
+    .expect("adding user");
 }

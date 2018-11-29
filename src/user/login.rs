@@ -37,7 +37,8 @@ use diesel::{
 };
 
 use crate::user::{
-    *, key::merge_x_api_key,
+    key::merge_x_api_key,
+    *,
 };
 
 use astacrypto::{
@@ -62,8 +63,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for LoginGuard
     {
         let header = request.headers();
 
-        let remote = request.remote()
-            .expect("reading remote address");
+        let remote = request.remote().expect("reading remote address");
 
         let user_agent: Vec<_> = header.get("user-agent").collect();
 
@@ -143,16 +143,15 @@ impl<'a, 'r> FromRequest<'a, 'r> for LoginGuard
         let mmdb_reader = maxminddb::Reader::open("GeoLite2-City_20181127/GeoLite2-City.mmdb")
             .expect("opening maxminddb reader");
 
-        let city: geoip2::City = mmdb_reader.lookup(remote.ip())
-            .expect("looking up ip");
+        let city: geoip2::City = mmdb_reader.lookup(remote.ip()).expect("looking up ip");
 
-        let names_map = city.city
+        let names_map = city
+            .city
             .expect("getting city entry from city record")
             .names
             .expect("getting names from city entry");
 
-        let city = names_map.get("en")
-            .expect("getting english entry from names_map");
+        let city = names_map.get("en").expect("getting english entry from names_map");
 
 
         match insert_into(user_token::table)

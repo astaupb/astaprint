@@ -20,10 +20,11 @@ pub mod queue;
 pub mod snmp;
 
 use diesel::{
-    r2d2::{
-        ConnectionManager, PooledConnection,
-    },
     prelude::*,
+    r2d2::{
+        ConnectionManager,
+        PooledConnection,
+    },
 };
 
 use chrono::NaiveDateTime;

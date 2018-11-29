@@ -30,8 +30,8 @@ use rocket_contrib::Json;
 use journal::*;
 
 use user::{
-    *,
     guard::UserGuard,
+    *,
 };
 
 #[get("/credit")]

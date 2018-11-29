@@ -20,7 +20,8 @@ use jobs::info::JobInfo;
 use diesel::{
     mysql::MysqlConnection,
     r2d2::{
-        Pool, ConnectionManager,
+        ConnectionManager,
+        Pool,
     },
 };
 
@@ -38,3 +39,12 @@ pub struct DispatcherTask
     pub info: JobInfo,
     pub data: Vec<u8>,
 }
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct DispatcherTaskResponse
+{
+    pub uid: Vec<u8>,
+    pub filename: String,
+    pub color: bool,
+}
+

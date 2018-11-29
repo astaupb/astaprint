@@ -15,16 +15,13 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 use std::collections::HashMap;
 
 use printers::queue::task::WorkerTask;
 
 use jobs::uid::UID;
 
-use rocket::{
-    State,
-};
+use rocket::State;
 
 use rocket_contrib::Json;
 
@@ -52,11 +49,17 @@ pub fn get_queue(
         None => return None,
     };
 
-    Some(Json(queue.get().iter().map(|element| {
-        if element.user_id == user.id {
-            QueueElement::own((*element).clone())
-        } else {
-            QueueElement::foreign(format!("{:x}", UID::from(element.uid.clone())))
-        }
-    }).collect()))
+    Some(Json(
+        queue
+            .get()
+            .iter()
+            .map(|element| {
+                if element.user_id == user.id {
+                    QueueElement::own((*element).clone())
+                } else {
+                    QueueElement::foreign(format!("{:x}", UID::from(element.uid.clone())))
+                }
+            })
+            .collect(),
+    ))
 }

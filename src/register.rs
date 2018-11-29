@@ -45,16 +45,14 @@ use diesel::{
     update,
 };
 
-use chrono::NaiveDateTime;
 use bigdecimal::BigDecimal;
-use std::{
-    str::FromStr,
-};
+use chrono::NaiveDateTime;
+use std::str::FromStr;
 
 use astacrypto::pwhash::PasswordHash;
 
 use journal::*;
-use user::*; 
+use user::*;
 
 table! {
     register_token (id) {

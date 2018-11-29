@@ -1,3 +1,4 @@
+pub mod get;
 /// AStAPrint
 /// Copyright (C) 2018  AStA der Universität Paderborn
 ///
@@ -15,6 +16,4 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 pub mod post;
-pub mod get;

@@ -40,9 +40,7 @@ use rocket_cors::{
     AllowedOrigins,
 };
 
-use redis::queue::{
-    TaskQueueClient,
-};
+use redis::queue::TaskQueueClient;
 
 use logger::Logger;
 
@@ -56,30 +54,31 @@ use astaprint::{
             put::*,
         },
         queue::{
-            post::*,
             get::*,
+            post::*,
         },
         task::DispatcherTask,
     },
+    journal::{
+        credit::*,
+        get::*,
+    },
+    pool::{
+        create_mysql_pool,
+        create_redis_pool,
+    },
     printers::{
         queue::{
-            post::*,
             get::*,
+            post::*,
             task::WorkerTask,
         },
         select_device_ids,
     },
+    register::*,
     user::http::{
         tokens::*,
         *,
-    },
-    journal::{
-        get::*,
-        credit::*,
-    },
-    register::*,
-    pool::{
-        create_redis_pool, create_mysql_pool, 
     },
 };
 
@@ -131,8 +130,7 @@ fn rocket() -> rocket::Rocket
 
     let mut worker_queues: HashMap<u16, TaskQueueClient<WorkerTask>> = HashMap::new();
 
-    let connection = mysql_pool.get()
-        .expect("getting mysql connection from pool");
+    let connection = mysql_pool.get().expect("getting mysql connection from pool");
 
     for device_id in select_device_ids(&connection) {
         let pool = redis_pool.clone();
@@ -154,7 +152,7 @@ fn rocket() -> rocket::Rocket
                 fetch_options,
                 fetch_single_option,
                 fetch_info,
-                //fetch_single_info,
+                // fetch_single_info,
                 // -> do we really need this?
                 get_dispatcher_queue,
                 upload_job,
@@ -169,7 +167,15 @@ fn rocket() -> rocket::Rocket
         )
         .mount(
             "/user",
-            routes![get_user_info, login, logout, credit_redirect, change_password, fetch_username, change_username],
+            routes![
+                get_user_info,
+                login,
+                logout,
+                credit_redirect,
+                change_password,
+                fetch_username,
+                change_username
+            ],
         )
         .mount(
             "/user/tokens",

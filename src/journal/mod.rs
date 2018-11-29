@@ -19,8 +19,8 @@ use bigdecimal::BigDecimal;
 use chrono::NaiveDateTime;
 
 pub mod credit;
-pub mod response;
 pub mod get;
+pub mod response;
 
 table! {
     journal (id) {
@@ -66,8 +66,8 @@ pub struct JournalDigest
 mod tests
 {
     use diesel::prelude::*;
-    use pool::create_mysql_pool;
     use journal::*;
+    use pool::create_mysql_pool;
     extern crate sha2;
     use chrono::FixedOffset;
     use sha2::{
@@ -82,7 +82,6 @@ mod tests
         let connection = create_mysql_pool(&url, 1).get().unwrap();
         let journal: Vec<Journal> =
             journal::table.select(journal::all_columns).load(&connection).expect("selecting journal");
-        println!("{:?}", journal);
 
         let digests: Vec<JournalDigest> = journal_digest::table
             .select(journal_digest::all_columns)
@@ -99,17 +98,14 @@ mod tests
                 &entry.id, &entry.user_id, &entry.value, &entry.description, datetime,
             );
 
-            println!("{}", concat);
-
             input.append(&mut concat.as_bytes().to_owned());
-            println!("{:x?}", input);
 
             let mut hasher = Sha512::new();
             hasher.input(&input[..]);
             let result = hasher.result();
 
-            println!("{:x?} == {:x?}", result.as_slice(), &digests[i+1].digest[..]);
-            assert_eq!(result.as_slice(), &digests[i+1].digest[..]);
+            assert_eq!(result.as_slice(), &digests[i + 1].digest[..]);
+            println!("{} verified", i);
         }
     }
 }

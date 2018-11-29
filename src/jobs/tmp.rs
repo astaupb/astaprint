@@ -21,13 +21,13 @@ use jobs::uid::UID;
 
 use std::{
     fs::{
-        File,
         remove_file,
+        File,
     },
     io::{
+        self,
         Read,
         Write,
-        self,
     },
 };
 

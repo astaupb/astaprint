@@ -20,11 +20,12 @@ use bigdecimal::{
     FromPrimitive,
 };
 use diesel::{
-    r2d2::{
-        Pool, ConnectionManager,
-    },
     insert_into,
     prelude::*,
+    r2d2::{
+        ConnectionManager,
+        Pool,
+    },
 };
 
 use journal::{
@@ -64,11 +65,9 @@ impl<'a> Accounting<'a>
 
         lock.grab();
 
-        let connection = pool.get()
-            .expect("gettting connection from pool");
+        let connection = pool.get().expect("gettting connection from pool");
 
-        let credit = get_credit(user_id, &connection)
-            .expect("getting credit from journal");
+        let credit = get_credit(user_id, &connection).expect("getting credit from journal");
 
         let value = BigDecimal::from_u32(0).unwrap();
 
@@ -105,8 +104,7 @@ impl<'a> Accounting<'a>
     pub fn finish(self)
     {
         if self.value < BigDecimal::from_u32(0).unwrap() {
-            let connection = self.pool.get()
-                .expect("getting mysql connection from pool");
+            let connection = self.pool.get().expect("getting mysql connection from pool");
 
             let credit = &self.credit + &self.value;
             insert_into(journal::table)
