@@ -80,7 +80,6 @@ struct RegisterUser
 {
     username: String,
     password: String,
-    token: String,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -88,8 +87,6 @@ pub enum RegisterError
 {
     UsernameTaken,
     InvalidUsername,
-    InvalidToken,
-    TokenAlreadyConsumed,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -103,8 +100,6 @@ impl<'r> Responder<'r> for RegisterResponse
             .status(match self.0 {
                 RegisterError::UsernameTaken => Status::new(470, "Username Taken"),
                 RegisterError::InvalidUsername => Status::new(471, "Invalid Username"),
-                RegisterError::TokenAlreadyConsumed => Status::new(472, "Token Already Consumed"),
-                RegisterError::InvalidToken => Status::new(473, "Invalid Token"),
             })
             .ok()
     }
@@ -122,65 +117,42 @@ fn register<'a>(
         return Ok(Ok(Err(RegisterResponse(RegisterError::InvalidUsername))));
     }
 
-    let result: Option<RegisterToken> = register_token::table
-        .select(register_token::all_columns)
-        .filter(register_token::value.eq(&user.token))
-        .first(&connection)
-        .optional()?;
+    let (hash, salt) = PasswordHash::create(&user.password);
 
-    let token = match result {
-        Some(token) => token,
-        None => return Ok(Ok(Err(RegisterResponse(RegisterError::InvalidToken)))),
-    };
+    match insert_into(user::table)
+        .values((
+            user::name.eq(&user.username),
+            user::locked.eq(false),
+            user::hash.eq(hash),
+            user::salt.eq(salt),
+        ))
+        .execute(&connection)
+    {
+        Err(err) => {
+            if let DatabaseError(UniqueViolation, _) = err {
+                info!("sometried to register with already taken username {}", &user.username);
 
-    if !token.used {
-        let (hash, salt) = PasswordHash::create(&user.password);
+                return Ok(Ok(Err(RegisterResponse(RegisterError::UsernameTaken))));
+            } else {
+                return Err(err);
+            }
+        },
+        Ok(_) => {
+            let user_id: u32 =
+                user::table.select(user::id).filter(user::name.eq(&user.username)).first(&connection)?;
 
-        match insert_into(user::table)
-            .values((
-                user::name.eq(&user.username),
-                user::locked.eq(false),
-                user::hash.eq(hash),
-                user::salt.eq(salt),
-            ))
-            .execute(&connection)
-        {
-            Err(err) => {
-                if let DatabaseError(UniqueViolation, _) = err {
-                    info!("sometried to register with already taken username {}", &user.username);
+            let credit = BigDecimal::from_str("3.00").unwrap();
 
-                    return Ok(Ok(Err(RegisterResponse(RegisterError::UsernameTaken))));
-                } else {
-                    return Err(err);
-                }
-            },
-            Ok(_) => {
-                let user_id: u32 = user::table
-                    .select(user::id)
-                    .filter(user::name.eq(&user.username))
-                    .first(&connection)?;
+            insert_into(journal::table)
+                .values((
+                    journal::user_id.eq(user_id),
+                    journal::value.eq(&credit),
+                    journal::description.eq("registered in beta"),
+                ))
+                .execute(&connection)?;
+            info!("{}#{} registered", &user.username, user_id);
 
-                update(register_token::table.filter(register_token::value.eq(&user.token)))
-                    .set((register_token::user_id.eq(user_id), register_token::used.eq(true)))
-                    .execute(&connection)?;
-
-                let credit = BigDecimal::from_str("3.00").unwrap();
-
-                insert_into(journal::table)
-                    .values((
-                        journal::user_id.eq(user_id),
-                        journal::value.eq(&credit),
-                        journal::description.eq(format!("registered with token {}", &user.token)),
-                    ))
-                    .execute(&connection)?;
-                info!("{}#{} registered with token {}", &user.username, user_id, &user.token);
-
-                Ok(Ok(Ok(NoContent)))
-            },
-        }
-    } else {
-        info!("{} tried to register with already used token {}", &user.username, &token.value);
-
-        Ok(Ok(Err(RegisterResponse(RegisterError::TokenAlreadyConsumed))))
+            Ok(Ok(Ok(NoContent)))
+        },
     }
 }

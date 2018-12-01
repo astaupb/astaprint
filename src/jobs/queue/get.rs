@@ -18,9 +18,7 @@
 use jobs::task::DispatcherTask;
 
 use jobs::uid::UID;
-use rocket::{
-    State,
-};
+use rocket::State;
 
 use rocket_contrib::Json;
 
@@ -52,11 +50,13 @@ pub fn get_dispatcher_queue(
     queue: State<TaskQueueClient<DispatcherTask>>,
 ) -> Option<Json<Vec<DispatcherTaskResponse>>>
 {
-    Some(Json(queue.get().iter().filter(|element| {
-        element.user_id == user.id
-    }).map(|element|{
-        (*element).clone()
-    }).map(|task| {
-        DispatcherTaskResponse::from(&task)
-    }).collect()))
+    Some(Json(
+        queue
+            .get()
+            .iter()
+            .filter(|element| element.user_id == user.id)
+            .map(|element| (*element).clone())
+            .map(|task| DispatcherTaskResponse::from(&task))
+            .collect(),
+    ))
 }

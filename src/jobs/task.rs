@@ -47,4 +47,3 @@ pub struct DispatcherTaskResponse
     pub filename: String,
     pub color: bool,
 }
-
