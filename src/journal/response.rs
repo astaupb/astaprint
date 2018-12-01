@@ -25,7 +25,7 @@ pub struct JournalResponse
 {
     pub value: f64,
     pub description: String,
-    pub created: String,
+    pub created: i64,
 }
 
 impl<'a> From<&'a Journal> for JournalResponse
@@ -35,7 +35,7 @@ impl<'a> From<&'a Journal> for JournalResponse
         JournalResponse {
             value: journal.value.to_f64().unwrap(),
             description: journal.description.clone(),
-            created: format!("{}", journal.created + FixedOffset::east(3600)),
+            created: (journal.created + FixedOffset::east(3600)).timestamp(),
         }
     }
 }
