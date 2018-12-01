@@ -17,7 +17,10 @@
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use chrono::NaiveDateTime;
 
-use crate::journal::*;
+use crate::journal::{
+    digest::table::*,
+    table::*,
+};
 
 pub mod add;
 pub mod guard;

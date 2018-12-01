@@ -26,7 +26,8 @@ use user::guard::UserGuard;
 
 use journal::{
     response::JournalResponse,
-    *,
+    table::*,
+    Journal,
 };
 
 #[get("/")]

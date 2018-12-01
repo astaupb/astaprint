@@ -30,7 +30,7 @@ use diesel::{
 
 use journal::{
     credit::get_credit,
-    *,
+    table::*,
 };
 
 use redis::lock::Lock;

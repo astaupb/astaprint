@@ -55,7 +55,9 @@ pub fn add_user(
     if user_id.is_some() {
         return Err(UserAddError::UsernameExists);
     }
+
     let (hash, salt) = PasswordHash::create(password);
+
     insert_into(user::table)
         .values((user::name.eq(name), user::hash.eq(hash), user::salt.eq(salt), user::locked.eq(locked)))
         .execute(&connection)

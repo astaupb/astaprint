@@ -27,7 +27,10 @@ use diesel::{
 
 use rocket_contrib::Json;
 
-use journal::*;
+use journal::{
+    digest::table::*,
+    table::*,
+};
 
 use user::{
     guard::UserGuard,

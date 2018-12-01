@@ -42,7 +42,6 @@ use diesel::{
         DatabaseErrorKind::UniqueViolation,
         Error::DatabaseError,
     },
-    update,
 };
 
 use bigdecimal::BigDecimal;
@@ -51,7 +50,7 @@ use std::str::FromStr;
 
 use astacrypto::pwhash::PasswordHash;
 
-use journal::*;
+use journal::table::*;
 use user::*;
 
 table! {
@@ -141,7 +140,7 @@ fn register<'a>(
             let user_id: u32 =
                 user::table.select(user::id).filter(user::name.eq(&user.username)).first(&connection)?;
 
-            let credit = BigDecimal::from_str("3.00").unwrap();
+            let credit = BigDecimal::from_str("0.00").unwrap();
 
             insert_into(journal::table)
                 .values((

@@ -62,6 +62,7 @@ use astaprint::{
     journal::{
         credit::*,
         get::*,
+        post::*,
     },
     pool::{
         create_mysql_pool,
@@ -182,7 +183,7 @@ fn rocket() -> rocket::Rocket
             routes![get_all_tokens, delete_all_tokens, get_single_token, delete_single_token],
         )
         .mount("/printers", routes![print_job, get_queue])
-        .mount("/journal", routes![journal, credit])
+        .mount("/journal", routes![journal, credit, post_to_journal])
         .mount("/register", routes![register])
         .attach(cors())
 }

@@ -29,6 +29,15 @@ CREATE TABLE `journal_digest`(
   `credit` DECIMAL(7, 2) NOT NULL,
   `created` TIMESTAMP NOT NULL);
 
+CREATE TABLE `journal_tokens`(
+  `id` INT UNSIGNED UNIQUE PRIMARY KEY AUTO_INCREMENT,
+  `value` DECIMAL(5, 2) NOT NULL DEFAULT 1.0,
+  `content` VARCHAR(128) NOT NULL,
+  `used` BOOLEAN NOT NULL,
+  `used_by` INT UNSIGNED,
+  `created` TIMESTAMP NOT NULL,
+  `updated` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP);
+
 -- seed journal_digest
 INSERT INTO `journal_digest`(digest, credit) VALUES (UNHEX(SHA2(NOW(), 512)), 0.0);
 
