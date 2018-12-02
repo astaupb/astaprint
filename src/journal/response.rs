@@ -35,7 +35,7 @@ impl<'a> From<&'a Journal> for JournalResponse
         JournalResponse {
             value: journal.value.to_f64().unwrap(),
             description: journal.description.clone(),
-            created: (journal.created + FixedOffset::east(3600)).timestamp(),
+            created: journal.created.timestamp(),
         }
     }
 }
