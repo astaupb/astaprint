@@ -33,7 +33,9 @@ use rocket::response::status::{
 use jobs::{
     options::{
         pagerange::PageRange,
+        JobOptions,
         JobOptionsUpdate,
+        Update,
         Value::{
             self,
             B,
@@ -105,14 +107,28 @@ fn update_single_option(
     Ok(Ok(Some(Reset)))
 }
 
-#[put("/<id>/options", data = "<options>")]
+#[put("/<id>/options", data = "<options_update>")]
 fn update_options(
     user: UserGuard,
     id: u32,
-    options: Json<JobOptionsUpdate>,
+    options_update: Json<JobOptionsUpdate>,
 ) -> QueryResult<Result<Option<Reset>, BadRequest<String>>>
 {
-    let serialized = bincode::serialize(&options.into_inner()).expect("serializing JobOptions");
+    let result: Option<Vec<u8>> = jobs::table
+        .select(jobs::options)
+        .filter(jobs::user_id.eq(user.id))
+        .filter(jobs::id.eq(id))
+        .first(&user.connection)
+        .optional()?;
+
+    let mut options: JobOptions = match result {
+        None => return Ok(Ok(None)),
+        Some(options) => bincode::deserialize(&options[..]).expect("deserializing JobOptions"),
+    };
+
+    options.merge(options_update.into_inner());
+
+    let serialized = bincode::serialize(&options).expect("serializing JobOptions");
 
     update(jobs::table.filter(jobs::id.eq(id)).filter(jobs::user_id.eq(user.id)))
         .set(jobs::options.eq(serialized))

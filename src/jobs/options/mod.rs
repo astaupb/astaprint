@@ -84,12 +84,12 @@ pub struct JobOptionsUpdate
 
 pub trait Update
 {
-    fn merge(self, update: JobOptionsUpdate) -> Self;
+    fn merge(&mut self, update: JobOptionsUpdate);
 }
 
 impl Update for JobOptions
 {
-    fn merge(mut self, update: JobOptionsUpdate) -> JobOptions
+    fn merge(&mut self, update: JobOptionsUpdate)
     {
         if let Some(duplex) = update.duplex {
             self.duplex = duplex;
@@ -122,7 +122,5 @@ impl Update for JobOptions
         if let Some(range) = update.range {
             self.range = range;
         }
-
-        self
     }
 }
