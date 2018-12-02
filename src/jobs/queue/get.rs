@@ -15,7 +15,10 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use jobs::task::DispatcherTask;
+use jobs::task::{
+    DispatcherTask,
+    DispatcherTaskResponse,
+};
 
 use rocket::State;
 
@@ -24,24 +27,6 @@ use rocket_contrib::Json;
 use user::guard::UserGuard;
 
 use redis::queue::TaskQueueClient;
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct DispatcherTaskResponse
-{
-    pub uid: String,
-    pub filename: String,
-    pub color: bool,
-}
-impl<'a> From<&'a DispatcherTask> for DispatcherTaskResponse
-{
-    fn from(task: &'a DispatcherTask) -> DispatcherTaskResponse
-    {
-        DispatcherTaskResponse {
-            uid: hex::encode(&task.uid[..]),
-            filename: task.info.filename.clone(),
-            color: task.info.color,
-        }
-    }
-}
 
 #[get("/queue")]
 pub fn get_dispatcher_queue(

@@ -25,6 +25,7 @@ pub struct JobInfo
     pub color: bool,
     pub a3: bool,
     pub password: String,
+    pub dispatch_time: i64,
 }
 
 impl JobInfo

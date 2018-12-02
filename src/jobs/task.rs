@@ -45,7 +45,19 @@ pub struct DispatcherTask
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct DispatcherTaskResponse
 {
-    pub uid: Vec<u8>,
+    pub uid: String,
     pub filename: String,
     pub color: bool,
+}
+
+impl<'a> From<&'a DispatcherTask> for DispatcherTaskResponse
+{
+    fn from(task: &'a DispatcherTask) -> DispatcherTaskResponse
+    {
+        DispatcherTaskResponse {
+            uid: hex::encode(&task.uid[..]),
+            filename: task.info.filename.clone(),
+            color: task.info.color,
+        }
+    }
 }
