@@ -96,10 +96,10 @@ paths:
         '202':
           description: Accepted
           content:
-            text/plain:
+            application/json:
               schema:
                 type: string
-              example: a636c183d5ee1c2d82779938249e208a7588b03d3395e1febe3edcfc64d1239a
+                example: '"a636c183d5ee1c2d82779938249e208a7588b03d"'
         '400':
           description: Bad request (eg. no base64)
         '401':
@@ -123,7 +123,7 @@ paths:
             type: boolean
           description: decides if the job should stay colored or not (default is false)
     get:
-      operationId: postJob
+      operationId: getJobQueue
       tags:
         - Jobs
         - Queue
@@ -134,10 +134,11 @@ paths:
         '202':
           description: Accepted
           content:
-            text/plain:
+            application/json:
               schema:
-                type: string
-              example: a636c183d5ee1c2d82779938249e208a7588b03d3395e1febe3edcfc64d1239a
+                type: array
+                items: 
+                  $ref: '#/components/schemas/DispatcherTask'
         '400':
           description: Bad request (eg. no base64)
         '401':
@@ -558,12 +559,12 @@ paths:
         '200':
           description: Success
           content:
-            text/plain:
+            application/json:
               schema:
                 type: string
                 format: base64
               example: >-
-                eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ
+                "eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ"
       security:
         - basicAuth: []
     delete:
@@ -926,8 +927,8 @@ paths:
         - in: path
           name: queue_item
           schema:
-            type: integer
-          description: ID of queue entry
+            type: string
+          description: UID of queue entry
           required: true
       responses:
         '200':
@@ -955,8 +956,8 @@ paths:
         - in: path
           name: queue_item
           schema:
-            type: integer
-          description: ID of queue entry
+            type: string
+          description: UID of queue entry
           required: true
       responses:
         '205':
@@ -1056,11 +1057,23 @@ components:
           type: integer
           format: int64
         user_id:
-          type: string
+          type: integer
+          format: uint32
         info:
           $ref: '#/components/schemas/JobInfo'
         options:
           $ref: '#/components/schemas/JobOptions'
+    DispatcherTask:
+        type: object
+        properties:
+          uid:
+            type: string
+            description: uid of specific task - hexadecimal encoded
+          user_id:
+            type: integer
+            format: uint32
+          info:
+            $ref: '#/components/schemas/JobInfo'
     User:
       type: object
       properties:
