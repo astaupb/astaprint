@@ -17,6 +17,30 @@
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use bigdecimal::BigDecimal;
 use chrono::NaiveDateTime;
+use diesel::{
+    insert_into,
+    prelude::*,
+    r2d2::{
+        ConnectionManager,
+        PooledConnection,
+    },
+    QueryResult,
+};
+use journal::lock::JournalLock;
+use r2d2_redis::{
+    r2d2::Pool,
+    RedisConnectionManager,
+};
+
+use astacrypto::generichash::GenericHash;
+use journal::digest::{
+    table::*,
+    JournalDigest,
+};
+use std::{
+    fmt,
+    str::FromStr,
+};
 
 pub mod get;
 pub mod post;
@@ -25,6 +49,7 @@ pub mod response;
 
 pub mod credit;
 pub mod digest;
+pub mod lock;
 pub mod tokens;
 
 pub mod table;
@@ -40,6 +65,79 @@ pub struct Journal
     pub created: NaiveDateTime,
 }
 
+impl fmt::Display for Journal
+{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+    {
+        write!(f, "{}{}{}{}{}", self.id, self.user_id, self.value, self.description, self.created)
+    }
+}
+
+pub fn insert(
+    user_id: u32,
+    value: BigDecimal,
+    description: &str,
+    redis: Pool<RedisConnectionManager>,
+    mysql: PooledConnection<ConnectionManager<MysqlConnection>>,
+) -> QueryResult<BigDecimal>
+{
+    let _lock = JournalLock::from(redis);
+
+    insert_into(journal::table)
+        .values((
+            journal::user_id.eq(user_id),
+            journal::value.eq(value),
+            journal::description.eq(description),
+        ))
+        .execute(&mysql)?;
+
+    let (digest, credit) = calculate_digest(user_id, &mysql)?;
+
+    insert_into(journal_digest::table)
+        .values((journal_digest::digest.eq(digest), journal_digest::credit.eq(credit.clone())))
+        .execute(&mysql)?;
+
+    Ok(credit)
+}
+pub fn calculate_digest(
+    user_id: u32,
+    mysql: &PooledConnection<ConnectionManager<MysqlConnection>>,
+) -> QueryResult<(Vec<u8>, BigDecimal)>
+{
+    let last_entry: Option<u32> = journal::table
+        .select(journal::id)
+        .filter(journal::user_id.eq(user_id))
+        .order(journal::id.desc())
+        .offset(1)
+        .first(mysql)
+        .optional()?;
+
+    let credit = match last_entry {
+        None => BigDecimal::from_str("0.0").unwrap(),
+        Some(id) => {
+            journal_digest::table
+                .select(journal_digest::credit)
+                .filter(journal_digest::id.eq(id + 1))
+                .first(mysql)?
+        },
+    };
+
+    let journal: Journal =
+        journal::table.select(journal::all_columns).order(journal::id.desc()).first(mysql)?;
+
+    let seed: JournalDigest = journal_digest::table
+        .select(journal_digest::all_columns)
+        .order(journal_digest::id.desc())
+        .first(mysql)?;
+
+    assert_eq!(journal.id, seed.id);
+
+    let new_digest = GenericHash::with_salt(&mut format!("{}", journal).as_bytes(), &seed.digest[..]);
+
+    let new_credit = credit + journal.value;
+
+    Ok((new_digest, new_credit))
+}
 #[cfg(test)]
 mod tests
 {
@@ -67,22 +165,15 @@ mod tests
             .expect("selecting journal digests");
 
         for (i, entry) in journal.iter().enumerate() {
-            let mut input = digests[i].digest.clone();
+            let mut salt = digests[i].digest.clone();
 
-            let datetime = entry.created + FixedOffset::west(-3600);
+            let input = format!("{}", entry);
 
-            let concat = format!(
-                "{}{}{}{}{}",
-                &entry.id, &entry.user_id, &entry.value, &entry.description, datetime,
-            );
+            let hash = GenericHash::with_salt(input.as_bytes(), &salt[..]);
 
-            input.append(&mut concat.as_bytes().to_owned());
-
-            let mut hasher = Sha512::new();
-            hasher.input(&input[..]);
-            let result = hasher.result();
-
-            assert_eq!(result.as_slice(), &digests[i + 1].digest[..]);
+            if i < digests.len() + 1 {
+                assert_eq!(&hash[..], &digests[i + 1].digest[..]);
+            }
             println!("{} verified", i);
         }
     }

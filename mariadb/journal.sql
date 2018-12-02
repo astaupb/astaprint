@@ -41,31 +41,6 @@ CREATE TABLE `journal_tokens`(
 -- seed journal_digest
 INSERT INTO `journal_digest`(digest, credit) VALUES (UNHEX(SHA2(NOW(), 512)), 0.0);
 
-DELIMITER //
-CREATE TRIGGER `journal_insert`
-AFTER INSERT ON `journal`
-FOR EACH ROW BEGIN
-
-SET @digest := UNHEX((SELECT
-					SHA2(CONCAT(
-						jd.digest, j.id, j.user_id, j.value, j.description, j.created), 512)
-				FROM journal j
-				INNER JOIN journal_digest jd
-				ON j.id = jd.id
-				WHERE j.id = NEW.id));
-
-SET @credit := IFNULL(
-                  (SELECT credit FROM journal_digest WHERE id =
-                    (SELECT id from journal WHERE user_id = NEW.user_id ORDER BY id DESC LIMIT 1 OFFSET 1) + 1
-                  ),
-                0.0)
-             + (SELECT value FROM journal WHERE id = NEW.id);
-
-INSERT INTO journal_digest(digest, credit) VALUES (@digest, @credit);
-
-END //
-DELIMITER ;
-
 CREATE TRIGGER `journal_update`
 BEFORE UPDATE ON `journal`
 FOR EACH ROW SIGNAL SQLSTATE "45000"

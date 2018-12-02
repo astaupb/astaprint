@@ -40,7 +40,6 @@ table! {
         name -> Varchar,
         hash -> Binary,
         salt -> Binary,
-        pin -> Nullable<Varchar>,
         locked -> Bool,
         created -> Timestamp,
         updated -> Timestamp,
@@ -56,8 +55,6 @@ pub struct User
     pub locked: bool,
     pub hash: Vec<u8>,
     pub salt: Vec<u8>,
-    pub card: Vec<u8>,
-    pub pin: u32,
     pub created: NaiveDateTime,
     pub updated: NaiveDateTime,
 }

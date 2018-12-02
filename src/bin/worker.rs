@@ -81,6 +81,7 @@ fn spawn_worker(
         WorkerState {
             printer_interface,
             mysql_pool,
+            redis_pool: redis_pool.clone(),
         },
         redis_pool,
         thread_pool,

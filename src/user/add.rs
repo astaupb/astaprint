@@ -25,9 +25,14 @@ use diesel::{
         PooledConnection,
     },
 };
+use r2d2_redis::{
+    r2d2::Pool,
+    RedisConnectionManager,
+};
 
 use astacrypto::PasswordHash;
 
+use journal::insert;
 use user::*;
 
 #[derive(Debug)]
@@ -42,6 +47,7 @@ pub fn add_user(
     locked: bool,
     credit: BigDecimal,
     description: &str,
+    redis: Pool<RedisConnectionManager>,
     connection: PooledConnection<ConnectionManager<MysqlConnection>>,
 ) -> Result<(), UserAddError>
 {
@@ -69,14 +75,8 @@ pub fn add_user(
         .first(&connection)
         .expect("getting user id");
 
-    insert_into(journal::table)
-        .values((
-            journal::user_id.eq(user_id),
-            journal::value.eq(credit),
-            journal::description.eq(description),
-        ))
-        .execute(&connection)
-        .expect("inserting into journal");
+    insert(user_id, credit, description, redis, connection).expect("inserting new journal entry");
+
 
     Ok(())
 }

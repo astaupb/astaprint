@@ -15,66 +15,75 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use r2d2_redis::redis::{
-    self,
-    Client,
-    Connection,
-    RedisResult,
-    Value,
+use r2d2_redis::{
+    redis::{
+        Commands,
+        RedisResult,
+        Value,
+    },
+    r2d2::{
+        Pool,
+    },
+    RedisConnectionManager,
 };
 
 use std::{
-    env,
     thread,
     time,
 };
 
 use astacrypto::random_bytes;
 
+#[derive(Debug)]
 pub struct Lock
 {
-    user_id: u32,
-    connection: Connection,
-    value: Vec<u8>,
+    name: String,
+    pool: Pool<RedisConnectionManager>,
+    value: Option<Vec<u8>>,
 }
 
 impl Lock
 {
-    pub fn new(user_id: u32) -> Lock
+    pub fn new(name: String, pool: Pool<RedisConnectionManager>) -> Lock
     {
-        let url = env::var("ASTAPRINT_REDIS_URL").expect("reading redis url from environment");
-        let client = Client::open(&url[..]).expect("creating redis client");
-        let connection = client.get_connection().expect("getting redis connection from client");
-
-        let value = random_bytes(20);
-
         Lock {
-            user_id,
-            connection,
-            value,
+            name: String::from(name),
+            pool,
+            value: None,
         }
     }
 
     pub fn is_grabbed(&self) -> bool
     {
-        let result: RedisResult<Vec<u8>> = redis::cmd("GET").arg(self.user_id).query(&self.connection);
+        let redis = self.pool.get()
+            .expect("getting redis from pool");
+
+        let result: RedisResult<Vec<u8>> = redis.get(&self.name);
         debug!("{:?}", result);
         result.is_ok() && result.unwrap().len() > 0
     }
 
-    pub fn grab(&self)
+    pub fn grab(&mut self)
     {
+        let redis = self.pool.get()
+            .expect("getting redis from pool");
+
+        assert!(self.value.is_none());
+        self.value = Some(random_bytes(20));
+
+        let mut count = 0;
         loop {
-            if let Ok(Value::Okay) = redis::cmd("SET")
-                .arg(self.user_id)
-                .arg(self.value.clone())
-                .arg("NX")
-                .arg("PX")
-                .arg(420000)
-                .query(&self.connection)
+            let result = redis.set_nx(
+                &self.name,
+                self.value.clone().unwrap()
+            );
+            println!("{:?}", result);
+            if let Ok(Value::Int(1)) = result
             {
+                debug!("{} locked after {} tries", self.name, count);
                 break;
             } else {
+                count += 1;
                 thread::sleep(time::Duration::from_millis(42));
             }
         }
@@ -82,16 +91,38 @@ impl Lock
 
     pub fn release(&self) -> bool
     {
+        let redis = self.pool.get()
+            .expect("getting redis from pool");
         // check if value is the own to avoid removing a lock created by another client
-        redis::cmd("GET").arg(self.user_id).query(&self.connection) == Ok(self.value.clone())
-            && redis::cmd("DEL").arg(self.user_id).query(&self.connection) == Ok(Value::Int(1))
+        let get: RedisResult<Value> = redis.get(&self.name);
+        println!("{:?}", get);
+        //== Ok(self.value.clone().unwrap())
+        let del: RedisResult<Value> = redis.del(&self.name);
+        //== Ok(Value::Int(1))
+        println!("{:?}", del);
+        true
     }
 }
-
 impl Drop for Lock
 {
     fn drop(&mut self)
     {
-        assert!(self.release());
+        self.release(); 
     }
+}
+
+#[cfg(test)]
+pub mod tests
+{
+    use std::thread;
+    fn spawn_grabber(name: &str, pool: Pool<RedisConnectionManager>)
+    {
+    
+    }
+    #[test]
+    fn lock_race()
+    {
+
+    }
+
 }

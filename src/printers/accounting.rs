@@ -33,6 +33,7 @@ use journal::{
     table::*,
 };
 
+use r2d2_redis::RedisConnectionManager;
 use redis::lock::Lock;
 
 use printers::snmp::counter::CounterValues;
@@ -49,9 +50,14 @@ pub struct Accounting<'a>
 
 impl<'a> Accounting<'a>
 {
-    pub fn new(user_id: u32, color: bool, pool: &Pool<ConnectionManager<MysqlConnection>>) -> Accounting
+    pub fn new(
+        user_id: u32,
+        color: bool,
+        pool: &Pool<ConnectionManager<MysqlConnection>>,
+        redis: Pool<RedisConnectionManager>,
+    ) -> Accounting
     {
-        let lock = Lock::new(user_id);
+        let mut lock = Lock::new(format!("{}", user_id), redis);
 
         if lock.is_grabbed() {
             info!("accounting for {} locked", &user_id);

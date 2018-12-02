@@ -20,7 +20,10 @@ use bigdecimal::BigDecimal;
 
 extern crate astaprint;
 use astaprint::{
-    pool::create_mysql_pool,
+    pool::{
+        create_mysql_pool,
+        create_redis_pool,
+    },
     user::add::add_user,
 };
 
@@ -35,15 +38,20 @@ fn main()
     if arg.len() != 3 {
         panic!("expecting username password");
     }
-    let url = env::var("ASTAPRINT_DATABASE_URL").expect("reading ASTAPRINT_DATABASE_URL from environment");
-    let connection = create_mysql_pool(&url, 1).get().unwrap();
+    let mysql_url =
+        env::var("ASTAPRINT_DATABASE_URL").expect("reading ASTAPRINT_DATABASE_URL from environment");
+    let redis_url =
+        env::var("ASTAPRINT_REDIS_URL").expect("reading ASTAPRINT_DATABASE_URL from environment");
+
+    let connection = create_mysql_pool(&mysql_url, 1).get().unwrap();
 
     add_user(
         &arg[1],
         &arg[2],
         false,
-        BigDecimal::from_str("0.00").unwrap(),
+        BigDecimal::from_str("0.0").unwrap(),
         "created from example/useradd.rs",
+        create_redis_pool(&redis_url, 1),
         connection,
     )
     .expect("adding user");

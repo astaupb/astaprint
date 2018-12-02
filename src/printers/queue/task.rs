@@ -29,6 +29,8 @@ use diesel::{
     },
 };
 
+use r2d2_redis::RedisConnectionManager;
+
 use lpr::LprConnection;
 
 use jobs::{
@@ -59,6 +61,7 @@ pub struct WorkerState
 {
     pub printer_interface: PrinterInterface,
     pub mysql_pool: Pool<ConnectionManager<MysqlConnection>>,
+    pub redis_pool: Pool<RedisConnectionManager>,
 }
 
 #[derive(PartialEq, Debug)]
@@ -88,7 +91,7 @@ pub fn work(task: WorkerTask, mut state: WorkerState)
 
     let snmp_session = SnmpSession::new(&state.printer_interface.ip, &state.printer_interface.community);
 
-    let mut accounting = Accounting::new(task.user_id, info.color, &state.mysql_pool);
+    let mut accounting = Accounting::new(task.user_id, info.color, &state.mysql_pool, state.redis_pool);
 
     if accounting.not_enough_credit() {
         info!("not enough credit for one page, aborting");
