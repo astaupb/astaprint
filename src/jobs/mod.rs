@@ -26,15 +26,12 @@ use crate::jobs::{
     options::JobOptions,
 };
 
-use jobs::uid::UID;
-
 pub mod options;
 pub mod info;
 
 pub mod pdf;
 pub mod task;
 pub mod tmp;
-pub mod uid;
 pub mod queue;
 
 pub mod get;
@@ -113,7 +110,7 @@ impl Job
 
         count * options.copies
     }
-    pub fn translate_for_printer(&mut self, uid: &UID) -> Vec<u8>
+    pub fn translate_for_printer(&mut self, uid: &[u8]) -> Vec<u8>
     {
         let info = self.info();
         let options = self.options();
@@ -129,7 +126,7 @@ impl Job
 
         header.append(&mut format!(
                    "\x40\x50\x4a\x4c\x20\x4a\x4f\x42\
-                    \x20\x4e\x41\x4d\x45\x3d\"{:x}\"\r\
+                    \x20\x4e\x41\x4d\x45\x3d\"{}\"\r\
                     \n", self.user_id
             ).as_bytes().to_owned(),
         );
@@ -144,7 +141,7 @@ impl Job
         header.append(&mut format!(
                    "\x40\x50\x4a\x4c\x20\x53\x45\x54\
                     \x20\x54\x52\x41\x43\x4b\x49\x44\
-                    \x3d\"{:x}\"\r\n", uid
+                    \x3d\"{}\"\r\n", hex::encode(uid)
             ).as_bytes().to_owned(),
         );
 

@@ -17,7 +17,6 @@
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use jobs::task::DispatcherTask;
 
-use jobs::uid::UID;
 use rocket::State;
 
 use rocket_contrib::Json;
@@ -37,7 +36,7 @@ impl<'a> From<&'a DispatcherTask> for DispatcherTaskResponse
     fn from(task: &'a DispatcherTask) -> DispatcherTaskResponse
     {
         DispatcherTaskResponse {
-            uid: format!("{:x}", UID::from(task.uid.clone())),
+            uid: hex::encode(&task.uid[..]),
             filename: task.info.filename.clone(),
             color: task.info.color,
         }

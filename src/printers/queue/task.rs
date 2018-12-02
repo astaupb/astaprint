@@ -35,7 +35,6 @@ use lpr::LprConnection;
 
 use jobs::{
     options::JobOptions,
-    uid::UID,
     *,
 };
 
@@ -73,8 +72,8 @@ pub enum WorkerCommand
 
 pub fn work(task: WorkerTask, mut state: WorkerState)
 {
-    let uid = UID::from(task.uid.clone());
-    info!("{:x} print thread spawned for {}", uid, task.user_id);
+    let hex_uid = hex::encode(&task.uid[..]);
+    info!("{} print thread spawned for {}", hex_uid, task.user_id);
 
     let connection = state.mysql_pool.get().expect("getting connection from mysql pool");
 
@@ -85,7 +84,7 @@ pub fn work(task: WorkerTask, mut state: WorkerState)
         .first(&connection)
         .expect("reading job from database");
 
-    let mut buf: Vec<u8> = job.translate_for_printer(&uid);
+    let mut buf: Vec<u8> = job.translate_for_printer(&task.uid[..]);
     let info = job.info();
     let options = job.options();
 
@@ -154,13 +153,13 @@ pub fn work(task: WorkerTask, mut state: WorkerState)
 
         if accounting.not_enough_credit() {
             debug!("current: {:?}", current);
-            info!("{:x} {} no credit left, clearing jobqueue", uid, task.user_id);
+            info!("{} {} no credit left, clearing jobqueue", hex_uid, task.user_id);
             break false;
         }
 
         if loop_count > 420 {
             debug!("current: {:?}", current);
-            warn!("{:x} {} timeout", uid, task.user_id);
+            warn!("{} {} timeout", hex_uid, task.user_id);
             break false;
         }
     };
@@ -175,12 +174,12 @@ pub fn work(task: WorkerTask, mut state: WorkerState)
 
     accounting.finish();
 
-    debug!("{:x} keep: {} - completed: {}", uid, options.keep, completed);
+    debug!("{} keep: {} - completed: {}", hex_uid, options.keep, completed);
     if !options.keep && completed {
         delete(jobs::table.filter(jobs::id.eq(task.job_id)).filter(jobs::user_id.eq(task.user_id)))
             .execute(&connection)
             .expect("deleting job from table");
     }
 
-    info!("{:x} finished", uid);
+    info!("{} finished", hex_uid);
 }

@@ -23,7 +23,6 @@ use std::collections::HashMap;
 
 use jobs::{
     options::JobOptions,
-    uid::UID,
     *,
 };
 use printers::queue::task::WorkerTask;
@@ -31,6 +30,8 @@ use rocket::{
     response::status::Accepted,
     State,
 };
+use rocket_contrib::Json;
+
 use user::guard::UserGuard;
 
 use redis::queue::TaskQueueClient;
@@ -49,7 +50,7 @@ pub fn print_job(
     device_id: u16,
     queues: State<HashMap<u16, TaskQueueClient<WorkerTask>>>,
     query: QueuePostQuery,
-) -> QueryResult<Option<Accepted<String>>>
+) -> QueryResult<Option<Accepted<Json<String>>>>
 {
     let queue = match queues.get(&device_id) {
         Some(queue) => queue,
@@ -70,17 +71,17 @@ pub fn print_job(
         },
     };
 
-    let uid = UID::from(random_bytes(20));
-    let uid_response = format!("{:x}", uid);
+    let uid = random_bytes(20);
+    let hex_uid = hex::encode(&uid[..]);
 
     let task = WorkerTask {
         job_id,
-        uid: uid.bytes,
+        uid,
         user_id: user.id,
         options: job_options,
     };
 
     queue.send(&task).expect("sending job to worker queue");
 
-    Ok(Some(Accepted(Some(uid_response))))
+    Ok(Some(Accepted(Some(Json(hex_uid)))))
 }

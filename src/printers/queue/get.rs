@@ -19,8 +19,6 @@ use std::collections::HashMap;
 
 use printers::queue::task::WorkerTask;
 
-use jobs::uid::UID;
-
 use rocket::State;
 
 use rocket_contrib::Json;
@@ -57,7 +55,7 @@ pub fn get_queue(
                 if element.user_id == user.id {
                     QueueElement::own((*element).clone())
                 } else {
-                    QueueElement::foreign(format!("{:x}", UID::from(element.uid.clone())))
+                    QueueElement::foreign(hex::encode(&element.uid[..]))
                 }
             })
             .collect(),

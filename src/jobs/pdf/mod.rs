@@ -44,12 +44,11 @@ use jobs::{
         DispatcherState,
         DispatcherTask,
     },
-    uid::UID,
 };
 
 pub fn dispatch(mut task: DispatcherTask, state: DispatcherState)
 {
-    let uid = UID::from(task.uid.clone());
+    let hex_uid = hex::encode(&task.uid[..]);
 
     let mut data = state.redis_store.get(task.uid).expect("getting file from store");
 
@@ -99,5 +98,5 @@ pub fn dispatch(mut task: DispatcherTask, state: DispatcherState)
         .execute(&connection)
         .expect("inserting new job into database");
 
-    info!("{:x} finished", uid);
+    info!("{} finished", hex_uid);
 }

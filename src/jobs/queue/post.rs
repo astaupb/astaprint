@@ -30,7 +30,6 @@ use rocket_contrib::Json;
 use jobs::{
     info::JobInfo,
     task::DispatcherTask,
-    uid::UID,
 };
 
 use user::guard::UserGuard;
@@ -65,7 +64,7 @@ fn upload_job<'a>(
         return Ok(Err(BadRequest(Some("could not find %PDF-1 in first 64 bytes of body"))));
     }
 
-    let uid = UID::from(store.set(data).expect("saving file in store"));
+    let uid = store.set(data).expect("saving file in store");
 
     let info = JobInfo::new(
         &options.filename.unwrap_or_else(|| String::from("")),
@@ -73,17 +72,17 @@ fn upload_job<'a>(
         options.color.unwrap_or(true),
     );
 
-    let uid_response = format!("{:x}", uid);
+    let hex_uid = hex::encode(&uid[..]);
 
     let task = DispatcherTask {
         user_id: user.id,
         info,
-        uid: uid.bytes,
+        uid,
     };
 
     taskqueue.send(&task).expect("sending task to queue");
 
-    info!("{} uploaded job with uid {}", user.id, uid_response);
+    info!("{} uploaded job with uid {}", user.id, hex_uid);
 
-    Ok(Ok(Accepted(Some(Json(uid_response)))))
+    Ok(Ok(Accepted(Some(Json(hex_uid)))))
 }

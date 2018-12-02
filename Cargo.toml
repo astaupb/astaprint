@@ -13,6 +13,7 @@ serde = "*"
 serde_json = "*"
 serde_derive = "*"
 bincode = "*"
+hex = "*"
 netsnmp-sys = "*"
 diesel = {version = "*", features = ["mysql", "r2d2", "chrono", "bigdecimal", "numeric"]}
 r2d2_redis = "*"

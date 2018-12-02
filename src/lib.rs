@@ -25,6 +25,7 @@ extern crate serde_json;
 #[macro_use]
 extern crate serde_derive;
 extern crate bincode;
+extern crate hex;
 
 #[macro_use]
 extern crate diesel;

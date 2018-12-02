@@ -17,8 +17,6 @@
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use astacrypto::random_bytes;
 
-use jobs::uid::UID;
-
 use std::{
     fs::{
         remove_file,
@@ -38,9 +36,9 @@ impl TemporaryFile
 {
     pub fn create(data: Vec<u8>) -> io::Result<String>
     {
-        let uid = UID::from(random_bytes(20));
+        let uid = random_bytes(20);
 
-        let path = format!("/tmp/{:x}", uid);
+        let path = format!("/tmp/{}", hex::encode(&uid[..]));
 
         let mut file = File::create(&path)?;
 
