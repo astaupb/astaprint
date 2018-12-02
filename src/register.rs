@@ -43,6 +43,7 @@ use diesel::{
         Error::DatabaseError,
     },
 };
+use r2d2_redis::RedisConnectionManager;
 
 use bigdecimal::BigDecimal;
 use chrono::NaiveDateTime;
@@ -50,7 +51,7 @@ use std::str::FromStr;
 
 use astacrypto::pwhash::PasswordHash;
 
-use journal::table::*;
+use journal::insert;
 use user::table::*;
 
 table! {
@@ -107,10 +108,11 @@ impl<'r> Responder<'r> for RegisterResponse
 #[post("/", data = "<user>")]
 fn register<'a>(
     user: Json<RegisterUser>,
-    pool: State<Pool<ConnectionManager<MysqlConnection>>>,
+    mysql_pool: State<Pool<ConnectionManager<MysqlConnection>>>,
+    redis_pool: State<Pool<RedisConnectionManager>>,
 ) -> QueryResult<Result<Result<NoContent, RegisterResponse>, BadRequest<&'a str>>>
 {
-    let connection = pool.get().unwrap();
+    let connection = mysql_pool.get().expect("getting mysql connection from pool");
 
     if user.username.chars().any(|c| !c.is_alphanumeric()) || user.username.bytes().count() > 32 {
         return Ok(Ok(Err(RegisterResponse(RegisterError::InvalidUsername))));
@@ -142,13 +144,8 @@ fn register<'a>(
 
             let credit = BigDecimal::from_str("0.00").unwrap();
 
-            insert_into(journal::table)
-                .values((
-                    journal::user_id.eq(user_id),
-                    journal::value.eq(&credit),
-                    journal::description.eq("registered in beta"),
-                ))
-                .execute(&connection)?;
+            insert(user_id, credit, "registerd in beta", redis_pool.inner().clone(), connection)?;
+
             info!("{}#{} registered", &user.username, user_id);
 
             Ok(Ok(Ok(NoContent)))
