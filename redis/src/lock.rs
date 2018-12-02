@@ -59,7 +59,6 @@ impl Lock
             .expect("getting redis from pool");
 
         let result: RedisResult<Vec<u8>> = redis.get(&self.name);
-        debug!("{:?}", result);
         result.is_ok() && result.unwrap().len() > 0
     }
 
@@ -77,7 +76,6 @@ impl Lock
                 &self.name,
                 self.value.clone().unwrap()
             );
-            println!("{:?}", result);
             if let Ok(Value::Int(1)) = result
             {
                 debug!("{} locked after {} tries", self.name, count);
@@ -94,20 +92,17 @@ impl Lock
         let redis = self.pool.get()
             .expect("getting redis from pool");
         // check if value is the own to avoid removing a lock created by another client
-        let get: RedisResult<Value> = redis.get(&self.name);
-        println!("{:?}", get);
-        //== Ok(self.value.clone().unwrap())
+        let _get: RedisResult<Value> = redis.get(&self.name);
         let del: RedisResult<Value> = redis.del(&self.name);
-        //== Ok(Value::Int(1))
-        println!("{:?}", del);
-        true
+
+        del == Ok(Value::Int(1))
     }
 }
 impl Drop for Lock
 {
     fn drop(&mut self)
     {
-        self.release(); 
+        assert!(self.release());
     }
 }
 
