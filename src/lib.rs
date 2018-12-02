@@ -41,7 +41,6 @@ extern crate threadpool;
 extern crate base64;
 extern crate bigdecimal;
 extern crate chrono;
-extern crate sha2;
 
 extern crate cairo;
 extern crate poppler;

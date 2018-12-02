@@ -144,12 +144,6 @@ mod tests
     use diesel::prelude::*;
     use journal::*;
     use pool::create_mysql_pool;
-    extern crate sha2;
-    use chrono::FixedOffset;
-    use sha2::{
-        Digest,
-        Sha512,
-    };
     use std::env;
     #[test]
     fn verify()

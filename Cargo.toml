@@ -18,7 +18,6 @@ diesel = {version = "*", features = ["mysql", "r2d2", "chrono", "bigdecimal", "n
 r2d2_redis = "*"
 threadpool = "*"
 bigdecimal = "0.0.11"
-sha2 = "*"
 rocket = "*"
 rocket_contrib = "*"
 rocket_codegen = "*"
