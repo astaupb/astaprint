@@ -100,23 +100,10 @@ fn cors() -> rocket_cors::Cors
     }
 }
 
-use rocket::response::Stream;
-use std::process::{
-    ChildStdout,
-    Command,
-    Stdio,
-};
-
 #[get("/")]
-fn api_reference() -> Stream<ChildStdout>
+fn api_reference() -> &'static str
 {
-    let curl = Command::new("curl")
-        .arg("https://git.uni-paderborn.de/asta/astaprint-docs/raw/master/api_reference.yml")
-        .stdout(Stdio::piped())
-        .spawn()
-        .expect("get current api specification with curl from git.upb.de");
-
-    Stream::from(curl.stdout.unwrap())
+    include_str!("../../openapi.yaml")
 }
 
 fn rocket() -> rocket::Rocket
