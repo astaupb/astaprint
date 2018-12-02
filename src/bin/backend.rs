@@ -141,6 +141,7 @@ fn rocket() -> rocket::Rocket
 
     rocket::ignite()
         .manage(mysql_pool)
+        .manage(redis_pool)
         .manage(dispatcher_queue)
         .manage(worker_queues)
         .mount("/", routes![api_reference])

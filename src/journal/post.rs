@@ -16,10 +16,13 @@
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use diesel::{
-    insert_into,
     prelude::*,
     result::QueryResult,
     update,
+};
+use r2d2_redis::{
+    r2d2::Pool,
+    RedisConnectionManager,
 };
 
 use rocket::{
@@ -30,13 +33,14 @@ use rocket::{
         Response,
     },
     Request,
+    State,
 };
 use rocket_contrib::Json;
 
 use user::guard::UserGuard;
 
 use journal::{
-    table::*,
+    insert,
     tokens::{
         table::*,
         JournalToken,
@@ -67,8 +71,11 @@ impl<'r> Responder<'r> for JournalPostError
 }
 
 #[post("/", data = "<token>")]
-fn post_to_journal(user: UserGuard, token: Json<String>)
-    -> QueryResult<Result<NoContent, JournalPostError>>
+fn post_to_journal(
+    user: UserGuard,
+    token: Json<String>,
+    redis: State<Pool<RedisConnectionManager>>,
+) -> QueryResult<Result<NoContent, JournalPostError>>
 {
     let token: Option<JournalToken> = journal_tokens::table
         .select(journal_tokens::all_columns)
@@ -82,17 +89,18 @@ fn post_to_journal(user: UserGuard, token: Json<String>)
             if token.used {
                 return Ok(Err(JournalPostError(TokenAlreadyConsumed)));
             }
-            update(journal_tokens::table)
+            update(journal_tokens::table.filter(journal_tokens::id.eq(token.id)))
                 .set((journal_tokens::used.eq(true), journal_tokens::used_by.eq(user.id)))
                 .execute(&user.connection)?;
 
-            insert_into(journal::table)
-                .values((
-                    journal::value.eq(token.value),
-                    journal::user_id.eq(user.id),
-                    journal::description.eq(format!("created with token: {}", token.content)),
-                ))
-                .execute(&user.connection)?;
+            insert(
+                user.id,
+                token.value,
+                &format!("created with token {}", token.content),
+                redis.inner().clone(),
+                user.connection,
+            )?;
+
 
             Ok(Ok(NoContent))
         },
