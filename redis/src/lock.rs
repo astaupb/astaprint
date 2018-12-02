@@ -105,19 +105,3 @@ impl Drop for Lock
         assert!(self.release());
     }
 }
-
-#[cfg(test)]
-pub mod tests
-{
-    use std::thread;
-    fn spawn_grabber(name: &str, pool: Pool<RedisConnectionManager>)
-    {
-    
-    }
-    #[test]
-    fn lock_race()
-    {
-
-    }
-
-}
