@@ -49,6 +49,8 @@ fn main()
 
     let mut user_list: Vec<&str> = contents.split("\r\n").collect();
 
+    let mysql_pool = create_mysql_pool(&mysql_url, 10);
+    let redis_pool = create_redis_pool(&redis_url, 10);
     let mut user_count = 0;
     while user_list.len() > 0 {
         let mut end = 32;
@@ -56,18 +58,19 @@ fn main()
             end = user_list.len();
         }
         user_count += end;
-        let mysql_pool = create_mysql_pool(&mysql_url, end as u32);
-        let redis_pool = create_redis_pool(&redis_url, end as u32);
         for user in user_list.drain(..end) {
             let mysql_pool = mysql_pool.clone();
             let split: Vec<&str> = user.split('\t').collect();
+            if split.len() < 3 {
+                break;
+            }
             let locked = split[2] == "1";
             let connection = mysql_pool.get().unwrap();
             match add_user(
                 split[0],
                 split[1],
                 locked,
-                BigDecimal::from_str(split[3]).unwrap(),
+                BigDecimal::from_str("0.0").unwrap(),
                 "imported",
                 redis_pool.clone(),
                 connection,
