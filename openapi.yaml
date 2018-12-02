@@ -20,7 +20,7 @@ tags:
   - name: Printers
     description: Operations about printers
 paths:
-  /jobs:
+  '/jobs':
     get:
       operationId: fetchJobs
       tags:
@@ -482,10 +482,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
               example:
-                username: test
+                name: test
                 user_id: 1
                 credit: 19.6
-                activeTokens: 4
+                active_tokens: 4
+                token_id: 77
         '401':
           $ref: '#/components/responses/UnauthorizedError'
   '/user/name':
@@ -577,7 +578,7 @@ paths:
           description: Success - No content - Reset view
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-  '/user/tokens/{token}':
+  '/user/tokens/{token_id}':
     get:
       operationId: getToken
       summary: Get info on one specific token
@@ -586,11 +587,11 @@ paths:
       security:
         - token: []
       parameters:
-        - name: token
+        - name: token_id
           in: path
           required: true
           schema:
-            type: string
+            type: integer
       responses:
         '200':
           description: Success
@@ -610,11 +611,11 @@ paths:
       security:
         - token: []
       parameters:
-        - name: token
+        - name: token_id
           in: path
           required: true
           schema:
-            type: string
+            type: integer
       responses:
         '205':
           description: Success - No content - Reset view
@@ -1063,7 +1064,7 @@ components:
     User:
       type: object
       properties:
-        username:
+        name:
           type: string
         user_id:
           type: integer
@@ -1071,16 +1072,20 @@ components:
           type: number
         active_tokens:
           type: integer
+        token_id:
+          type: integer
     Token:
       type: object
       properties:
-        token:
+        id:
+          type: integer
+        user_agent:
           type: string
-        timestamp:
+        ip:
           type: string
-        client:
+        location:
           type: string
-        geolocation:
+        created:
           type: string
     Device:
       type: object
