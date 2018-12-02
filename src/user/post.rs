@@ -17,6 +17,7 @@
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use rocket::response::status::Reset;
 
+use rocket_contrib::Json;
 use user::{
     guard::UserGuard,
     login::LoginGuard,
@@ -30,9 +31,9 @@ use diesel::{
 };
 
 #[post("/tokens")]
-pub fn login(login: LoginGuard) -> String
+pub fn login(login: LoginGuard) -> Json<String>
 {
-    login.token
+    Json(login.token)
 }
 
 #[post("/logout")]
