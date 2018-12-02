@@ -40,6 +40,7 @@ struct UserInfo
     name: String,
     credit: f64,
     tokens: usize,
+    token_id: u32,
 }
 
 #[get("/")]
@@ -63,6 +64,7 @@ fn get_user_info(user: UserGuard) -> QueryResult<Json<UserInfo>>
         name,
         credit,
         tokens,
+        token_id: user.token_id,
     }))
 }
 
