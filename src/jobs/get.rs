@@ -17,7 +17,7 @@
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use diesel::{
     prelude::*,
-    result::QueryResult,
+    QueryResult,
 };
 
 use rocket_contrib::Json;
@@ -29,7 +29,7 @@ use jobs::{
 use user::guard::UserGuard;
 
 #[get("/<id>")]
-fn fetch_job(user: UserGuard, id: u32) -> Result<Option<Json<JobResponse>>, diesel::result::Error>
+fn fetch_job(user: UserGuard, id: u32) -> QueryResult<Option<Json<JobResponse>>>
 {
     let job: Option<(u32, u32, NaiveDateTime, Vec<u8>, Vec<u8>)> = jobs::table
         .select((jobs::id, jobs::user_id, jobs::created, jobs::info, jobs::options))

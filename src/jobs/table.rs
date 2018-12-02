@@ -1,6 +1,4 @@
-#![feature(plugin, custom_derive, custom_attribute)]
-#![plugin(rocket_codegen)]
-/// AStAPrint - lib.rs
+/// AStAPrint - Jobs Table
 /// Copyright (C) 2018  AStA der Universität Paderborn
 ///
 /// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
@@ -17,45 +15,19 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#[macro_use]
-extern crate log;
-extern crate serde;
-extern crate serde_json;
 
-#[macro_use]
-extern crate serde_derive;
-extern crate bincode;
-extern crate hex;
-
-#[macro_use]
-extern crate diesel;
-
-extern crate maxminddb;
-extern crate rocket;
-extern crate rocket_contrib;
-
-extern crate r2d2_redis;
-extern crate redis;
-
-extern crate threadpool;
-
-extern crate base64;
-extern crate bigdecimal;
-extern crate chrono;
-
-extern crate cairo;
-extern crate poppler;
-
-extern crate lpr;
-
-extern crate astacrypto;
-
-// routes
-pub mod admin;
-pub mod jobs;
-pub mod journal;
-pub mod printers;
-pub mod register;
-pub mod user;
-
-pub mod pool;
+table! {
+    jobs (id) {
+        id -> Unsigned<Integer>,
+        user_id -> Unsigned<Integer>,
+        info -> Binary,
+        options -> Binary,
+        data -> Longblob,
+        preview_0 -> Mediumblob,
+        preview_1 -> Nullable<Mediumblob>,
+        preview_2 -> Nullable<Mediumblob>,
+        preview_3 -> Nullable<Mediumblob>,
+        created -> Timestamp,
+        updated -> Timestamp,
+    }
+}

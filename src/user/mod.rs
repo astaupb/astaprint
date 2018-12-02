@@ -17,34 +17,19 @@
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use chrono::NaiveDateTime;
 
-use crate::journal::{
-    digest::table::*,
-    table::*,
-};
+pub mod table;
+use self::table::*;
+
+pub mod get;
+pub mod post;
+pub mod put;
 
 pub mod add;
 pub mod guard;
-pub mod http;
 pub mod key;
 pub mod login;
 pub mod response;
-
-allow_tables_to_appear_in_same_query!(user, user_token, journal, journal_digest,);
-
-joinable!(user_token -> user (user_id));
-joinable!(journal -> user (user_id));
-
-table! {
-    user (id) {
-        id -> Unsigned<Integer>,
-        name -> Varchar,
-        hash -> Binary,
-        salt -> Binary,
-        locked -> Bool,
-        created -> Timestamp,
-        updated -> Timestamp,
-    }
-}
+pub mod tokens;
 
 #[derive(Identifiable, Queryable, Debug)]
 #[table_name = "user"]
@@ -57,29 +42,4 @@ pub struct User
     pub salt: Vec<u8>,
     pub created: NaiveDateTime,
     pub updated: NaiveDateTime,
-}
-
-table! {
-    user_token (id) {
-        id -> Unsigned<Integer>,
-        user_id -> Unsigned<Integer>,
-        user_agent -> Varchar,
-        ip -> Varchar,
-        location -> Varchar,
-        hash -> Binary,
-        created -> Timestamp,
-    }
-}
-
-#[derive(Identifiable, Queryable, Associations, Debug)]
-#[table_name = "user_token"]
-pub struct UserToken
-{
-    pub id: u32,
-    pub user_id: u32,
-    pub user_agent: String,
-    pub ip: String,
-    pub location: String,
-    pub hash: Vec<u8>,
-    pub created: NaiveDateTime,
 }

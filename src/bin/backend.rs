@@ -80,9 +80,14 @@ use astaprint::{
         select_device_ids,
     },
     register::*,
-    user::http::{
-        tokens::*,
-        *,
+    user::{
+        get::*,
+        post::*,
+        put::*,
+        tokens::{
+            delete::*,
+            get::*,
+        },
     },
 };
 

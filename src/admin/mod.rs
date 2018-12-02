@@ -1,6 +1,4 @@
-#![feature(plugin, custom_derive, custom_attribute)]
-#![plugin(rocket_codegen)]
-/// AStAPrint - lib.rs
+/// AStAPrint - Admin
 /// Copyright (C) 2018  AStA der Universität Paderborn
 ///
 /// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
@@ -17,45 +15,26 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#[macro_use]
-extern crate log;
-extern crate serde;
-extern crate serde_json;
+use chrono::{
+    NaiveDate,
+    NaiveDateTime,
+};
+pub mod tokens;
 
-#[macro_use]
-extern crate serde_derive;
-extern crate bincode;
-extern crate hex;
+pub mod table;
+use self::table::*;
 
-#[macro_use]
-extern crate diesel;
-
-extern crate maxminddb;
-extern crate rocket;
-extern crate rocket_contrib;
-
-extern crate r2d2_redis;
-extern crate redis;
-
-extern crate threadpool;
-
-extern crate base64;
-extern crate bigdecimal;
-extern crate chrono;
-
-extern crate cairo;
-extern crate poppler;
-
-extern crate lpr;
-
-extern crate astacrypto;
-
-// routes
-pub mod admin;
-pub mod jobs;
-pub mod journal;
-pub mod printers;
-pub mod register;
-pub mod user;
-
-pub mod pool;
+#[derive(Identifiable, Queryable, Insertable, Debug)]
+#[table_name = "admin"]
+pub struct Admin
+{
+    pub id: u32,
+    pub first_name: String,
+    pub last_name: String,
+    pub password_hash: Vec<u8>,
+    pub password_salt: Vec<u8>,
+    pub is_service: bool,
+    pub expires: NaiveDate,
+    pub created: NaiveDateTime,
+    pub updated: NaiveDateTime,
+}

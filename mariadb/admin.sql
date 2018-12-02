@@ -16,7 +16,7 @@
 --  You should have received a copy of the GNU Affero General Public License
 --  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-CREATE TABLE `manager`(
+CREATE TABLE `admin`(
   `id` INT UNSIGNED UNIQUE PRIMARY KEY AUTO_INCREMENT,
   `first_name` VARCHAR(64) NOT NULL,
   `last_name` VARCHAR(64) NOT NULL,
@@ -27,7 +27,7 @@ CREATE TABLE `manager`(
   `created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP);
 
-CREATE TABLE `manager_token`(
+CREATE TABLE `admin_tokens`(
   `id` INT UNSIGNED UNIQUE PRIMARY KEY AUTO_INCREMENT,
   `user_id` INT UNSIGNED NOT NULL,
   `user_agent` VARCHAR(128) NOT NULL,

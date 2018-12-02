@@ -34,7 +34,7 @@ use journal::{
 
 use user::{
     guard::UserGuard,
-    *,
+    table::*,
 };
 
 #[get("/credit")]

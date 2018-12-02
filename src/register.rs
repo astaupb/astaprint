@@ -51,7 +51,7 @@ use std::str::FromStr;
 use astacrypto::pwhash::PasswordHash;
 
 use journal::table::*;
-use user::*;
+use user::table::*;
 
 table! {
     register_token (id) {

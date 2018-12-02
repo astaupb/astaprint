@@ -21,7 +21,7 @@ CREATE DATABASE `astaprint`;
 USE `astaprint`;
 
 source user.sql;
-source manager.sql;
+source admin.sql;
 source journal.sql;
 source jobs.sql;
 source printers.sql;

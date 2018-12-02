@@ -38,7 +38,8 @@ use diesel::{
 
 use crate::user::{
     key::merge_x_api_key,
-    *,
+    table::*,
+    tokens::table::*,
 };
 
 use astacrypto::{
@@ -152,13 +153,13 @@ impl<'a, 'r> FromRequest<'a, 'r> for LoginGuard
         let city = names_map.get("en").expect("getting english entry from names_map");
 
 
-        match insert_into(user_token::table)
+        match insert_into(user_tokens::table)
             .values((
-                user_token::user_id.eq(user_id),
-                user_token::user_agent.eq(user_agent),
-                user_token::ip.eq(format!("{}", remote.ip())),
-                user_token::location.eq(city),
-                user_token::hash.eq(hash),
+                user_tokens::user_id.eq(user_id),
+                user_tokens::user_agent.eq(user_agent),
+                user_tokens::ip.eq(format!("{}", remote.ip())),
+                user_tokens::location.eq(city),
+                user_tokens::hash.eq(hash),
             ))
             .execute(&connection)
         {

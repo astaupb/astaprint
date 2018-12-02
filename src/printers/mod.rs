@@ -1,5 +1,3 @@
-pub mod accounting;
-pub mod queue;
 /// AStAPrint - Printers
 /// Copyright (C) 2018  AStA der Universität Paderborn
 ///
@@ -19,6 +17,9 @@ pub mod queue;
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 pub mod snmp;
 
+pub mod accounting;
+pub mod queue;
+
 use diesel::{
     prelude::*,
     r2d2::{
@@ -29,20 +30,8 @@ use diesel::{
 
 use chrono::NaiveDateTime;
 
-table! {
-    printers (id) {
-        id -> Unsigned<Smallint>,
-        hostname -> Varchar,
-        ip -> Varchar,
-        community -> Varchar,
-        mac -> Varchar,
-        device_id -> Unsigned<Smallint>,
-        model_id -> Unsigned<Smallint>,
-        location -> Varchar,
-        description -> Varchar,
-        updated -> Timestamp,
-    }
-}
+pub mod table;
+use self::table::*;
 
 #[derive(Identifiable, Queryable, Associations, Debug)]
 #[table_name = "printers"]
@@ -60,18 +49,6 @@ pub struct Printer
     pub updated: NaiveDateTime,
 }
 
-table! {
-    printer_model (id) {
-        id -> Unsigned<Smallint>,
-        counter_id -> Unsigned<Smallint>,
-        queue_ctl_id -> Unsigned<Smallint>,
-        energy_ctl_id -> Unsigned<Smallint>,
-        description -> Varchar,
-    }
-}
-
-joinable!(printers -> printer_model (model_id));
-
 #[derive(Identifiable, Queryable, Associations, Debug)]
 #[table_name = "printer_model"]
 pub struct PrinterModel
@@ -83,19 +60,6 @@ pub struct PrinterModel
     pub description: String,
 }
 
-table! {
-    printer_counter (id) {
-        id -> Unsigned<Smallint>,
-        total -> Varchar,
-        print_black -> Varchar,
-        print_color -> Nullable<Varchar>,
-        copy_black -> Varchar,
-        copy_color -> Nullable<Varchar>,
-        description -> Varchar,
-    }
-}
-
-joinable!(printer_model -> printer_counter (counter_id));
 
 #[derive(Identifiable, Queryable, Debug)]
 #[table_name = "printer_counter"]
@@ -110,17 +74,6 @@ pub struct Counter
     pub description: String,
 }
 
-table! {
-    printer_queue_ctl (id) {
-        id -> Unsigned<Smallint>,
-        oid -> Varchar,
-        cancel -> Integer,
-        clear -> Integer,
-    }
-}
-
-joinable!(printer_model -> printer_queue_ctl (queue_ctl_id));
-
 #[derive(Identifiable, Queryable, Debug)]
 #[table_name = "printer_queue_ctl"]
 pub struct QueueCtl
@@ -131,17 +84,6 @@ pub struct QueueCtl
     pub clear: i32,
 }
 
-table! {
-    printer_energy_ctl (id) {
-        id -> Unsigned<Smallint>,
-        oid -> Varchar,
-        wake -> Integer,
-        sleep -> Integer,
-    }
-}
-
-joinable!(printer_model -> printer_energy_ctl (energy_ctl_id));
-
 #[derive(Identifiable, Queryable, Debug)]
 #[table_name = "printer_energy_ctl"]
 pub struct EnergyCtl
@@ -151,14 +93,6 @@ pub struct EnergyCtl
     pub wake: i32,
     pub sleep: i32,
 }
-
-allow_tables_to_appear_in_same_query!(
-    printers,
-    printer_model,
-    printer_counter,
-    printer_energy_ctl,
-    printer_queue_ctl,
-);
 
 pub fn select_device_ids(connection: &PooledConnection<ConnectionManager<MysqlConnection>>) -> Vec<u16>
 {

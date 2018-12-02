@@ -1,4 +1,3 @@
-use bincode;
 /// AStAPrint - Jobs
 /// Copyright (C) 2018  AStA der Universität Paderborn
 ///
@@ -16,6 +15,7 @@ use bincode;
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+use bincode;
 use chrono::{
     NaiveDateTime,
     Local,
@@ -38,21 +38,8 @@ pub mod get;
 pub mod delete;
 pub mod response;
 
-table! {
-    jobs (id) {
-        id -> Unsigned<Integer>,
-        user_id -> Unsigned<Integer>,
-        info -> Binary,
-        options -> Binary,
-        data -> Longblob,
-        preview_0 -> Mediumblob,
-        preview_1 -> Nullable<Mediumblob>,
-        preview_2 -> Nullable<Mediumblob>,
-        preview_3 -> Nullable<Mediumblob>,
-        created -> Timestamp,
-        updated -> Timestamp,
-    }
-}
+pub mod table;
+use self::table::*;
 
 #[derive(Identifiable, Queryable, Insertable, Associations, Debug)]
 pub struct Job

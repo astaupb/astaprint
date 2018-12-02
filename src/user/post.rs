@@ -1,6 +1,4 @@
-#![feature(plugin, custom_derive, custom_attribute)]
-#![plugin(rocket_codegen)]
-/// AStAPrint - lib.rs
+/// AStAPrint-Backend - User POST Routes
 /// Copyright (C) 2018  AStA der Universität Paderborn
 ///
 /// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
@@ -17,45 +15,32 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#[macro_use]
-extern crate log;
-extern crate serde;
-extern crate serde_json;
+use rocket::response::status::Reset;
 
-#[macro_use]
-extern crate serde_derive;
-extern crate bincode;
-extern crate hex;
+use user::{
+    guard::UserGuard,
+    login::LoginGuard,
+    tokens::table::*,
+};
 
-#[macro_use]
-extern crate diesel;
+use diesel::{
+    delete,
+    prelude::*,
+    QueryResult,
+};
 
-extern crate maxminddb;
-extern crate rocket;
-extern crate rocket_contrib;
+#[post("/tokens")]
+pub fn login(login: LoginGuard) -> String
+{
+    login.token
+}
 
-extern crate r2d2_redis;
-extern crate redis;
+#[post("/logout")]
+pub fn logout(user: UserGuard) -> QueryResult<Reset>
+{
+    delete(user_tokens::table.filter(user_tokens::id.eq(user.token_id))).execute(&user.connection)?;
 
-extern crate threadpool;
+    info!("{} logged out", user.id);
 
-extern crate base64;
-extern crate bigdecimal;
-extern crate chrono;
-
-extern crate cairo;
-extern crate poppler;
-
-extern crate lpr;
-
-extern crate astacrypto;
-
-// routes
-pub mod admin;
-pub mod jobs;
-pub mod journal;
-pub mod printers;
-pub mod register;
-pub mod user;
-
-pub mod pool;
+    Ok(Reset)
+}

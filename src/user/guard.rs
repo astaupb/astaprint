@@ -29,20 +29,21 @@ use rocket::{
 };
 
 use diesel::{
-    self,
     prelude::*,
     r2d2::{
         ConnectionManager,
         Pool,
         PooledConnection,
     },
+    QueryResult,
 };
 
 use astacrypto::GenericHash;
 
 use crate::user::{
     key::split_x_api_key,
-    *,
+    table::*,
+    tokens::table::*,
 };
 
 pub struct UserGuard
@@ -85,16 +86,16 @@ impl<'a, 'r> FromRequest<'a, 'r> for UserGuard
         };
 
         // select password hash of user which is used as salt
-        let result: Result<Vec<u8>, diesel::result::Error> =
+        let result: QueryResult<Vec<u8>> =
             user::table.select(user::hash).filter(user::id.eq(user_id)).first(&connection);
 
         if let Ok(salt) = result {
             let hash = GenericHash::with_salt(&token[..], &salt[..]);
 
-            let result: Result<u32, diesel::result::Error> = user_token::table
-                .select(user_token::id)
-                .filter(user_token::user_id.eq(user_id))
-                .filter(user_token::hash.eq(hash))
+            let result: QueryResult<u32> = user_tokens::table
+                .select(user_tokens::id)
+                .filter(user_tokens::user_id.eq(user_id))
+                .filter(user_tokens::hash.eq(hash))
                 .first(&connection);
 
             if let Ok(token_id) = result {

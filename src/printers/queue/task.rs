@@ -35,7 +35,8 @@ use lpr::LprConnection;
 
 use jobs::{
     options::JobOptions,
-    *,
+    table::*,
+    Job,
 };
 
 use printers::{

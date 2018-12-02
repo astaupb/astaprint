@@ -1,7 +1,3 @@
-use diesel::{
-    prelude::*,
-    result::QueryResult,
-};
 /// AStAPrint
 /// Copyright (C) 2018  AStA der Universität Paderborn
 ///
@@ -21,15 +17,22 @@ use diesel::{
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use std::collections::HashMap;
 
+use diesel::{
+    prelude::*,
+    result::QueryResult,
+};
+
 use jobs::{
     options::JobOptions,
-    *,
+    table::*,
 };
+
 use printers::queue::task::WorkerTask;
 use rocket::{
     response::status::Accepted,
     State,
 };
+
 use rocket_contrib::Json;
 
 use user::guard::UserGuard;
