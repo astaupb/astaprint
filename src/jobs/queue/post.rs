@@ -27,8 +27,6 @@ use rocket::{
 
 use rocket_contrib::Json;
 
-use astacrypto::random_bytes;
-
 use jobs::{
     info::JobInfo,
     task::DispatcherTask,
@@ -37,7 +35,10 @@ use jobs::{
 
 use user::guard::UserGuard;
 
-use redis::queue::TaskQueueClient;
+use redis::{
+    queue::TaskQueueClient,
+    store::Store,
+};
 
 
 #[derive(FromForm, Debug)]
@@ -53,6 +54,7 @@ fn upload_job<'a>(
     data: Vec<u8>,
     options: UploadForm,
     taskqueue: State<TaskQueueClient<DispatcherTask>>,
+    store: State<Store>,
 ) -> Result<Result<Accepted<Json<String>>, BadRequest<&'a str>>, io::Error>
 {
     if data.len() < 64 {
@@ -63,7 +65,7 @@ fn upload_job<'a>(
         return Ok(Err(BadRequest(Some("could not find %PDF-1 in first 64 bytes of body"))));
     }
 
-    let uid = UID::from(random_bytes(20));
+    let uid = UID::from(store.set(data).expect("saving file in store"));
 
     let info = JobInfo::new(
         &options.filename.unwrap_or_else(|| String::from("")),
@@ -76,7 +78,6 @@ fn upload_job<'a>(
     let task = DispatcherTask {
         user_id: user.id,
         info,
-        data,
         uid: uid.bytes,
     };
 

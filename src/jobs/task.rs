@@ -25,10 +25,13 @@ use diesel::{
     },
 };
 
+use redis::store::Store;
+
 #[derive(Clone)]
 pub struct DispatcherState
 {
     pub mysql_pool: Pool<ConnectionManager<MysqlConnection>>,
+    pub redis_store: Store,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -37,7 +40,6 @@ pub struct DispatcherTask
     pub user_id: u32,
     pub uid: Vec<u8>,
     pub info: JobInfo,
-    pub data: Vec<u8>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

@@ -28,7 +28,10 @@ use logger::Logger;
 
 use threadpool::ThreadPool;
 
-use redis::queue::TaskQueue;
+use redis::{
+    queue::TaskQueue,
+    store::Store,
+};
 
 use astaprint::{
     jobs::{
@@ -50,6 +53,8 @@ fn main()
 
     let redis_pool = create_redis_pool(&redis_url, 10);
 
+    let redis_store = Store::from(redis_pool.clone());
+
     let mysql_url = env::var("ASTAPRINT_DATABASE_URL").expect("reading database url from environment");
 
     let mysql_pool = create_mysql_pool(&mysql_url, 10);
@@ -58,6 +63,7 @@ fn main()
 
     let state = DispatcherState {
         mysql_pool,
+        redis_store,
     };
     let taskqueue: TaskQueue<DispatcherTask, DispatcherState> =
         TaskQueue::new("dispatcher", state, redis_pool, thread_pool);
@@ -67,6 +73,6 @@ fn main()
     info!("listening");
 
     taskqueue.listen(|task, state| {
-        dispatch(task, state.mysql_pool);
+        dispatch(task, state);
     });
 }

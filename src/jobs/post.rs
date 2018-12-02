@@ -37,7 +37,10 @@ use jobs::{
 
 use user::guard::UserGuard;
 
-use redis::queue::TaskQueueClient;
+use redis::{
+    queue::TaskQueueClient,
+    store::Store,
+};
 
 
 #[derive(FromForm, Debug)]
@@ -54,6 +57,7 @@ fn upload_job<'a>(
     data: Vec<u8>,
     options: UploadForm,
     taskqueue: State<TaskQueueClient<DispatcherTask>>,
+    store: State<Store>,
 ) -> Result<Result<Accepted<String>, BadRequest<&'a str>>, io::Error>
 {
     if data.len() < 64 {
@@ -64,20 +68,20 @@ fn upload_job<'a>(
         return Ok(Err(BadRequest(Some("could not find %PDF-1 in first 64 bytes of body"))));
     }
 
-    let uid = UID::from(random_bytes(20));
-
     let info = JobInfo::new(
         &options.filename.unwrap_or_else(|| String::from("")),
         &options.password.unwrap_or_else(|| String::from("")),
         options.color.unwrap_or(true),
     );
+    let store = store.into_inner();
+
+    let uid = UID::from(store.set(data).expect("saving file in store"));
 
     let uid_response = format!("{:x}", uid);
 
     let task = DispatcherTask {
         user_id: user.id,
         info,
-        data,
         uid: uid.bytes,
     };
 

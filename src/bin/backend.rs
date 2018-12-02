@@ -40,7 +40,10 @@ use rocket_cors::{
     AllowedOrigins,
 };
 
-use redis::queue::TaskQueueClient;
+use redis::{
+    queue::TaskQueueClient,
+    store::Store,
+};
 
 use logger::Logger;
 
@@ -129,19 +132,25 @@ fn rocket() -> rocket::Rocket
     let dispatcher_queue: TaskQueueClient<DispatcherTask> =
         TaskQueueClient::new("dispatcher", redis_pool.clone());
 
+    let redis_store = Store::from(redis_pool);
+
     let mut worker_queues: HashMap<u16, TaskQueueClient<WorkerTask>> = HashMap::new();
 
     let connection = mysql_pool.get().expect("getting mysql connection from pool");
+
+    let redis_pool = create_redis_pool(&url, 20);
 
     for device_id in select_device_ids(&connection) {
         let pool = redis_pool.clone();
         worker_queues.insert(device_id, TaskQueueClient::new(&format!("worker::{}", device_id), pool));
     }
 
+    let redis_pool = create_redis_pool(&url, 10);
 
     rocket::ignite()
         .manage(mysql_pool)
         .manage(redis_pool)
+        .manage(redis_store)
         .manage(dispatcher_queue)
         .manage(worker_queues)
         .mount("/", routes![api_reference])

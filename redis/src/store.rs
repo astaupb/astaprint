@@ -32,6 +32,16 @@ pub struct Store
     pool: Pool<RedisConnectionManager>,
 }
 
+impl From<Pool<RedisConnectionManager>> for Store
+{
+    fn from(pool: Pool<RedisConnectionManager>) -> Store
+    {
+        Store {
+            pool, 
+        } 
+    }
+}
+
 impl Store
 {
     pub fn new(pool: Pool<RedisConnectionManager>) -> Store

@@ -22,10 +22,6 @@ pub mod subprocesses;
 use diesel::{
     insert_into,
     prelude::*,
-    r2d2::{
-        ConnectionManager,
-        Pool,
-    },
 };
 
 use jobs::*;
@@ -44,15 +40,20 @@ use jobs::{
             pdfjam,
         },
     },
-    task::DispatcherTask,
+    task::{
+        DispatcherState,
+        DispatcherTask,
+    },
     uid::UID,
 };
 
-pub fn dispatch(mut task: DispatcherTask, pool: Pool<ConnectionManager<MysqlConnection>>)
+pub fn dispatch(mut task: DispatcherTask, state: DispatcherState)
 {
-    let uid = UID::from(task.uid);
+    let uid = UID::from(task.uid.clone());
 
-    let mut pdf_document = PDFDocument::new(&task.data[..], &task.info.password);
+    let mut data = state.redis_store.get(task.uid).expect("getting file from store");
+
+    let mut pdf_document = PDFDocument::new(&data[..], &task.info.password);
 
     // swap filename with pdf title if filename is empty
     if task.info.filename == "" {
@@ -60,8 +61,8 @@ pub fn dispatch(mut task: DispatcherTask, pool: Pool<ConnectionManager<MysqlConn
     }
 
     if task.info.password != "" {
-        task.data = decrypt_pdf(task.data, &task.info.password).expect("decrypting pdf");;
-        pdf_document = PDFDocument::new(&task.data[..], "");
+        data = decrypt_pdf(data, &task.info.password).expect("decrypting pdf");;
+        pdf_document = PDFDocument::new(&data[..], "");
     }
 
     task.info.pagecount = pdf_document.get_pagecount();
@@ -71,25 +72,25 @@ pub fn dispatch(mut task: DispatcherTask, pool: Pool<ConnectionManager<MysqlConn
     if page_info.size != Valid(PageSize::A3) && page_info.size != Valid(PageSize::A4) {
         info!("invalid pageformat, using pdfjam to fix it");
 
-        task.data = pdfjam(task.data, &page_info).expect("jamming pdf to valid format");
+        data = pdfjam(data, &page_info).expect("jamming pdf to valid format");
 
-        pdf_document = PDFDocument::new(&task.data, "");
+        pdf_document = PDFDocument::new(&data, "");
     }
 
     if !task.info.color {
-        task.data = create_greyscale_pdf(task.data).expect("creating greyscale pdf with gs");
+        data = create_greyscale_pdf(data).expect("creating greyscale pdf with gs");
 
-        pdf_document = PDFDocument::new(&task.data, "");
+        pdf_document = PDFDocument::new(&data, "");
     }
 
-    let connection = pool.get().expect("getting mysql connection from pool");
+    let connection = state.mysql_pool.get().expect("getting mysql connection from pool");
 
     insert_into(jobs::table)
         .values((
             jobs::user_id.eq(task.user_id),
             jobs::info.eq(task.info.serialize()),
             jobs::options.eq(JobOptions::default().serialize()),
-            jobs::data.eq(task.data),
+            jobs::data.eq(data),
             jobs::preview_0.eq(pdf_document.render_preview(0).unwrap()),
             jobs::preview_1.eq(pdf_document.render_preview(1)),
             jobs::preview_2.eq(pdf_document.render_preview(2)),
