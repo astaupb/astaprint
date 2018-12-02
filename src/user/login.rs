@@ -139,9 +139,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for LoginGuard
             String::from(user_agent[0])
         };
 
-        // FIXME: read geoip database from memory
-        let mmdb_reader = maxminddb::Reader::open("GeoLite2-City_20181127/GeoLite2-City.mmdb")
-            .expect("opening maxminddb reader");
+        let mmdb_reader = request.guard::<State<maxminddb::OwnedReaderFile<'_>>>()?;
 
         let city: geoip2::City = mmdb_reader.lookup(remote.ip()).expect("looking up ip");
 

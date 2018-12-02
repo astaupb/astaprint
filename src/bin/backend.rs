@@ -131,6 +131,8 @@ fn rocket() -> rocket::Rocket
         let pool = redis_pool.clone();
         worker_queues.insert(device_id, TaskQueueClient::new(&format!("worker::{}", device_id), pool));
     }
+    let mmdb_reader = maxminddb::Reader::open_readfile("GeoLite2-City_20181127/GeoLite2-City.mmdb")
+        .expect("opening maxminddb reader");
 
     let redis_pool = create_redis_pool(&url, 10);
 
@@ -138,6 +140,7 @@ fn rocket() -> rocket::Rocket
         .manage(mysql_pool)
         .manage(redis_pool)
         .manage(redis_store)
+        .manage(mmdb_reader)
         .manage(dispatcher_queue)
         .manage(worker_queues)
         .mount("/", routes![api_reference])
