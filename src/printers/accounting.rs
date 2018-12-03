@@ -20,7 +20,6 @@ use bigdecimal::{
     FromPrimitive,
 };
 use diesel::{
-    insert_into,
     prelude::*,
     r2d2::{
         ConnectionManager,
@@ -29,8 +28,8 @@ use diesel::{
 };
 
 use journal::{
+    insert,
     credit::get_credit,
-    table::*,
 };
 
 use r2d2_redis::RedisConnectionManager;
@@ -38,26 +37,27 @@ use redis::lock::Lock;
 
 use printers::snmp::counter::CounterValues;
 
-pub struct Accounting<'a>
+pub struct Accounting
 {
     user_id: u32,
     pub lock: Lock,
     baseprice_cent: u32,
     credit: BigDecimal,
     value: BigDecimal,
-    pool: &'a Pool<ConnectionManager<MysqlConnection>>,
+    mysql_pool: Pool<ConnectionManager<MysqlConnection>>,
+    redis_pool: Pool<RedisConnectionManager>,
 }
 
-impl<'a> Accounting<'a>
+impl Accounting
 {
     pub fn new(
         user_id: u32,
         color: bool,
-        pool: &Pool<ConnectionManager<MysqlConnection>>,
-        redis: Pool<RedisConnectionManager>,
+        mysql_pool: Pool<ConnectionManager<MysqlConnection>>,
+        redis_pool: Pool<RedisConnectionManager>,
     ) -> Accounting
     {
-        let mut lock = Lock::new(format!("{}", user_id), redis);
+        let mut lock = Lock::new(format!("{}", user_id), redis_pool.clone());
 
         if lock.is_grabbed() {
             info!("accounting for {} locked", &user_id);
@@ -71,7 +71,7 @@ impl<'a> Accounting<'a>
 
         lock.grab();
 
-        let connection = pool.get().expect("gettting connection from pool");
+        let connection = mysql_pool.get().expect("gettting connection from pool");
 
         let credit = get_credit(user_id, &connection).expect("getting credit from journal");
 
@@ -83,7 +83,8 @@ impl<'a> Accounting<'a>
             baseprice_cent,
             credit,
             value,
-            pool,
+            mysql_pool,
+            redis_pool,
         }
     }
 
@@ -110,17 +111,16 @@ impl<'a> Accounting<'a>
     pub fn finish(self)
     {
         if self.value < BigDecimal::from_u32(0).unwrap() {
-            let connection = self.pool.get().expect("getting mysql connection from pool");
+            let connection = self.mysql_pool.get().expect("getting mysql connection from pool");
 
             let credit = &self.credit + &self.value;
-            insert_into(journal::table)
-                .values((
-                    journal::user_id.eq(&self.user_id),
-                    journal::value.eq(&self.value),
-                    journal::description.eq("Print Job"),
-                ))
-                .execute(&connection)
-                .expect("inserting new journal entry");
+            insert(
+                self.user_id,
+                self.value,
+                "Print Job",
+                self.redis_pool,
+                connection,
+            ).expect("inserting new entry into journal");
 
             info!("inserted new credit for {}: {}", &self.user_id, &credit);
         } else {
