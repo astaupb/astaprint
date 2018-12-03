@@ -195,7 +195,7 @@ fn rocket() -> rocket::Rocket
 
 fn main()
 {
-    Logger::init("backend").expect("initialising Logger");
+    Logger::init().expect("initialising Logger");
 
     rocket().launch();
 }

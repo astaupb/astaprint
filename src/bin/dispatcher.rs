@@ -68,7 +68,7 @@ fn main()
     let taskqueue: TaskQueue<DispatcherTask, DispatcherState> =
         TaskQueue::new("dispatcher", state, redis_pool, thread_pool);
 
-    Logger::init("dispatcher").expect("initialising logger");
+    Logger::init().expect("initialising logger");
 
     info!("listening");
 

@@ -49,6 +49,7 @@ use jobs::{
 pub fn dispatch(mut task: DispatcherTask, state: DispatcherState)
 {
     let hex_uid = hex::encode(&task.uid[..]);
+    info!("{} {} started", task.user_id, &hex_uid[..8]);
 
     let mut data = state.redis_store.get(task.uid).expect("getting file from store");
 
@@ -98,5 +99,5 @@ pub fn dispatch(mut task: DispatcherTask, state: DispatcherState)
         .execute(&connection)
         .expect("inserting new job into database");
 
-    info!("{} finished", hex_uid);
+    info!("{} {} finished", task.user_id, &hex_uid[..8]);
 }

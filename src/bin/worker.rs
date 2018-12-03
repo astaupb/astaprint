@@ -96,7 +96,7 @@ fn spawn_worker(
 }
 fn main()
 {
-    Logger::init("worker").expect("initializing Logger");
+    Logger::init().expect("initializing Logger");
 
     let redis_url = env::var("ASTAPRINT_REDIS_URL").expect("reading redis url from environment");
 

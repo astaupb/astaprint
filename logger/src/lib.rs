@@ -32,10 +32,7 @@ use log::{
     SetLoggerError,
 };
 
-pub struct Logger
-{
-    name: String,
-}
+pub struct Logger;
 
 impl Log for Logger
 {
@@ -48,10 +45,9 @@ impl Log for Logger
     {
         if self.enabled(record.metadata()) {
             println!(
-                "{} {} {} {}",
-                Local::now().format("%Y-%m-%d %H:%M:%S.%f"),
+                "{} {} {}",
+                Local::now().format(".%f"),
                 record.level(),
-                self.name,
                 record.args()
             );
         }
@@ -65,13 +61,9 @@ impl Log for Logger
 
 impl Logger
 {
-    pub fn init(name: &str) -> Result<(), SetLoggerError>
+    pub fn init() -> Result<(), SetLoggerError>
     {
-        let logger = Logger {
-            name: name.to_string(),
-        };
-
-        set_boxed_logger(Box::new(logger))?;
+        set_boxed_logger(Box::new(Logger))?;
 
         set_max_level(LevelFilter::Debug);
 
