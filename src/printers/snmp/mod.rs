@@ -47,13 +47,8 @@ impl PrinterInterface
         connection: &PooledConnection<ConnectionManager<MysqlConnection>>,
     ) -> PrinterInterface
     {
-        let (row, queue_ctl, energy_ctl, community, ip): (
-            Counter,
-            QueueCtl,
-            EnergyCtl,
-            String,
-            String,
-        ) = select_printer_interface_information(device_id, connection);
+        let (row, queue_ctl, energy_ctl, community, ip): (Counter, QueueCtl, EnergyCtl, String, String) =
+            select_printer_interface_information(device_id, connection);
 
         PrinterInterface {
             ip,

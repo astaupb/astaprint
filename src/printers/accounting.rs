@@ -28,8 +28,8 @@ use diesel::{
 };
 
 use journal::{
-    insert,
     credit::get_credit,
+    insert,
 };
 
 use r2d2_redis::RedisConnectionManager;
@@ -114,13 +114,8 @@ impl Accounting
             let connection = self.mysql_pool.get().expect("getting mysql connection from pool");
 
             let credit = &self.credit + &self.value;
-            insert(
-                self.user_id,
-                self.value,
-                "Print Job",
-                self.redis_pool,
-                connection,
-            ).expect("inserting new entry into journal");
+            insert(self.user_id, self.value, "Print Job", self.redis_pool, connection)
+                .expect("inserting new entry into journal");
 
             info!("inserted new credit for {}: {}", &self.user_id, &credit);
         } else {

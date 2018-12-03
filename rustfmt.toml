@@ -1,4 +1,4 @@
-required_version = "0.99.6"
+required_version = "1.0.0"
 max_width = 108
 hard_tabs = false
 tab_spaces = 4

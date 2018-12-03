@@ -166,7 +166,7 @@ mod tests
             let hash = GenericHash::with_salt(input.as_bytes(), &salt[..]);
 
             assert_eq!(&hash[..], &digests[i + 1].digest[..]);
-            println!("id {} verified", i+1);
+            println!("id {} verified", i + 1);
         }
     }
 }
