@@ -91,7 +91,7 @@ pub fn work(task: WorkerTask, mut state: WorkerState)
 
     let snmp_session = SnmpSession::new(&state.printer_interface.ip, &state.printer_interface.community);
 
-    let mut accounting = Accounting::new(task.user_id, info.color, &state.mysql_pool, state.redis_pool);
+    let mut accounting = Accounting::new(task.user_id, info.color, state.mysql_pool, state.redis_pool);
 
     if accounting.not_enough_credit() {
         info!("not enough credit for one page, aborting");
@@ -158,7 +158,7 @@ pub fn work(task: WorkerTask, mut state: WorkerState)
             break false;
         }
 
-        if loop_count > 420 {
+        if loop_count > 800 {
             debug!("current: {:?}", current);
             warn!("{} {} timeout", hex_uid, task.user_id);
             break false;
@@ -173,6 +173,13 @@ pub fn work(task: WorkerTask, mut state: WorkerState)
         )
         .expect("clearing jobqueue");
 
+    thread::sleep(time::Duration::from_millis(80));
+
+    let current = snmp_session
+        .get_counter_values(&mut state.printer_interface.counter)
+        .expect("getting counter values");
+
+    accounting.set_value(&(current.clone() - counter_base.clone()));
     accounting.finish();
 
     debug!("{} keep: {} - completed: {}", hex_uid, options.keep, completed);
