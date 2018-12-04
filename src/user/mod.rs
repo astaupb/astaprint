@@ -40,6 +40,8 @@ pub struct User
     pub locked: bool,
     pub hash: Vec<u8>,
     pub salt: Vec<u8>,
+    pub card: Option<u64>,
+    pub pin: Option<u32>,
     pub created: NaiveDateTime,
     pub updated: NaiveDateTime,
 }

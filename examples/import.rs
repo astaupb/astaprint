@@ -26,6 +26,7 @@ use astaprint::{
     },
     user::add::add_user,
 };
+extern crate diesel;
 
 use std::{
     env,
@@ -52,6 +53,7 @@ fn main()
     let mysql_pool = create_mysql_pool(&mysql_url, 10);
     let redis_pool = create_redis_pool(&redis_url, 10);
     let mut user_count = 0;
+        let connection = mysql_pool.get().unwrap();
     while user_list.len() > 0 {
         let mut end = 32;
         if user_list.len() < 32 {
@@ -59,11 +61,28 @@ fn main()
         }
         user_count += end;
         for user in user_list.drain(..end) {
-            let mysql_pool = mysql_pool.clone();
             let split: Vec<&str> = user.split('\t').collect();
             if split.len() < 3 {
                 break;
             }
+            let card: u64 = split[0].parse().unwrap();
+            let pin: u32 = match split[1].parse() {
+                Ok(pin) => pin,
+                Err(_) => break,
+            };
+            use diesel::{
+                update, prelude::*,
+            };
+            println!("{} {}", card, pin);
+            use astaprint::user::table::*;
+            update(user::table.filter(user::name.eq(split[0])))
+                .set((
+                    user::card.eq(Some(card)),
+                    user::pin.eq(Some(pin)),
+                    ))
+                .execute(&connection)
+                .expect("updating user");
+            /*
             let locked = split[2] == "1";
             let connection = mysql_pool.get().unwrap();
             match add_user(
@@ -78,6 +97,7 @@ fn main()
                 Ok(_) => println!("{} {} imported..", split[0], split[1]),
                 Err(e) => println!("{}: {:?}", split[0], e),
             }
+            */
         }
         println!("{} imported", user_count);
     }

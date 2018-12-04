@@ -32,6 +32,8 @@ table! {
         name -> Varchar,
         hash -> Binary,
         salt -> Binary,
+        card -> Nullable<Unsigned<BigInt>>,
+        pin -> Nullable<Unsigned<Integer>>,
         locked -> Bool,
         created -> Timestamp,
         updated -> Timestamp,
