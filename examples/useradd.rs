@@ -38,12 +38,10 @@ fn main()
     if arg.len() != 3 {
         panic!("expecting username password");
     }
-    let mysql_url =
-        env::var("ASTAPRINT_DATABASE_URL").expect("reading ASTAPRINT_DATABASE_URL from environment");
     let redis_url =
         env::var("ASTAPRINT_REDIS_URL").expect("reading ASTAPRINT_DATABASE_URL from environment");
 
-    let connection = create_mysql_pool(&mysql_url, 1).get().unwrap();
+    let connection = create_mysql_pool(&mysql_url).get().unwrap();
 
     add_user(
         &arg[1],

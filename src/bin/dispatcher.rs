@@ -55,9 +55,7 @@ fn main()
 
     let redis_store = Store::from(redis_pool.clone());
 
-    let mysql_url = env::var("ASTAPRINT_DATABASE_URL").expect("reading database url from environment");
-
-    let mysql_pool = create_mysql_pool(&mysql_url, 10);
+    let mysql_pool = create_mysql_pool(10);
 
     let thread_pool = ThreadPool::new(20);
 

@@ -100,11 +100,9 @@ fn main()
 
     let redis_url = env::var("ASTAPRINT_REDIS_URL").expect("reading redis url from environment");
 
-    let mysql_url = env::var("ASTAPRINT_DATABASE_URL").expect("reading database url form environment");
-
     let mut handles: Vec<thread::JoinHandle<()>> = Vec::new();
 
-    let mysql_pool = create_mysql_pool(&mysql_url, 10);
+    let mysql_pool = create_mysql_pool(10);
 
     let connection = mysql_pool.get().expect("getting mysql connection from pool");
 

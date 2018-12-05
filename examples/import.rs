@@ -37,10 +37,7 @@ use std::{
 
 fn main()
 {
-    let mysql_url =
-        env::var("ASTAPRINT_DATABASE_URL").expect("reading ASTAPRINT_DATABASE_URL from environment");
-    let redis_url =
-        env::var("ASTAPRINT_REDIS_URL").expect("reading ASTAPRINT_DATABASE_URL from environment");
+    let redis_url = env::var("ASTAPRINT_REDIS_URL").expect("reading ASTAPRINT_REDIS_URL from environment");
 
     let mut file = File::open("dump.tsv").unwrap();
 
@@ -50,10 +47,10 @@ fn main()
 
     let mut user_list: Vec<&str> = contents.split("\r\n").collect();
 
-    let mysql_pool = create_mysql_pool(&mysql_url, 10);
+    let mysql_pool = create_mysql_pool(10);
     let redis_pool = create_redis_pool(&redis_url, 10);
     let mut user_count = 0;
-        let connection = mysql_pool.get().unwrap();
+    let connection = mysql_pool.get().unwrap();
     while user_list.len() > 0 {
         let mut end = 32;
         if user_list.len() < 32 {

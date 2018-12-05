@@ -113,9 +113,7 @@ fn api_reference() -> &'static str
 
 fn rocket() -> rocket::Rocket
 {
-    let url = env::var("ASTAPRINT_DATABASE_URL").expect("reading ASTAPRINT_DATABASE_URL from environment");
-
-    let mysql_pool = create_mysql_pool(&url, 10);
+    let mysql_pool = create_mysql_pool(10);
 
     let url = env::var("ASTAPRINT_REDIS_URL").expect("reading ASTAPRINT_REDIS_URL from environment");
 

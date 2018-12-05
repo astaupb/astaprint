@@ -38,7 +38,7 @@ fn main()
     let value = BigDecimal::from_str(&arg[2]).unwrap();
     let user_id: u32 = arg[1].parse().unwrap();
     let redis_pool = create_redis_pool(&env::var("ASTAPRINT_REDIS_URL").unwrap(), 3);
-    let mysql_pool = create_mysql_pool(&env::var("ASTAPRINT_DATABASE_URL").unwrap(), 3);
+    let mysql_pool = create_mysql_pool(3);
 
     insert(user_id, value, &arg[3], redis_pool, mysql_pool.get().unwrap()).unwrap();
 }

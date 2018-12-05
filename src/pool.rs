@@ -28,6 +28,8 @@ use diesel::{
     },
 };
 
+use std::env;
+
 pub fn create_redis_pool(url: &str, max_size: u32) -> RedisPool<RedisConnectionManager>
 {
     RedisPool::builder()
@@ -36,10 +38,12 @@ pub fn create_redis_pool(url: &str, max_size: u32) -> RedisPool<RedisConnectionM
         .expect("creating Redis Connection Pool")
 }
 
-pub fn create_mysql_pool(url: &str, max_size: u32) -> MysqlPool<ConnectionManager<MysqlConnection>>
+pub fn create_mysql_pool(max_size: u32) -> MysqlPool<ConnectionManager<MysqlConnection>>
 {
     MysqlPool::builder()
         .max_size(max_size)
-        .build(ConnectionManager::<MysqlConnection>::new(url))
+        .build(ConnectionManager::<MysqlConnection>::new(
+            env::var("ASTAPRINT_DATABASE_URL").expect("getting database url from environment"),
+        ))
         .expect("creating Mysql Connection Pool")
 }

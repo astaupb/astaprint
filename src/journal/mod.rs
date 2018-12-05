@@ -148,8 +148,7 @@ mod tests
     #[test]
     fn verify()
     {
-        let url = env::var("ASTAPRINT_DATABASE_URL").unwrap();
-        let connection = create_mysql_pool(&url, 1).get().unwrap();
+        let connection = create_mysql_pool(1).get().unwrap();
         let journal: Vec<Journal> =
             journal::table.select(journal::all_columns).load(&connection).expect("selecting journal");
 
