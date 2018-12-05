@@ -26,14 +26,16 @@ use crate::jobs::{
     options::JobOptions,
 };
 
-pub mod options;
 pub mod info;
+pub mod options;
+pub mod data;
 
 pub mod pdf;
 pub mod task;
 pub mod tmp;
 pub mod queue;
 
+pub mod select;
 pub mod get;
 pub mod delete;
 pub mod response;
@@ -79,24 +81,6 @@ impl Job
         self.options = bincode::serialize(&options).expect("serializing JobOptions");
     }
 
-    pub fn pages_to_print(&self) -> u16
-    {
-        let info = self.info();
-        let options = self.options();
-        let mut count = info.pagecount;
-
-        count = (count / u16::from(options.nup))
-            + match info.pagecount % u16::from(options.nup) {
-                0 => 0,
-                _ => 1,
-            };
-
-        if options.a3 {
-            count *= 2;
-        }
-
-        count * options.copies
-    }
     pub fn translate_for_printer(&mut self, uid: &[u8]) -> Vec<u8>
     {
         let info = self.info();

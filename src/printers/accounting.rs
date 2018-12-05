@@ -28,7 +28,7 @@ use diesel::{
 };
 
 use journal::{
-    credit::get_credit,
+    credit::select_credit,
     insert,
 };
 
@@ -73,7 +73,7 @@ impl Accounting
 
         let connection = mysql_pool.get().expect("gettting connection from pool");
 
-        let credit = get_credit(user_id, &connection).expect("getting credit from journal");
+        let credit = select_credit(user_id, &connection).expect("getting credit from journal");
 
         let value = BigDecimal::from_u32(0).unwrap();
 

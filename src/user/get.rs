@@ -25,7 +25,7 @@ use diesel::{
     QueryResult,
 };
 
-use journal::credit::get_credit;
+use journal::credit::select_credit;
 use user::{
     guard::UserGuard,
     table::*,
@@ -54,7 +54,7 @@ fn get_user_info(user: UserGuard) -> QueryResult<Json<UserInfo>>
 
     let tokens = tokens.len();
 
-    let credit = get_credit(user.id, &user.connection)?.to_f64().unwrap();
+    let credit = select_credit(user.id, &user.connection)?.to_f64().unwrap();
 
     let name: String =
         user::table.select(user::name).filter(user::id.eq(user.id)).first(&user.connection)?;

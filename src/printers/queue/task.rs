@@ -34,6 +34,7 @@ use r2d2_redis::RedisConnectionManager;
 use lpr::LprConnection;
 
 use jobs::{
+    data::JobData,
     options::JobOptions,
     table::*,
     Job,
@@ -108,7 +109,8 @@ pub fn work(task: WorkerTask, mut state: WorkerState)
         LprConnection::new(&state.printer_interface.ip, 20000 /* socket timeout in ms */);
     lpr_connection.print(&mut buf).expect("printing job with lpr");
 
-    let print_count = job.pages_to_print();
+    let print_count =
+        JobData::from((job.id, &job.info[..], &job.options[..], job.created)).pages_to_print();
 
     // check energy status before initial waiting
     // 1 == ready

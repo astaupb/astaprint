@@ -15,72 +15,52 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use bincode;
+use bincode::deserialize;
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct JobInfo
+use chrono::NaiveDateTime;
+
+use jobs::{
+    info::JobInfo,
+    options::JobOptions,
+};
+
+#[derive(Debug)]
+pub struct JobData
 {
-    pub filename: String,
-    pub pagecount: u16,
-    pub color: bool,
-    pub a3: bool,
-    pub password: String,
-    pub dispatch_time: i64,
+    pub id: u32,
+    pub info: JobInfo,
+    pub options: JobOptions,
+    pub created: NaiveDateTime,
 }
-
-impl JobInfo
+impl JobData
 {
-    pub fn new(filename: &str, password: &str, color: bool) -> JobInfo
+    pub fn pages_to_print(&self) -> u16
     {
-        JobInfo {
-            filename: String::from(filename),
-            pagecount: 0,
-            color,
-            a3: false,
-            password: String::from(password),
+        let mut count = self.info.pagecount;
+
+        count = (count / u16::from(self.options.nup))
+            + match self.info.pagecount % u16::from(self.options.nup) {
+                0 => 0,
+                _ => 1,
+            };
+
+        if self.options.a3 {
+            count *= 2;
         }
-    }
 
-    pub fn serialize(&self) -> Vec<u8>
-    {
-        bincode::serialize(&self).expect("serializing JobInfo")
+        count * self.options.copies
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct JobOptions
+impl<'a> From<(u32, &'a [u8], &'a [u8], NaiveDateTime)> for JobData
 {
-    pub duplex: u8,
-    pub copies: u16,
-    pub collate: bool,
-    pub keep: bool,
-    pub a3: bool,
-    pub nup: u8,
-    pub nuppageorder: u8,
-    pub range: String,
-}
-
-impl JobOptions
-{
-    pub fn serialize(&self) -> Vec<u8>
+    fn from((id, info, options, created): (u32, &'a [u8], &'a [u8], NaiveDateTime)) -> JobData
     {
-        bincode::serialize(&self).expect("serializing JobOptions")
-    }
-}
-
-impl Default for JobOptions
-{
-    fn default() -> JobOptions
-    {
-        JobOptions {
-            duplex: 0,
-            copies: 1,
-            collate: false,
-            keep: false,
-            a3: false,
-            nup: 1,
-            nuppageorder: 0,
-            range: String::from(""),
+        JobData {
+            id,
+            info: deserialize(info).expect("deserializing JobInfo"),
+            options: deserialize(options).expect("deserializing JobOptions"),
+            created,
         }
     }
 }

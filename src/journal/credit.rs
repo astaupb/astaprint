@@ -40,14 +40,14 @@ use user::{
 #[get("/credit")]
 pub fn credit(user: UserGuard) -> QueryResult<Json<f64>>
 {
-    let credit: BigDecimal = get_credit(user.id, &user.connection)?;
+    let credit: BigDecimal = select_credit(user.id, &user.connection)?;
 
     info!("{} fetched credit {}", user.id, credit);
 
     Ok(Json(credit.to_f64().unwrap()))
 }
 
-pub fn get_credit(user_id: u32, connection: &MysqlConnection) -> QueryResult<BigDecimal>
+pub fn select_credit(user_id: u32, connection: &MysqlConnection) -> QueryResult<BigDecimal>
 {
     let mut credit_id: u32 = user::table
         .inner_join(journal::table)

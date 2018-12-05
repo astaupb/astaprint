@@ -47,3 +47,11 @@ impl JobInfo
         bincode::serialize(&self).expect("serializing JobInfo")
     }
 }
+
+impl<'a> From<&'a [u8]> for JobInfo
+{
+    fn from(bytes: &'a [u8]) -> JobInfo
+    {
+        bincode::deserialize(bytes).expect("deserializing JobInfo")
+    }
+}
