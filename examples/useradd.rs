@@ -41,7 +41,7 @@ fn main()
     let redis_url =
         env::var("ASTAPRINT_REDIS_URL").expect("reading ASTAPRINT_DATABASE_URL from environment");
 
-    let connection = create_mysql_pool(&mysql_url).get().unwrap();
+    let connection = create_mysql_pool(1).get().unwrap();
 
     add_user(
         &arg[1],
