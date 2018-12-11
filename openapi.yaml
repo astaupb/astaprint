@@ -132,7 +132,7 @@ paths:
         - token: []
       responses:
         '202':
-          description: Accepted
+          description: Success
           content:
             application/json:
               schema:
@@ -143,24 +143,6 @@ paths:
           description: Bad request (eg. no base64)
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-        '415':
-          description: Unsupported media type
-      parameters:
-        - in: query
-          name: password
-          schema:
-            type: string
-          description: Password for decrypting password-protected PDFs
-        - in: query
-          name: filename
-          schema:
-            type: string
-          description: Filename on the original filesystem
-        - in: query
-          name: color
-          schema:
-            type: boolean
-          description: decides if the job should stay colored or not (default is false)
   '/jobs/queue/options':
     put:
       operationId: setDefaultOptions
@@ -1072,8 +1054,8 @@ components:
           user_id:
             type: integer
             format: uint32
-          info:
-            $ref: '#/components/schemas/JobInfo'
+          color:
+            type: boolean
     User:
       type: object
       properties:
