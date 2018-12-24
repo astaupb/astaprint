@@ -1,0 +1,12 @@
+[package]
+name = "pdf"
+version = "0.1.0"
+authors = ["Gerrit Pape <papeg@mail.upb.de>"]
+edition = "2018"
+
+[dependencies]
+astacrypto = {path = "../crypto"}
+log = {version = "*", features = ["std", "max_level_debug", "release_max_level_info"]}
+hex = "*"
+cairo-rs = { version= "0.3.0", features = ["png"]}
+poppler = {git = "https://git.uni-paderborn.de/asta/poppler-rs", rev="69ea0bc"}
