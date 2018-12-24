@@ -10,7 +10,7 @@ pub fn select_journal(connection: &MysqlConnection)
     journal::table.select(journal::all_columns).load(connection)
 }
 
-pub fn select_journal_by_user_id(
+pub fn select_journal_of_user(
     user_id: u32,
     connection: &MysqlConnection,
 ) -> QueryResult<Vec<Journal>>
@@ -57,7 +57,7 @@ pub fn select_journal_token(
     journal_tokens::table.select(journal_tokens::all_columns).load(connection)
 }
 
-pub fn select_latest_journal_id_by_user_id(
+pub fn select_latest_journal_of_user(
     user_id: u32,
     connection: &MysqlConnection,
 ) -> QueryResult<u32>

@@ -50,8 +50,8 @@ mod tests
 
         let printers = select_printers(connection).unwrap();
         println!("{:x?}", printers);
-        let printer_objects = select_printer_objects(connection).unwrap();
-        println!("{:x?}", printer_objects);
+        let printer_counter = select_printer_counter(connection).unwrap();
+        println!("{:x?}", printer_counter);
 
         let user = select_user(connection).unwrap();
         println!("{:x?}", user);
@@ -73,6 +73,15 @@ mod tests
             "{}_test",
             env::var("ASTAPRINT_DATABASE_URL").expect("getting url from env")
         );
+        let pool = create_mysql_pool(&url, 3);
+        let connection = &pool.get().unwrap();
+        select_everything(connection);
+    }
+
+    #[test]
+    fn select_everything_production()
+    {
+        let url = env::var("ASTAPRINT_DATABASE_URL").expect("getting url from env");
         let pool = create_mysql_pool(&url, 3);
         let connection = &pool.get().unwrap();
         select_everything(connection);

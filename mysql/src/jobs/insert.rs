@@ -21,7 +21,7 @@ pub fn insert_into_jobs(
             jobs::user_id.eq(user_id),
             jobs::info.eq(info),
             jobs::options.eq(options),
-            jobs::data.eq(data),
+            jobs::pdf.eq(data),
             jobs::preview_0.eq(preview_0),
             jobs::preview_1.eq(preview_1),
             jobs::preview_2.eq(preview_2),

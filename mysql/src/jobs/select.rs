@@ -10,7 +10,7 @@ pub fn select_jobs(connection: &MysqlConnection) -> QueryResult<Vec<Job>>
     jobs::table.select(jobs::all_columns).load(connection)
 }
 
-pub fn select_all_jobs_data_by_user_id(
+pub fn select_all_jobs_of_user(
     user_id: u32,
     connection: &MysqlConnection,
 ) -> QueryResult<Vec<(u32, Vec<u8>, Vec<u8>, NaiveDateTime)>>
@@ -21,7 +21,7 @@ pub fn select_all_jobs_data_by_user_id(
         .load(connection)
 }
 
-pub fn select_single_job_data_by_id(
+pub fn select_single_job_of_user(
     job_id: u32,
     user_id: u32,
     connection: &MysqlConnection,
@@ -35,7 +35,7 @@ pub fn select_single_job_data_by_id(
         .optional()
 }
 
-pub fn select_job_info_by_user_id(
+pub fn select_job_info(
     job_id: u32,
     user_id: u32,
     connection: &MysqlConnection,
@@ -49,7 +49,7 @@ pub fn select_job_info_by_user_id(
         .optional()
 }
 
-pub fn select_job_options_by_user_id(
+pub fn select_job_options(
     job_id: u32,
     user_id: u32,
     connection: &MysqlConnection,
@@ -66,7 +66,7 @@ pub fn select_job_options_by_user_id(
 pub fn select_pdf(id: u32, user_id: u32, connection: &MysqlConnection) -> QueryResult<Option<Vec<u8>>>
 {
     jobs::table
-        .select(jobs::data)
+        .select(jobs::pdf)
         .filter(jobs::user_id.eq(user_id))
         .filter(jobs::id.eq(id))
         .first(connection)

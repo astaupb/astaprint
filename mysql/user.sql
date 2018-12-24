@@ -21,6 +21,7 @@ CREATE TABLE `user`(
   `name` VARCHAR(32) UNIQUE NOT NULL,
   `hash` BINARY(64) NOT NULL,
   `salt` BINARY(16) NOT NULL,
+  `options` BINARY(128) NOT NULL,
   `card` BINARY(4) UNIQUE,
   `pin` INT UNSIGNED,
   `locked`  BOOLEAN NOT NULL DEFAULT false,

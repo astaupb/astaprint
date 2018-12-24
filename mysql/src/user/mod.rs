@@ -16,6 +16,7 @@ pub struct User
     pub name: String,
     pub hash: Vec<u8>,
     pub salt: Vec<u8>,
+    pub options: Vec<u8>,
     pub card: Option<Vec<u8>>,
     pub pin: Option<u32>,
     pub locked: bool,
