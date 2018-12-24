@@ -6,6 +6,9 @@ authors = ["Gerrit Pape <gerrit.pape@asta.upb.de>"]
 [dependencies]
 astacrypto = {path = "./crypto"}
 redis = {path = "./redis"}
+mysql = {path = "./mysql"}
+pdf = {path = "./pdf"}
+snmp = {path = "./snmp"}
 logger = {path = "./logger"}
 log = {version = "*", features = ["std", "max_level_debug", "release_max_level_info"]}
 chrono = "*"
@@ -19,11 +22,11 @@ diesel = {version = "*", features = ["mysql", "r2d2", "chrono", "bigdecimal", "n
 r2d2_redis = "*"
 threadpool = "*"
 bigdecimal = "0.0.11"
-rocket = "*"
-rocket_contrib = "*"
-rocket_codegen = "*"
-rocket_cors = "*"
-maxminddb = "*"
+rocket = "0.3"
+rocket_codegen = "0.3"
+rocket_contrib = "0.3"
+rocket_cors = "0.3"
+maxminddb = "0.11"
 base64 = "*"
 lpr = "0.1.4"
 cairo-rs = { version= "0.3.0", features = ["png"]}

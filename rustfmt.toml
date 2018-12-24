@@ -1,12 +1,12 @@
 required_version = "1.0.0"
-max_width = 108
+max_width = 80
 hard_tabs = false
 tab_spaces = 4
 newline_style = "Unix"
 use_small_heuristics = "Off"
 indent_style = "Block"
 wrap_comments = true
-comment_width = 108
+comment_width = 84
 normalize_comments = true
 normalize_doc_attributes = true
 format_strings = true
