@@ -17,10 +17,7 @@ use user::{
 #[get("/")]
 pub fn get_all_tokens(user: UserGuard) -> Result<Json<Vec<UserTokenResponse>>, diesel::result::Error>
 {
-    let tokens: Vec<UserToken> = user_tokens::table
-        .select(user_tokens::all_columns)
-        .filter(user_tokens::user_id.eq(user.id))
-        .load(&user.connection)?;
+    let tokens: Vec<UserToken> = 
 
     info!("{} fetched all tokens", user.id);
 

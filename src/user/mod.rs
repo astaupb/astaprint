@@ -15,35 +15,15 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use chrono::NaiveDateTime;
-
-pub mod table;
-use self::table::*;
 
 pub mod get;
 pub mod post;
 pub mod put;
 
-pub mod select;
-
 pub mod add;
+pub mod card;
 pub mod guard;
 pub mod key;
 pub mod login;
 pub mod response;
 pub mod tokens;
-
-#[derive(Identifiable, Queryable, Debug)]
-#[table_name = "user"]
-pub struct User
-{
-    pub id: u32,
-    pub name: String,
-    pub locked: bool,
-    pub hash: Vec<u8>,
-    pub salt: Vec<u8>,
-    pub card: Option<u64>,
-    pub pin: Option<u32>,
-    pub created: NaiveDateTime,
-    pub updated: NaiveDateTime,
-}

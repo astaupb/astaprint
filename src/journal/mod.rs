@@ -83,19 +83,10 @@ pub fn insert(
 {
     let _lock = JournalLock::from(redis);
 
-    insert_into(journal::table)
-        .values((
-            journal::user_id.eq(user_id),
-            journal::value.eq(value),
-            journal::description.eq(description),
-        ))
-        .execute(&mysql)?;
+    ;
 
     let (digest, credit) = calculate_digest(user_id, &mysql)?;
 
-    insert_into(journal_digest::table)
-        .values((journal_digest::digest.eq(digest), journal_digest::credit.eq(credit.clone())))
-        .execute(&mysql)?;
 
     Ok(credit)
 }
@@ -125,11 +116,7 @@ pub fn calculate_digest(
     let journal: Journal =
         journal::table.select(journal::all_columns).order(journal::id.desc()).first(mysql)?;
 
-    let seed: JournalDigest = journal_digest::table
-        .select(journal_digest::all_columns)
-        .order(journal_digest::id.desc())
-        .first(mysql)?;
-
+    let seed: JournalDigest = 
     assert_eq!(journal.id, seed.id);
 
     let new_digest = GenericHash::with_salt(&mut format!("{}", journal).as_bytes(), &seed.digest[..]);

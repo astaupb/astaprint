@@ -44,7 +44,7 @@ use redis::{
 pub struct UploadForm
 {
     pub filename: Option<String>,
-    pub color: Option<bool>,
+    pub password: Option<String>,
 }
 
 #[post("/queue?<options>", data = "<data>", format = "application/pdf")]

@@ -24,23 +24,16 @@ use rocket_contrib::Json;
 
 use user::guard::UserGuard;
 
+use mysql::journal::Journal;
+
 use journal::{
     response::JournalResponse,
-    table::*,
-    Journal,
 };
 
 #[get("/")]
 fn journal(user: UserGuard) -> QueryResult<Json<Vec<JournalResponse>>>
 {
-    let journal: Vec<Journal> = journal::table
-        .select(journal::all_columns)
-        .filter(journal::user_id.eq(user.id))
-        .order(journal::id.desc())
-        .load(&user.connection)?;
-
-
-    info!("{} fetched journal", user.id);
+    let journal: Vec<Journal> = select_journal_of_user(user.id, &user.connection);
 
     Ok(Json(journal.iter().map(|row| JournalResponse::from(row)).collect()))
 }

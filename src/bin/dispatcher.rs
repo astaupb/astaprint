@@ -17,7 +17,6 @@
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #[macro_use]
 extern crate log;
-extern crate astaprint;
 extern crate logger;
 extern crate redis;
 extern crate threadpool;
@@ -49,7 +48,8 @@ use astaprint::{
 
 fn main()
 {
-    let redis_url = env::var("ASTAPRINT_REDIS_URL").expect("reading redis url from environment");
+    let redis_url = env::var("ASTAPRINT_REDIS_URL")
+        .expect("reading redis url from environment");
 
     let redis_pool = create_redis_pool(&redis_url, 10);
 

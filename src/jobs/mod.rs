@@ -26,6 +26,11 @@ use crate::jobs::{
     options::JobOptions,
 };
 
+use mysql::jobs::{
+    Job as JobRow,
+    select::*,
+};
+
 pub mod info;
 pub mod options;
 pub mod data;
@@ -40,48 +45,33 @@ pub mod get;
 pub mod delete;
 pub mod response;
 
-pub mod table;
-use self::table::*;
 
-#[derive(Identifiable, Queryable, Insertable, Associations, Debug)]
+#[derive(Serialize, Deserialize)]
 pub struct Job
 {
     pub id: u32,
     pub user_id: u32,
-    pub info: Vec<u8>,
-    pub options: Vec<u8>,
-    pub data: Vec<u8>,
-    pub preview_0: Vec<u8>,
-    pub preview_1: Option<Vec<u8>>,
-    pub preview_2: Option<Vec<u8>>,
-    pub preview_3: Option<Vec<u8>>,
-    pub created: NaiveDateTime,
-    pub updated: NaiveDateTime,
+    pub timestamp: i64,
+    pub info: JobInfo,
+    pub options: JobOptions,
+}
+
+impl From<(u32, Vec<u8>, Vec<u8>, NaiveDateTime)> for Job
+{
+    fn from(row: (u32, Vec<u8>, Vec<u8>, NaiveDateTime)) -> Job
+    {
+        Job {
+            id: row.0,
+            info: bincode::deserialize(&row.1[..]).expect("deserializing JobInfo"),
+            options: bincode::deserialize(&row.2[..]).expect("deserializing JobOptions"),
+            timestamp: row.3.timestamp(),
+        }
+    }
 }
 
 impl Job
 {
-    pub fn info(&self) -> JobInfo
-    {
-        bincode::deserialize(&self.info[..]).expect("deserialzing JobInfo")
-    }
-
-    pub fn options(&self) -> JobOptions
-    {
-        bincode::deserialize(&self.options[..]).expect("deserializing JobOptions")
-    }
-
-    pub fn set_info(&mut self, info: JobInfo)
-    {
-        self.info = bincode::serialize(&info).expect("serializing JobInfo");
-    }
-
-    pub fn set_options(&mut self, options: JobOptions)
-    {
-        self.options = bincode::serialize(&options).expect("serializing JobOptions");
-    }
-
-    pub fn translate_for_printer(&mut self, uid: &[u8]) -> Vec<u8>
+    pub fn translate_for_printer(&mut self, uid: &[u8], data: Vec<u8>) -> Vec<u8>
     {
         let info = self.info();
         let options = self.options();
@@ -299,7 +289,7 @@ impl Job
                     .to_vec(),
         );
 
-        header.append(&mut self.data);
+        header.append(&mut data);
 
         header.append(&mut
                   b"\x1b\x25\x2d\x31\x32\x33\x34\x35\

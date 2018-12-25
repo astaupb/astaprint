@@ -44,10 +44,9 @@ fn fetch_job(user: UserGuard, id: u32) -> QueryResult<Option<Json<JobResponse>>>
 #[get("/")]
 fn jobs(user: UserGuard) -> QueryResult<Json<Vec<JobResponse>>>
 {
-    let jobs: Vec<(u32, u32, NaiveDateTime, Vec<u8>, Vec<u8>)> = jobs::table
-        .select((jobs::id, jobs::user_id, jobs::created, jobs::info, jobs::options))
-        .filter(jobs::user_id.eq(user.id))
-        .load(&user.connection)?;
+    let jobs: Vec<(u32, u32, NaiveDateTime, Vec<u8>, Vec<u8>)>
+        = select_all_jobs_of_user(user.id, &user.connection)
+            .expect("selecting jobs");
 
     Ok(Json(jobs.iter().map(|x| JobResponse::from(x.clone())).collect()))
 }
@@ -55,61 +54,34 @@ fn jobs(user: UserGuard) -> QueryResult<Json<Vec<JobResponse>>>
 #[get("/<id>/pdf")]
 fn fetch_pdf(user: UserGuard, id: u32) -> QueryResult<Option<Vec<u8>>>
 {
-    let pdf: Option<Vec<u8>> = jobs::table
-        .select(jobs::data)
-        .filter(jobs::user_id.eq(user.id))
-        .filter(jobs::id.eq(id))
-        .first(&user.connection)
-        .optional()?;
-
-    Ok(pdf)
+    Ok(select_pdf(id, user.id, &user.connection)
+        .expect("selecting pdf"))
 }
 
 #[get("/<id>/preview/0")]
 fn fetch_preview_0(user: UserGuard, id: u32) -> QueryResult<Option<Vec<u8>>>
 {
-    let preview = jobs::table
-        .select(jobs::preview_0)
-        .filter(jobs::user_id.eq(user.id))
-        .filter(jobs::id.eq(id))
-        .first(&user.connection)
-        .optional()?;
-
-    Ok(preview)
+    Ok(select_preview_0(id, user.id, &user.connection)
+        .expect("selecting preview 0"))
 }
 
 #[get("/<id>/preview/1")]
 fn fetch_preview_1(user: UserGuard, id: u32) -> QueryResult<Option<Vec<u8>>>
 {
-    let preview = jobs::table
-        .select(jobs::preview_1)
-        .filter(jobs::user_id.eq(user.id))
-        .filter(jobs::id.eq(id))
-        .first(&user.connection)?;
-
-    Ok(preview)
+    Ok(select_preview_1(id, user.id, &user.connection)
+        .expect("selection preview 1"))
 }
 
 #[get("/<id>/preview/2")]
 fn fetch_preview_2(user: UserGuard, id: u32) -> QueryResult<Option<Vec<u8>>>
 {
-    let preview = jobs::table
-        .select(jobs::preview_2)
-        .filter(jobs::user_id.eq(user.id))
-        .filter(jobs::id.eq(id))
-        .first(&user.connection)?;
-
-    Ok(preview)
+    Ok(select_preview_2(id, user.id, &user.connection)
+        .expect("selection preview 2"))
 }
 
 #[get("/<id>/preview/3")]
 fn fetch_preview_3(user: UserGuard, id: u32) -> QueryResult<Option<Vec<u8>>>
 {
-    let preview = jobs::table
-        .select(jobs::preview_3)
-        .filter(jobs::user_id.eq(user.id))
-        .filter(jobs::id.eq(id))
-        .first(&user.connection)?;
-
-    Ok(preview)
+    Ok(select_preview_3(id, user.id, &user.connection)
+        .expect("selection preview 2"))
 }

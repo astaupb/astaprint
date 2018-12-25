@@ -19,9 +19,6 @@ use chrono::{
     NaiveDate,
     NaiveDateTime,
 };
-pub mod tokens;
-
-pub mod table;
 use self::table::*;
 
 #[derive(Identifiable, Queryable, Insertable, Debug)]
@@ -37,4 +34,17 @@ pub struct Admin
     pub expires: NaiveDate,
     pub created: NaiveDateTime,
     pub updated: NaiveDateTime,
+}
+
+#[derive(Identifiable, Queryable, Insertable, Associations, Debug)]
+#[table_name = "admin_tokens"]
+pub struct AdminToken
+{
+    pub id: u32,
+    pub user_id: u32,
+    pub user_agent: String,
+    pub ip: String,
+    pub location: String,
+    pub hash: Vec<u8>,
+    pub salt: Vec<u8>,
 }

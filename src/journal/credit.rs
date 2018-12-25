@@ -40,30 +40,19 @@ use user::{
 #[get("/credit")]
 pub fn credit(user: UserGuard) -> QueryResult<Json<f64>>
 {
-    let credit: BigDecimal = select_credit(user.id, &user.connection)?;
+    let credit: BigDecimal = get_credit(user.id, &user.connection)?;
 
     info!("{} fetched credit {}", user.id, credit);
 
     Ok(Json(credit.to_f64().unwrap()))
 }
 
-pub fn select_credit(user_id: u32, connection: &MysqlConnection) -> QueryResult<BigDecimal>
+pub fn get_credit(user_id: u32, connection: &MysqlConnection) -> QueryResult<BigDecimal>
 {
-    let mut credit_id: u32 = user::table
-        .inner_join(journal::table)
-        .select(journal::id)
-        .filter(user::id.eq(journal::user_id))
-        .filter(user::id.eq(user_id))
-        .order(journal::id.desc())
-        .first(connection)?;
-
+    let mut credit_id: u32 = 
     // calculated credit has offset of one from journal
     credit_id += 1;
 
-    let credit: BigDecimal = journal_digest::table
-        .select(journal_digest::credit)
-        .filter(journal_digest::id.eq(credit_id))
-        .first(connection)?;
-
+    let credit: BigDecimal = 
     Ok(credit)
 }

@@ -100,9 +100,7 @@ fn update_single_option(
     };
     let value = bincode::serialize(&options).expect("serializing JobOptions");
 
-    update(jobs::table.filter(jobs::user_id.eq(user.id)).filter(jobs::id.eq(id)))
-        .set(jobs::options.eq(value))
-        .execute(&user.connection)?;
+    ;
 
     Ok(Ok(Some(Reset)))
 }

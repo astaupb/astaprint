@@ -21,7 +21,6 @@ extern crate log;
 extern crate diesel;
 extern crate threadpool;
 
-extern crate astaprint;
 extern crate logger;
 extern crate r2d2_redis;
 extern crate redis;
@@ -73,7 +72,8 @@ fn spawn_worker(
 {
     let connection = mysql_pool.get().expect("getting connection from pool");
 
-    let printer_interface = PrinterInterface::from_device_id(device_id, &connection);
+    let printer_interface =
+        PrinterInterface::from_device_id(device_id, &connection);
     let name = format!("worker::{}", device_id);
     let thread_pool = ThreadPool::new(8);
     let taskqueue: TaskQueue<WorkerTask, WorkerState> = TaskQueue::new(
@@ -98,13 +98,15 @@ fn main()
 {
     Logger::init().expect("initializing Logger");
 
-    let redis_url = env::var("ASTAPRINT_REDIS_URL").expect("reading redis url from environment");
+    let redis_url = env::var("ASTAPRINT_REDIS_URL")
+        .expect("reading redis url from environment");
 
     let mut handles: Vec<thread::JoinHandle<()>> = Vec::new();
 
     let mysql_pool = create_mysql_pool(10);
 
-    let connection = mysql_pool.get().expect("getting mysql connection from pool");
+    let connection =
+        mysql_pool.get().expect("getting mysql connection from pool");
 
     for id in select_device_ids(&connection) {
         let redis_pool = create_redis_pool(&redis_url, 3);

@@ -41,10 +41,10 @@ use user::guard::UserGuard;
 
 use journal::{
     insert,
-    tokens::{
-        table::*,
-        JournalToken,
-    },
+};
+
+use mysql::journal::{
+    Journal, select::*,
 };
 
 #[derive(Debug)]
@@ -77,11 +77,8 @@ fn post_to_journal(
     redis: State<Pool<RedisConnectionManager>>,
 ) -> QueryResult<Result<NoContent, JournalPostError>>
 {
-    let token: Option<JournalToken> = journal_tokens::table
-        .select(journal_tokens::all_columns)
-        .filter(journal_tokens::content.eq(token.into_inner()))
-        .first(&user.connection)
-        .optional()?;
+    let token: Option<JournalToken> = select_journal_token_by_value(token.into_inner(), &user.connection)
+        .expect("selecting journal token");
 
     match token {
         None => return Ok(Err(JournalPostError(Unauthorized))),

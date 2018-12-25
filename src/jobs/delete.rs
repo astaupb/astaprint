@@ -26,6 +26,8 @@ use rocket::response::status::Reset;
 use jobs::*;
 use user::guard::UserGuard;
 
+
+
 #[delete("/<id>")]
 pub fn delete_job(user: UserGuard, id: u32) -> QueryResult<Option<Reset>>
 {

@@ -27,17 +27,16 @@ use jobs::{
     *,
 };
 
+use mysql::{
+    jobs::select::*,
+};
+
 use user::guard::UserGuard;
 
 #[get("/<id>/info")]
 fn fetch_info(user: UserGuard, id: u32) -> QueryResult<Option<Json<JobInfo>>>
 {
-    let result: Option<Vec<u8>> = jobs::table
-        .select(jobs::info)
-        .filter(jobs::user_id.eq(user.id))
-        .filter(jobs::id.eq(id))
-        .first(&user.connection)
-        .optional()?;
+    let result: Option<Vec<u8>> = select_job_info(id, user.id, &user.connection);
 
     Ok(result.map(|serialized| {
         let info: JobInfo = bincode::deserialize(&serialized[..]).expect("deserializing JobInfo");

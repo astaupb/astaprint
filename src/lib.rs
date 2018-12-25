@@ -37,6 +37,8 @@ extern crate rocket_contrib;
 extern crate r2d2_redis;
 extern crate redis;
 
+extern crate mysql;
+
 extern crate threadpool;
 
 extern crate base64;
@@ -50,12 +52,11 @@ extern crate lpr;
 
 extern crate astacrypto;
 
+extern crate mysql;
+
 // routes
-pub mod admin;
 pub mod jobs;
 pub mod journal;
 pub mod printers;
 pub mod register;
 pub mod user;
-
-pub mod pool;

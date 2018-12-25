@@ -26,7 +26,6 @@ extern crate logger;
 
 extern crate diesel;
 
-extern crate astaprint;
 extern crate redis;
 
 use std::{
@@ -95,11 +94,21 @@ fn cors() -> rocket_cors::Cors
 {
     rocket_cors::Cors {
         allowed_origins: AllowedOrigins::all(),
-        allowed_methods: vec![Method::Get, Method::Post, Method::Delete, Method::Put]
-            .into_iter()
-            .map(From::from)
-            .collect(),
-        allowed_headers: AllowedHeaders::some(&["Authorization", "Accept", "X-Api-Key", "Content-Type"]),
+        allowed_methods: vec![
+            Method::Get,
+            Method::Post,
+            Method::Delete,
+            Method::Put,
+        ]
+        .into_iter()
+        .map(From::from)
+        .collect(),
+        allowed_headers: AllowedHeaders::some(&[
+            "Authorization",
+            "Accept",
+            "X-Api-Key",
+            "Content-Type",
+        ]),
         allow_credentials: true,
         ..Default::default()
     }
@@ -115,7 +124,8 @@ fn rocket() -> rocket::Rocket
 {
     let mysql_pool = create_mysql_pool(10);
 
-    let url = env::var("ASTAPRINT_REDIS_URL").expect("reading ASTAPRINT_REDIS_URL from environment");
+    let url = env::var("ASTAPRINT_REDIS_URL")
+        .expect("reading ASTAPRINT_REDIS_URL from environment");
 
     let redis_pool = create_redis_pool(&url, 10);
 
@@ -124,18 +134,25 @@ fn rocket() -> rocket::Rocket
 
     let redis_store = Store::from(redis_pool);
 
-    let mut worker_queues: HashMap<u16, TaskQueueClient<WorkerTask>> = HashMap::new();
+    let mut worker_queues: HashMap<u16, TaskQueueClient<WorkerTask>> =
+        HashMap::new();
 
-    let connection = mysql_pool.get().expect("getting mysql connection from pool");
+    let connection =
+        mysql_pool.get().expect("getting mysql connection from pool");
 
     let redis_pool = create_redis_pool(&url, 20);
 
     for device_id in select_device_ids(&connection) {
         let pool = redis_pool.clone();
-        worker_queues.insert(device_id, TaskQueueClient::new(&format!("worker::{}", device_id), pool));
+        worker_queues.insert(
+            device_id,
+            TaskQueueClient::new(&format!("worker::{}", device_id), pool),
+        );
     }
-    let mmdb_reader = maxminddb::Reader::open_readfile("GeoLite2-City_20181127/GeoLite2-City.mmdb")
-        .expect("opening maxminddb reader");
+    let mmdb_reader = maxminddb::Reader::open_readfile(
+        "GeoLite2-City_20181127/GeoLite2-City.mmdb",
+    )
+    .expect("opening maxminddb reader");
 
     let redis_pool = create_redis_pool(&url, 10);
 
@@ -183,7 +200,12 @@ fn rocket() -> rocket::Rocket
         )
         .mount(
             "/user/tokens",
-            routes![get_all_tokens, delete_all_tokens, get_single_token, delete_single_token],
+            routes![
+                get_all_tokens,
+                delete_all_tokens,
+                get_single_token,
+                delete_single_token
+            ],
         )
         .mount("/printers", routes![print_job, get_queue])
         .mount("/journal", routes![journal, credit, post_to_journal])

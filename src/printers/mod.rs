@@ -28,6 +28,8 @@ use diesel::{
     },
 };
 
+pub mod select;
+
 use chrono::NaiveDateTime;
 
 pub mod table;

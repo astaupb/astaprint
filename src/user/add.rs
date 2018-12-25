@@ -51,11 +51,7 @@ pub fn add_user(
     connection: PooledConnection<ConnectionManager<MysqlConnection>>,
 ) -> Result<(), UserAddError>
 {
-    let user_id: Option<u32> = user::table
-        .select(user::id)
-        .filter(user::name.eq(name))
-        .first(&connection)
-        .optional()
+    let user_id: Option<u32> = 
         .expect("getting username");
 
     if user_id.is_some() {
