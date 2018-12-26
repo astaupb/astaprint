@@ -16,7 +16,6 @@
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use diesel::{
-    prelude::*,
     result::QueryResult,
 };
 
@@ -24,16 +23,19 @@ use rocket_contrib::Json;
 
 use user::guard::UserGuard;
 
-use mysql::journal::Journal;
+use mysql::journal::{
+    Journal, select::*,
+};
 
 use journal::{
     response::JournalResponse,
 };
 
+
 #[get("/")]
 fn journal(user: UserGuard) -> QueryResult<Json<Vec<JournalResponse>>>
 {
-    let journal: Vec<Journal> = select_journal_of_user(user.id, &user.connection);
+    let journal: Vec<Journal> = select_journal_of_user(user.id, &user.connection)?;
 
     Ok(Json(journal.iter().map(|row| JournalResponse::from(row)).collect()))
 }

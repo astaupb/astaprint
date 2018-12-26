@@ -16,9 +16,7 @@
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use diesel::{
-    prelude::*,
     result::QueryResult,
-    update,
 };
 use r2d2_redis::{
     r2d2::Pool,
@@ -44,7 +42,7 @@ use journal::{
 };
 
 use mysql::journal::{
-    Journal, select::*,
+    JournalToken, select::*, update::*,
 };
 
 #[derive(Debug)]
@@ -86,16 +84,15 @@ fn post_to_journal(
             if token.used {
                 return Ok(Err(JournalPostError(TokenAlreadyConsumed)));
             }
-            update(journal_tokens::table.filter(journal_tokens::id.eq(token.id)))
-                .set((journal_tokens::used.eq(true), journal_tokens::used_by.eq(user.id)))
-                .execute(&user.connection)?;
+
+            update_journal_token(token.id, true, user.id, &user.connection)?;
 
             insert(
                 user.id,
                 token.value,
                 &format!("created with token {}", token.content),
                 redis.inner().clone(),
-                user.connection,
+                &user.connection,
             )?;
 
 

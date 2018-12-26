@@ -16,7 +16,6 @@
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use diesel::{
-    prelude::*,
     result::QueryResult,
 };
 
@@ -32,12 +31,8 @@ use user::guard::UserGuard;
 #[get("/<id>/options/<option>")]
 fn fetch_single_option(user: UserGuard, id: u32, option: String) -> QueryResult<Option<Json<Value>>>
 {
-    let result: Option<Vec<u8>> = jobs::table
-        .select(jobs::options)
-        .filter(jobs::user_id.eq(user.id))
-        .filter(jobs::id.eq(id))
-        .first(&user.connection)
-        .optional()?;
+    let result: Option<Vec<u8>> = 
+        select_job_options(id, user.id, &user.connection)?;
 
     Ok(result.and_then(|serialized| {
         let options: JobOptions = bincode::deserialize(&serialized[..]).expect("deserializing JobOptions");
@@ -59,12 +54,8 @@ fn fetch_single_option(user: UserGuard, id: u32, option: String) -> QueryResult<
 #[get("/<id>/options")]
 fn fetch_options(user: UserGuard, id: u32) -> QueryResult<Option<Json<JobOptions>>>
 {
-    let result: Option<Vec<u8>> = jobs::table
-        .select(jobs::options)
-        .filter(jobs::user_id.eq(user.id))
-        .filter(jobs::id.eq(id))
-        .first(&user.connection)
-        .optional()?;
+    let result: Option<Vec<u8>> =
+        select_job_options(id, user.id, &user.connection)?;
 
     Ok(result.map(|serialized| {
         let options: JobOptions = bincode::deserialize(&serialized[..]).expect("deserializing JobOptions");

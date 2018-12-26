@@ -23,3 +23,21 @@ pub fn insert_into_user_tokens(
         ))
         .execute(connection)
 }
+
+pub fn insert_into_user(
+    name: &str,
+    hash: Vec<u8>,
+    salt: Vec<u8>,
+    locked: bool,
+    connection: &MysqlConnection,
+) -> QueryResult<usize>
+{
+    insert_into(user::table)
+        .values((
+            user::name.eq(name),
+            user::locked.eq(locked),
+            user::hash.eq(hash),
+            user::salt.eq(salt),
+        ))
+    .execute(connection)
+}

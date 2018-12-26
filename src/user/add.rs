@@ -18,12 +18,7 @@
 use bigdecimal::BigDecimal;
 
 use diesel::{
-    insert_into,
     prelude::*,
-    r2d2::{
-        ConnectionManager,
-        PooledConnection,
-    },
 };
 use r2d2_redis::{
     r2d2::Pool,
@@ -33,8 +28,10 @@ use r2d2_redis::{
 use astacrypto::PasswordHash;
 
 use journal::insert;
-use user::*;
 
+use mysql::user::{
+    select::*, insert::*,
+};
 #[derive(Debug)]
 pub enum UserAddError
 {
@@ -48,10 +45,10 @@ pub fn add_user(
     credit: BigDecimal,
     description: &str,
     redis: Pool<RedisConnectionManager>,
-    connection: PooledConnection<ConnectionManager<MysqlConnection>>,
+    connection: &MysqlConnection, 
 ) -> Result<(), UserAddError>
 {
-    let user_id: Option<u32> = 
+    let user_id: Option<u32> = select_user_id_by_name(name, connection)
         .expect("getting username");
 
     if user_id.is_some() {
@@ -59,17 +56,12 @@ pub fn add_user(
     }
 
     let (hash, salt) = PasswordHash::create(password);
+    
+    insert_into_user(name, hash, salt, locked, connection)
+        .expect("inserting user");
 
-    insert_into(user::table)
-        .values((user::name.eq(name), user::hash.eq(hash), user::salt.eq(salt), user::locked.eq(locked)))
-        .execute(&connection)
-        .expect("adding user");
-
-    let user_id: u32 = user::table
-        .select(user::id)
-        .filter(user::name.eq(name))
-        .first(&connection)
-        .expect("getting user id");
+    let user_id: u32 = select_user_id_by_name(name, connection)
+        .expect("selecting user id").expect("id is some");
 
     insert(user_id, credit, description, redis, connection).expect("inserting new journal entry");
 

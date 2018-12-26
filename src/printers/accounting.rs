@@ -28,14 +28,14 @@ use diesel::{
 };
 
 use journal::{
-    credit::select_credit,
+    credit::get_credit,
     insert,
 };
 
 use r2d2_redis::RedisConnectionManager;
 use redis::lock::Lock;
 
-use printers::snmp::counter::CounterValues;
+use snmp::counter::CounterValues;
 
 pub struct Accounting
 {
@@ -52,7 +52,6 @@ impl Accounting
 {
     pub fn new(
         user_id: u32,
-        color: bool,
         mysql_pool: Pool<ConnectionManager<MysqlConnection>>,
         redis_pool: Pool<RedisConnectionManager>,
     ) -> Accounting
@@ -63,17 +62,13 @@ impl Accounting
             info!("accounting for {} locked", &user_id);
         }
 
-        let baseprice_cent = if color {
-            10
-        } else {
-            2
-        };
+        let baseprice_cent = 5;
 
         lock.grab();
 
         let connection = mysql_pool.get().expect("gettting connection from pool");
 
-        let credit = select_credit(user_id, &connection).expect("getting credit from journal");
+        let credit = get_credit(user_id, &connection).expect("getting credit from journal");
 
         let value = BigDecimal::from_u32(0).unwrap();
 
@@ -98,11 +93,13 @@ impl Accounting
     /// returns true if there's enough credit for another page
     pub fn set_value(&mut self, counter: &CounterValues)
     {
+        /*
         let value_cent = counter.print_black * 2
             + counter.print_color.unwrap_or(0) * 10
             + counter.copy_black * 2
             + counter.copy_color.unwrap_or(0) * 10;
-
+        */
+        let value_cent = counter.total * 5;
         debug!("calculated value: {}", value_cent);
         self.value =
             -(BigDecimal::from_u32(value_cent as u32).unwrap() / BigDecimal::from_u32(100).unwrap());
@@ -114,7 +111,7 @@ impl Accounting
             let connection = self.mysql_pool.get().expect("getting mysql connection from pool");
 
             let credit = &self.credit + &self.value;
-            insert(self.user_id, self.value, "Print Job", self.redis_pool, connection)
+            insert(self.user_id, self.value, "Print Job", self.redis_pool, &connection)
                 .expect("inserting new entry into journal");
 
             info!("inserted new credit for {}: {}", &self.user_id, &credit);

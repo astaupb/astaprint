@@ -57,10 +57,10 @@ pub fn select_journal_token(
     journal_tokens::table.select(journal_tokens::all_columns).load(connection)
 }
 
-pub fn select_latest_journal_of_user(
+pub fn select_latest_journal_id_of_user(
     user_id: u32,
     connection: &MysqlConnection,
-) -> QueryResult<u32>
+) -> QueryResult<Option<u32>>
 {
     user::table
         .inner_join(journal::table)
@@ -69,6 +69,7 @@ pub fn select_latest_journal_of_user(
         .filter(user::id.eq(user_id))
         .order(journal::id.desc())
         .first(connection)
+        .optional()
 }
 
 pub fn select_credit_by_id(

@@ -1,23 +1,23 @@
 use diesel::{
-    self,
-    prelude::*,
+    QueryResult,
 };
 use rocket_contrib::Json;
 
 use user::{
     guard::UserGuard,
     response::UserTokenResponse,
-    tokens::{
-        table::*,
-        UserToken,
-    },
+};
+
+use mysql::user::{
+    UserToken,
+    select::*,
 };
 
 
 #[get("/")]
-pub fn get_all_tokens(user: UserGuard) -> Result<Json<Vec<UserTokenResponse>>, diesel::result::Error>
+pub fn get_all_tokens(user: UserGuard) -> QueryResult<Json<Vec<UserTokenResponse>>>
 {
-    let tokens: Vec<UserToken> = 
+    let tokens: Vec<UserToken> = select_user_tokens_by_user_id(user.id, &user.connection)?;
 
     info!("{} fetched all tokens", user.id);
 
@@ -28,13 +28,8 @@ pub fn get_all_tokens(user: UserGuard) -> Result<Json<Vec<UserTokenResponse>>, d
 pub fn get_single_token(
     user: UserGuard,
     token_id: u32,
-) -> Result<Option<Json<UserTokenResponse>>, diesel::result::Error>
+) -> QueryResult<Option<Json<UserTokenResponse>>>
 {
-    let token: Option<UserToken> = user_tokens::table
-        .select(user_tokens::all_columns)
-        .filter(user_tokens::id.eq(token_id))
-        .first(&user.connection)
-        .optional()?;
-
+    let token: Option<UserToken> = select_single_user_token_optional(user.id, token_id, &user.connection)?;
     Ok(token.map(|x| Json(UserTokenResponse::from(&x))))
 }

@@ -27,7 +27,6 @@ use crate::jobs::{
 };
 
 use mysql::jobs::{
-    Job as JobRow,
     select::*,
 };
 
@@ -35,22 +34,18 @@ pub mod info;
 pub mod options;
 pub mod data;
 
-pub mod pdf;
 pub mod task;
 pub mod tmp;
 pub mod queue;
 
-pub mod select;
 pub mod get;
 pub mod delete;
-pub mod response;
 
 
 #[derive(Serialize, Deserialize)]
 pub struct Job
 {
     pub id: u32,
-    pub user_id: u32,
     pub timestamp: i64,
     pub info: JobInfo,
     pub options: JobOptions,
@@ -69,13 +64,40 @@ impl From<(u32, Vec<u8>, Vec<u8>, NaiveDateTime)> for Job
     }
 }
 
+impl<'a> From<(u32, &'a [u8], &'a [u8], NaiveDateTime)> for Job
+{
+    fn from((id, info, options, created): (u32, &'a [u8], &'a [u8], NaiveDateTime)) -> Job
+    {
+        Job {
+            id,
+            info: bincode::deserialize(info).expect("deserializing JobInfo"),
+            options: bincode::deserialize(options).expect("deserializing JobOptions"),
+            timestamp: created.timestamp(),
+        }
+    }
+}
+
 impl Job
 {
-    pub fn translate_for_printer(&mut self, uid: &[u8], data: Vec<u8>) -> Vec<u8>
+    pub fn pages_to_print(&self) -> u32
     {
-        let info = self.info();
-        let options = self.options();
+        let mut count = self.info.pagecount;
 
+        count = (count / u32::from(self.options.nup))
+            + match self.info.pagecount % u32::from(self.options.nup) {
+                0 => 0,
+                _ => 1,
+            };
+
+        if self.options.a3 {
+            count *= 2;
+        }
+
+        count * self.options.copies as u32
+    }
+
+    pub fn translate_for_printer(&mut self, uid: &[u8], user_id: u32, mut data: Vec<u8>) -> Vec<u8>
+    {
         let mut header: Vec<u8> = Vec::with_capacity(8096);
         header.append(&mut
                   b"\x1b\x25\x2d\x31\x32\x33\x34\x35\
@@ -88,14 +110,14 @@ impl Job
         header.append(&mut format!(
                    "\x40\x50\x4a\x4c\x20\x4a\x4f\x42\
                     \x20\x4e\x41\x4d\x45\x3d\"{}\"\r\
-                    \n", self.user_id
+                    \n", user_id
             ).as_bytes().to_owned(),
         );
 
         header.append(&mut format!(
                    "\x40\x50\x4a\x4c\x20\x53\x45\x54\
                     \x20\x4a\x4f\x42\x4e\x41\x4d\x45\
-                    \x3d\"{}\"\r\n", self.user_id
+                    \x3d\"{}\"\r\n", user_id
             ).as_bytes().to_owned(),
         );
 
@@ -109,7 +131,7 @@ impl Job
         header.append(&mut format!(
                    "\x40\x50\x4a\x4c\x20\x53\x45\x54\
                     \x20\x55\x53\x45\x52\x4e\x41\x4d\
-                    \x45\x3d\"{}\"\r\n", self.user_id
+                    \x45\x3d\"{}\"\r\n", user_id
             ).as_bytes().to_owned(),
         );
 
@@ -126,7 +148,7 @@ impl Job
             ).as_bytes().to_owned(),
         );
 
-        if !options.a3 {
+        if !self.options.a3 {
             header.append(&mut
                   b"\x40\x50\x4a\x4c\x20\x53\x45\x54\
                     \x20\x50\x41\x50\x45\x52\x3d\x41\
@@ -140,7 +162,7 @@ impl Job
             );
         }
 
-        match options.duplex {
+        match self.options.duplex {
             0 => {
                 header.append(&mut
                   b"\x40\x50\x4a\x4c\x20\x53\x45\x54\
@@ -171,26 +193,26 @@ impl Job
             _ => (),
         }
 
-        if options.copies > 1 {
-            if options.collate {
+        if self.options.copies > 1 {
+            if self.options.collate {
                 // WHAT THE FUCK RICOH
                 header.append(&mut format!(
                    "\x40\x50\x4a\x4c\x20\x53\x45\x54\
                     \x20\x43\x4f\x50\x49\x45\x53\x3d\
                     {}\r\n",
-                    options.copies
+                    self.options.copies
                 ).as_bytes().to_owned(),);
             } else {
                 header.append(&mut format!(
                    "\x40\x50\x4a\x4c\x20\x53\x45\x54\
                     \x20\x51\x54\x59\x3d{}\r\n",
-                    options.copies
+                    self.options.copies
                 ).as_bytes().to_owned(),);
             }
         }
 
-        if options.a3 != info.a3 {
-            if !options.a3 {
+        if self.options.a3 != self.info.a3 {
+            if !self.options.a3 {
                 header.append(&mut
                   b"\x40\x50\x4a\x4c\x20\x53\x45\x54\
                     \x20\x46\x49\x54\x54\x4f\x50\x41\
@@ -205,8 +227,8 @@ impl Job
             }
         }
 
-        if options.nup > 1 {
-            match options.nup {
+        if self.options.nup > 1 {
+            match self.options.nup {
                 2 => {
                     header.append(&mut
                   b"\x40\x50\x4a\x4c\x20\x53\x45\x54\
@@ -219,7 +241,7 @@ impl Job
                 },
                 _ => (),
             }
-            match options.nuppageorder {
+            match self.options.nuppageorder {
                 0 => {
                     header.append(&mut
                   b"\x50\x4a\x4c\x20\x53\x45\x54\x20\
@@ -256,13 +278,13 @@ impl Job
             }
         }
 
-        if options.range != "" {
+        if self.options.range != "" {
             // assuming pagerange is valid here
             header.append(&mut format!(
                    "\x40\x50\x4a\x4c\x20\x53\x45\x54\
                     \x20\x50\x52\x49\x4e\x54\x50\x41\
                     \x47\x45\x53\x3d\"{}\"\r\n",
-                    options.range
+                    self.options.range
                 ).as_bytes().to_owned(),
             );
         }

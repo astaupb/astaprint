@@ -15,8 +15,6 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use bincode::deserialize;
-
 use chrono::NaiveDateTime;
 
 use jobs::{
@@ -34,33 +32,7 @@ pub struct JobData
 }
 impl JobData
 {
-    pub fn pages_to_print(&self) -> u16
-    {
-        let mut count = self.info.pagecount;
 
-        count = (count / u16::from(self.options.nup))
-            + match self.info.pagecount % u16::from(self.options.nup) {
-                0 => 0,
-                _ => 1,
-            };
-
-        if self.options.a3 {
-            count *= 2;
-        }
-
-        count * self.options.copies
-    }
 }
 
-impl<'a> From<(u32, &'a [u8], &'a [u8], NaiveDateTime)> for JobData
-{
-    fn from((id, info, options, created): (u32, &'a [u8], &'a [u8], NaiveDateTime)) -> JobData
-    {
-        JobData {
-            id,
-            info: deserialize(info).expect("deserializing JobInfo"),
-            options: deserialize(options).expect("deserializing JobOptions"),
-            created,
-        }
-    }
-}
+

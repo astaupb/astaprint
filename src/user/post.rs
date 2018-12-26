@@ -21,13 +21,14 @@ use rocket_contrib::Json;
 use user::{
     guard::UserGuard,
     login::LoginGuard,
-    tokens::table::*,
 };
 
 use diesel::{
-    delete,
-    prelude::*,
     QueryResult,
+};
+
+use mysql::user::{
+    delete::*,
 };
 
 #[post("/tokens")]
@@ -39,7 +40,7 @@ pub fn login(login: LoginGuard) -> Json<String>
 #[post("/logout")]
 pub fn logout(user: UserGuard) -> QueryResult<Reset>
 {
-    delete(user_tokens::table.filter(user_tokens::id.eq(user.token_id))).execute(&user.connection)?;
+    delete_user_token_by_id(user.id, user.token_id, &user.connection)?;
 
     info!("{} logged out", user.id);
 

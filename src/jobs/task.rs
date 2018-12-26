@@ -15,8 +15,6 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use jobs::info::JobInfo;
-
 use diesel::{
     mysql::MysqlConnection,
     r2d2::{
@@ -38,8 +36,8 @@ pub struct DispatcherState
 pub struct DispatcherTask
 {
     pub user_id: u32,
+    pub filename: String,
     pub uid: Vec<u8>,
-    pub info: JobInfo,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -47,7 +45,6 @@ pub struct DispatcherTaskResponse
 {
     pub uid: String,
     pub filename: String,
-    pub color: bool,
 }
 
 impl<'a> From<&'a DispatcherTask> for DispatcherTaskResponse
@@ -56,8 +53,7 @@ impl<'a> From<&'a DispatcherTask> for DispatcherTaskResponse
     {
         DispatcherTaskResponse {
             uid: hex::encode(&task.uid[..]),
-            filename: task.info.filename.clone(),
-            color: task.info.color,
+            filename: task.filename.clone(),
         }
     }
 }

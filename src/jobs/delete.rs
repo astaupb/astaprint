@@ -16,14 +16,14 @@
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use diesel::{
-    delete,
-    prelude::*,
     result::QueryResult,
 };
 
 use rocket::response::status::Reset;
 
-use jobs::*;
+use mysql::{
+    jobs::{delete::*},
+};
 use user::guard::UserGuard;
 
 
@@ -31,8 +31,7 @@ use user::guard::UserGuard;
 #[delete("/<id>")]
 pub fn delete_job(user: UserGuard, id: u32) -> QueryResult<Option<Reset>>
 {
-    let deleted = delete(jobs::table.filter(jobs::user_id.eq(user.id)).filter(jobs::id.eq(id)))
-        .execute(&user.connection)?;
+    let deleted = delete_job_by_id(id, user.id, &user.connection)?;
 
     Ok(if deleted == 1 {
         Some(Reset)

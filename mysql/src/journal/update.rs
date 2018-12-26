@@ -4,11 +4,11 @@ use diesel::{
 };
 use crate::schema::*;
 
-pub fn update_journal_token(id: u32, used: bool, user_id: u32) -> QueryResult<usize>
+pub fn update_journal_token(id: u32, used: bool, user_id: u32, connection: &MysqlConnection) -> QueryResult<usize>
 {
     update(
         journal_tokens::table
-            .filter(journal_tokens::id.eq(token.id))
+            .filter(journal_tokens::id.eq(id))
         )
         .set((
             journal_tokens::used.eq(used),

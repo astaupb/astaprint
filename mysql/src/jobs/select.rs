@@ -10,6 +10,14 @@ pub fn select_jobs(connection: &MysqlConnection) -> QueryResult<Vec<Job>>
     jobs::table.select(jobs::all_columns).load(connection)
 }
 
+pub fn select_job(id: u32, connection: &MysqlConnection) -> QueryResult<Job>
+{
+    jobs::table
+        .select(jobs::all_columns)
+        .filter(jobs::id.eq(id))
+        .first(connection)
+}
+
 pub fn select_all_jobs_of_user(
     user_id: u32,
     connection: &MysqlConnection,

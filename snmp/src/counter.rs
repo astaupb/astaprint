@@ -65,7 +65,6 @@ impl From<Vec<i64>> for CounterValues
         } 
     }
 }
-/*
 
 impl Sub for CounterValues
 {
@@ -73,29 +72,12 @@ impl Sub for CounterValues
 
     fn sub(self, other: CounterValues) -> CounterValues
     {
-        let total = self.total - other.total;
-
-        let print_black = self.print_black - other.print_black;
-
-        let copy_black = self.copy_black - other.copy_black;
-
-        let print_color = match (self.print_color, other.print_color) {
-            (Some(some), Some(other)) => Some(some - other),
-            _ => None,
-        };
-
-        let copy_color = match (self.copy_color, other.copy_color) {
-            (Some(some), Some(other)) => Some(some - other),
-            _ => None,
-        };
-
         CounterValues {
-            total,
-            print_black,
-            copy_black,
-            print_color,
-            copy_color,
+            total: self.total - other.total,
+            copy_total: self.copy_total - other.copy_total,
+            copy_bw: self.copy_bw - other.copy_bw,
+            print_total: self.print_total - other.print_total,
+            print_bw: self.print_bw - other.print_bw,
         }
     }
 }
-*/

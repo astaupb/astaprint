@@ -28,7 +28,6 @@ use rocket::{
 };
 
 use diesel::{
-    insert_into,
     prelude::*,
     r2d2::{
         ConnectionManager,
@@ -38,8 +37,6 @@ use diesel::{
 
 use crate::user::{
     key::merge_x_api_key,
-    table::*,
-    tokens::table::*,
 };
 
 use astacrypto::{
@@ -49,6 +46,10 @@ use astacrypto::{
 };
 
 use maxminddb::geoip2;
+
+use mysql::user::{
+    User, select::*, insert::*,
+};
 
 
 pub struct LoginGuard
@@ -102,19 +103,19 @@ impl<'a, 'r> FromRequest<'a, 'r> for LoginGuard
 
         let connection = pool.get().expect("retrieving connection from pool");
 
-        let mut result: Vec<(bool, u32, Vec<u8>, Vec<u8>)> = user::table
-            .select((user::locked, user::id, user::hash, user::salt))
-            .filter(user::name.eq(credentials[0]))
-            .load(&connection)
-            .expect("loading user status from table");
+        let result = select_user_by_name_optional(credentials[0], &connection)
+            .expect("selecting user by name");
 
-        if result.len() != 1 {
+        let user: User = match result {
+            None => return Outcome::Failure((Status::Unauthorized, ())),
+            Some(user) => user,
+        };
+
+        if user.locked {
             return Outcome::Failure((Status::Unauthorized, ()));
         }
 
-        let (locked, user_id, hash, salt) = result.pop().unwrap();
-
-        if locked || PasswordHash::with_salt(credentials[1], &salt[..]) != hash {
+        if PasswordHash::with_salt(credentials[1], &user.salt[..]) != user.hash {
             return Outcome::Failure((Status::Unauthorized, ()));
         }
 
@@ -123,9 +124,9 @@ impl<'a, 'r> FromRequest<'a, 'r> for LoginGuard
 
         // using the password hash as salt for performace reasons
         // and so every token gets invalidated on password change
-        let hash = GenericHash::with_salt(&token[..], &hash[..]);
+        let hash = GenericHash::with_salt(&token[..], &user.hash[..]);
 
-        let x_api_key = match merge_x_api_key(user_id, token) {
+        let x_api_key = match merge_x_api_key(user.id, token) {
             Ok(key) => key,
             Err(_) => return Outcome::Failure((Status::Unauthorized, ())),
         };
@@ -153,18 +154,17 @@ impl<'a, 'r> FromRequest<'a, 'r> for LoginGuard
         let city = names_map.get("en").expect("getting english entry from names_map");
 
 
-        match insert_into(user_tokens::table)
-            .values((
-                user_tokens::user_id.eq(user_id),
-                user_tokens::user_agent.eq(user_agent),
-                user_tokens::ip.eq(format!("{}", remote.ip())),
-                user_tokens::location.eq(city),
-                user_tokens::hash.eq(hash),
-            ))
-            .execute(&connection)
+        match insert_into_user_tokens(
+            user.id,
+            &user_agent,
+            &format!("{}", remote.ip()),
+            &city,
+            hash,
+            &connection,
+        )
         {
             Ok(_) => {
-                info!("{} logged in ", user_id);
+                info!("{} logged in ", user.id);
                 Outcome::Success(LoginGuard {
                     token: x_api_key,
                 })

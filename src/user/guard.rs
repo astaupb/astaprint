@@ -42,8 +42,10 @@ use astacrypto::GenericHash;
 
 use crate::user::{
     key::split_x_api_key,
-    table::*,
-    tokens::table::*,
+};
+
+use mysql::user::{
+    select::*,
 };
 
 pub struct UserGuard
@@ -86,17 +88,15 @@ impl<'a, 'r> FromRequest<'a, 'r> for UserGuard
         };
 
         // select password hash of user which is used as salt
-        let result: QueryResult<Vec<u8>> =
-            user::table.select(user::hash).filter(user::id.eq(user_id)).first(&connection);
+        let result: QueryResult<Vec<u8>> = select_user_hash_by_id(user_id, &connection);
 
         if let Ok(salt) = result {
             let hash = GenericHash::with_salt(&token[..], &salt[..]);
 
-            let result: QueryResult<u32> = user_tokens::table
-                .select(user_tokens::id)
-                .filter(user_tokens::user_id.eq(user_id))
-                .filter(user_tokens::hash.eq(hash))
-                .first(&connection);
+            let result: QueryResult<u32> =
+                select_user_token_id_by_hash(
+                    user_id, hash, &connection,
+                );
 
             if let Ok(token_id) = result {
                 Outcome::Success(UserGuard {

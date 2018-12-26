@@ -38,6 +38,8 @@ extern crate r2d2_redis;
 extern crate redis;
 
 extern crate mysql;
+extern crate snmp;
+extern crate pdf;
 
 extern crate threadpool;
 
@@ -51,8 +53,6 @@ extern crate poppler;
 extern crate lpr;
 
 extern crate astacrypto;
-
-extern crate mysql;
 
 // routes
 pub mod jobs;

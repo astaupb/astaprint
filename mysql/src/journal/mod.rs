@@ -1,8 +1,11 @@
 pub mod select;
+pub mod insert;
+pub mod update;
 
 use crate::schema::*;
 use bigdecimal::BigDecimal;
 use chrono::NaiveDateTime;
+use std::fmt;
 
 joinable!(journal -> user (user_id));
 
@@ -38,4 +41,12 @@ pub struct JournalToken
     used_by: Option<u32>,
     created: NaiveDateTime,
     updated: NaiveDateTime,
+}
+
+impl fmt::Display for Journal
+{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+    {
+        write!(f, "{}{}{}{}{}", self.id, self.user_id, self.value, self.description, self.created)
+    }
 }

@@ -1,7 +1,7 @@
 /// AStAPrint - Jobs GET Routes
 /// Copyright (C) 2018  AStA der Universität Paderborn
 ///
-/// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
+// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
 ///
 /// This program is free software: you can redistribute it and/or modify
 /// it under the terms of the GNU Affero General Public License as published by
@@ -16,39 +16,38 @@
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use diesel::{
-    prelude::*,
     QueryResult,
 };
+
+use chrono::NaiveDateTime;
 
 use rocket_contrib::Json;
 
 use jobs::{
-    response::JobResponse,
-    *,
+    Job,
+};
+use mysql::{
+    jobs::{
+        select::*,
+    },
 };
 use user::guard::UserGuard;
 
 #[get("/<id>")]
-fn fetch_job(user: UserGuard, id: u32) -> QueryResult<Option<Json<JobResponse>>>
+fn fetch_job(user: UserGuard, id: u32) -> QueryResult<Option<Json<Job>>>
 {
-    let job: Option<(u32, u32, NaiveDateTime, Vec<u8>, Vec<u8>)> = jobs::table
-        .select((jobs::id, jobs::user_id, jobs::created, jobs::info, jobs::options))
-        .filter(jobs::user_id.eq(user.id))
-        .filter(jobs::id.eq(id))
-        .first(&user.connection)
-        .optional()?;
+    let job: Option<(u32, Vec<u8>, Vec<u8>, NaiveDateTime)> = select_single_job_of_user(id, user.id, &user.connection)?;
 
-    Ok(job.map(|x| Json(JobResponse::from(x))))
+    Ok(job.map(|x| Json(Job::from(x))))
 }
 
 #[get("/")]
-fn jobs(user: UserGuard) -> QueryResult<Json<Vec<JobResponse>>>
+fn jobs(user: UserGuard) -> QueryResult<Json<Vec<Job>>>
 {
-    let jobs: Vec<(u32, u32, NaiveDateTime, Vec<u8>, Vec<u8>)>
-        = select_all_jobs_of_user(user.id, &user.connection)
-            .expect("selecting jobs");
+    let jobs: Vec<(u32, Vec<u8>, Vec<u8>, NaiveDateTime)>
+        = select_all_jobs_of_user(user.id, &user.connection)?;
 
-    Ok(Json(jobs.iter().map(|x| JobResponse::from(x.clone())).collect()))
+    Ok(Json(jobs.iter().map(|x| Job::from(x.clone())).collect()))
 }
 
 #[get("/<id>/pdf")]

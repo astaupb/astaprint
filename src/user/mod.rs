@@ -21,7 +21,6 @@ pub mod post;
 pub mod put;
 
 pub mod add;
-pub mod card;
 pub mod guard;
 pub mod key;
 pub mod login;

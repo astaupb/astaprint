@@ -28,7 +28,6 @@ use rocket::{
 use rocket_contrib::Json;
 
 use jobs::{
-    info::JobInfo,
     task::DispatcherTask,
 };
 
@@ -66,18 +65,12 @@ fn upload_job<'a>(
 
     let uid = store.set(data).expect("saving file in store");
 
-    let info = JobInfo::new(
-        &options.filename.unwrap_or_else(|| String::from("")),
-        "",
-        options.color.unwrap_or(true),
-    );
-
     let hex_uid = hex::encode(&uid[..]);
 
     let task = DispatcherTask {
         user_id: user.id,
-        info,
         uid,
+        filename: options.filename.unwrap_or("empty".into()),
     };
 
     taskqueue.send(&task).expect("sending task to queue");

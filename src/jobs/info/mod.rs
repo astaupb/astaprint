@@ -23,25 +23,14 @@ pub mod get;
 pub struct JobInfo
 {
     pub filename: String,
-    pub pagecount: u16,
-    pub color: bool,
+    pub title: String,
+    pub pagecount: u32,
+    pub colored: u32,
     pub a3: bool,
-    pub password: String,
 }
 
 impl JobInfo
 {
-    pub fn new(filename: &str, password: &str, color: bool) -> JobInfo
-    {
-        JobInfo {
-            filename: String::from(filename),
-            pagecount: 0,
-            color,
-            a3: false,
-            password: String::from(password),
-        }
-    }
-
     pub fn serialize(&self) -> Vec<u8>
     {
         bincode::serialize(&self).expect("serializing JobInfo")

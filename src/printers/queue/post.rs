@@ -18,13 +18,11 @@
 use std::collections::HashMap;
 
 use diesel::{
-    prelude::*,
     result::QueryResult,
 };
 
 use jobs::{
     options::JobOptions,
-    table::*,
 };
 
 use printers::queue::task::WorkerTask;
@@ -40,6 +38,8 @@ use user::guard::UserGuard;
 use redis::queue::TaskQueueClient;
 
 use astacrypto::random_bytes;
+
+use mysql::jobs::select::*;
 
 #[derive(FromForm)]
 pub struct QueuePostQuery
@@ -60,17 +60,11 @@ pub fn print_job(
         None => return Ok(None),
     };
 
-    let result: Option<(u32, Vec<u8>)> = jobs::table
-        .select((jobs::id, jobs::options))
-        .filter(jobs::id.eq(query.id))
-        .filter(jobs::user_id.eq(user.id))
-        .first(&user.connection)
-        .optional()?;
-
-    let (job_id, job_options): (u32, JobOptions) = match result {
+    let job_options: JobOptions =
+        match select_job_options(query.id, user.id, &user.connection)? {
         None => return Ok(None),
-        Some((job_id, job_options)) => {
-            (job_id, bincode::deserialize(&job_options).expect("deserializing JobOptions"))
+        Some(job_options) => {
+            bincode::deserialize(&job_options).expect("deserializing JobOptions")
         },
     };
 
@@ -78,7 +72,7 @@ pub fn print_job(
     let hex_uid = hex::encode(&uid[..]);
 
     let task = WorkerTask {
-        job_id,
+        job_id: query.id,
         uid,
         user_id: user.id,
         options: job_options,

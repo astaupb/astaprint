@@ -23,8 +23,6 @@ use rocket::response::status::{
 use rocket_contrib::Json;
 
 use diesel::{
-    prelude::*,
-    update,
     QueryResult,
 };
 
@@ -32,7 +30,10 @@ use astacrypto::PasswordHash;
 
 use crate::user::{
     guard::UserGuard,
-    table::*,
+};
+
+use mysql::user::{
+    select::*, update::*,
 };
 
 #[derive(Deserialize, Debug)]
@@ -54,17 +55,15 @@ fn change_password(
     body: Json<PasswordChangeBody>,
 ) -> QueryResult<Result<NoContent, BadRequest<&'static str>>>
 {
-    let (hash, salt): (Vec<u8>, Vec<u8>) = user::table
-        .select((user::hash, user::salt))
-        .filter(user::id.eq(user.id))
-        .first(&user.connection)?;
+    let (hash, salt): (Vec<u8>, Vec<u8>) =
+        select_hash_and_salt(user.id, &user.connection)?;
 
     if PasswordHash::with_salt(&body.password.old, &salt[..]) == hash {
         let (hash, salt) = PasswordHash::create(&body.password.new);
 
-        update(user::table.filter(user::id.eq(user.id)))
-            .set((user::hash.eq(hash), user::salt.eq(salt)))
-            .execute(&user.connection)?;
+        update_hash_and_salt(
+            user.id, hash, salt, &user.connection,
+        )?;
 
         info!("{} changed password", user.id);
 
@@ -80,9 +79,7 @@ fn change_password(
 #[put("/name", data = "<new_username>")]
 fn change_username(user: UserGuard, new_username: Json<String>) -> QueryResult<Reset>
 {
-    update(user::table.filter(user::id.eq(user.id)))
-        .set(user::name.eq(new_username.into_inner()))
-        .execute(&user.connection)?;
+    update_user_name(user.id, &new_username, &user.connection)?;
 
     info!("{} changed username", user.id);
 

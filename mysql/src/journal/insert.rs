@@ -1,5 +1,9 @@
-use diesel::prelude::*;
+use diesel::{
+    prelude::*,
+    insert_into,
+};
 use bigdecimal::BigDecimal;
+use crate::journal::*;
 
 pub fn insert_into_journal(user_id: u32, value: BigDecimal, description: &str, connection: &MysqlConnection) -> QueryResult<usize>
 {
@@ -9,7 +13,7 @@ pub fn insert_into_journal(user_id: u32, value: BigDecimal, description: &str, c
             journal::value.eq(value),
             journal::description.eq(description),
         ))
-        .execute(&mysql)
+        .execute(connection)
 }
 
 pub fn insert_into_journal_digest(digest: Vec<u8>, credit: BigDecimal, connection: &MysqlConnection) -> QueryResult<usize>
@@ -19,5 +23,5 @@ pub fn insert_into_journal_digest(digest: Vec<u8>, credit: BigDecimal, connectio
             journal_digest::digest.eq(digest),
             journal_digest::credit.eq(credit),
         ))
-        .execute(&connection)
+        .execute(connection)
 }

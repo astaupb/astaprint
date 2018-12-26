@@ -32,7 +32,6 @@ use rocket::{
 use rocket_contrib::Json;
 
 use diesel::{
-    insert_into,
     prelude::*,
     r2d2::{
         ConnectionManager,
@@ -52,7 +51,10 @@ use std::str::FromStr;
 use astacrypto::pwhash::PasswordHash;
 
 use journal::insert;
-use user::table::*;
+
+use mysql::user::{
+    insert::*, select::*,
+};
 
 table! {
     register_token (id) {
@@ -120,14 +122,7 @@ fn register<'a>(
 
     let (hash, salt) = PasswordHash::create(&user.password);
 
-    match insert_into(user::table)
-        .values((
-            user::name.eq(&user.username),
-            user::locked.eq(false),
-            user::hash.eq(hash),
-            user::salt.eq(salt),
-        ))
-        .execute(&connection)
+    match insert_into_user(&user.username, hash, salt, false, &connection)
     {
         Err(err) => {
             if let DatabaseError(UniqueViolation, _) = err {
@@ -140,11 +135,11 @@ fn register<'a>(
         },
         Ok(_) => {
             let user_id: u32 =
-                user::table.select(user::id).filter(user::name.eq(&user.username)).first(&connection)?;
+                select_user_id_by_name(&user.username, &connection)?.unwrap();
 
             let credit = BigDecimal::from_str("0.00").unwrap();
 
-            insert(user_id, credit, "registerd in beta", redis_pool.inner().clone(), connection)?;
+            insert(user_id, credit, "registerd in beta", redis_pool.inner().clone(), &connection)?;
 
             info!("{}#{} registered", &user.username, user_id);
 

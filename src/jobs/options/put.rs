@@ -18,9 +18,7 @@
 use std::str::FromStr;
 
 use diesel::{
-    prelude::*,
     result::QueryResult,
-    update,
 };
 
 use rocket_contrib::Json;
@@ -46,6 +44,10 @@ use jobs::{
     *,
 };
 
+use mysql::jobs::{
+    update::*,
+};
+
 use user::guard::UserGuard;
 
 #[put("/<id>/options/<option>", data = "<value>")]
@@ -56,12 +58,8 @@ fn update_single_option(
     value: Json<Value>,
 ) -> QueryResult<Result<Option<Reset>, BadRequest<String>>>
 {
-    let result: Option<Vec<u8>> = jobs::table
-        .select(jobs::options)
-        .filter(jobs::user_id.eq(user.id))
-        .filter(jobs::id.eq(id))
-        .first(&user.connection)
-        .optional()?;
+    let result: Option<Vec<u8>> =
+        select_job_options(id, user.id, &user.connection)?;
 
     let mut options: JobOptions = match result {
         None => return Ok(Ok(None)),
@@ -100,7 +98,7 @@ fn update_single_option(
     };
     let value = bincode::serialize(&options).expect("serializing JobOptions");
 
-    ;
+    update_job_options(id, user.id, value, &user.connection)?;
 
     Ok(Ok(Some(Reset)))
 }
@@ -112,12 +110,8 @@ fn update_options(
     options_update: Json<JobOptionsUpdate>,
 ) -> QueryResult<Result<Option<Reset>, BadRequest<String>>>
 {
-    let result: Option<Vec<u8>> = jobs::table
-        .select(jobs::options)
-        .filter(jobs::user_id.eq(user.id))
-        .filter(jobs::id.eq(id))
-        .first(&user.connection)
-        .optional()?;
+    let result: Option<Vec<u8>> =
+        select_job_options(id, user.id, &user.connection)?;
 
     let mut options: JobOptions = match result {
         None => return Ok(Ok(None)),
@@ -128,9 +122,9 @@ fn update_options(
 
     let serialized = bincode::serialize(&options).expect("serializing JobOptions");
 
-    update(jobs::table.filter(jobs::id.eq(id)).filter(jobs::user_id.eq(user.id)))
-        .set(jobs::options.eq(serialized))
-        .execute(&user.connection)?;
+    update_job_options(
+        id, user.id, serialized, &user.connection, 
+    )?;
 
     Ok(Ok(Some(Reset)))
 }

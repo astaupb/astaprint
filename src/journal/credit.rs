@@ -27,14 +27,14 @@ use diesel::{
 
 use rocket_contrib::Json;
 
-use journal::{
-    digest::table::*,
-    table::*,
+use mysql::{
+    journal::{
+        select::*,
+    },
 };
 
 use user::{
     guard::UserGuard,
-    table::*,
 };
 
 #[get("/credit")]
@@ -49,10 +49,10 @@ pub fn credit(user: UserGuard) -> QueryResult<Json<f64>>
 
 pub fn get_credit(user_id: u32, connection: &MysqlConnection) -> QueryResult<BigDecimal>
 {
-    let mut credit_id: u32 = 
+    let mut credit_id: u32 = select_latest_journal_id_of_user(user_id, connection)?.unwrap();
     // calculated credit has offset of one from journal
     credit_id += 1;
 
-    let credit: BigDecimal = 
+    let credit: BigDecimal = select_credit_by_id(credit_id, connection)?;
     Ok(credit)
 }

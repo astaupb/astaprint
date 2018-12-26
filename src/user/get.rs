@@ -21,15 +21,17 @@ use rocket_contrib::Json;
 use bigdecimal::ToPrimitive;
 
 use diesel::{
-    prelude::*,
     QueryResult,
 };
 
-use journal::credit::select_credit;
+use journal::credit::get_credit;
+
 use user::{
     guard::UserGuard,
-    table::*,
-    tokens::table::*,
+};
+
+use mysql::user::{
+    select::*,
 };
 
 
@@ -47,17 +49,13 @@ struct UserInfo
 fn get_user_info(user: UserGuard) -> QueryResult<Json<UserInfo>>
 {
     let id = user.id;
-    let tokens: Vec<u32> = user_tokens::table
-        .select(user_tokens::id)
-        .filter(user_tokens::user_id.eq(id))
-        .load(&user.connection)?;
+    let tokens: Vec<u32> = select_token_ids_of_user(user.id, &user.connection)?;
 
     let tokens = tokens.len();
 
-    let credit = select_credit(user.id, &user.connection)?.to_f64().unwrap();
+    let credit = get_credit(user.id, &user.connection)?.to_f64().unwrap();
 
-    let name: String =
-        user::table.select(user::name).filter(user::id.eq(user.id)).first(&user.connection)?;
+    let name: String = select_user_name_by_id(user.id, &user.connection)?.unwrap();
 
     Ok(Json(UserInfo {
         id,
@@ -71,8 +69,7 @@ fn get_user_info(user: UserGuard) -> QueryResult<Json<UserInfo>>
 #[get("/name")]
 fn fetch_username(user: UserGuard) -> QueryResult<Json<String>>
 {
-    let username: String =
-        user::table.select(user::name).filter(user::id.eq(user.id)).first(&user.connection)?;
+    let username: String = select_user_name_by_id(user.id, &user.connection)?.unwrap();
 
     info!("{} fetched username", user.id);
 
