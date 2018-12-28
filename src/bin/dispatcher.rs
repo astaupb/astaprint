@@ -20,6 +20,12 @@ extern crate log;
 extern crate logger;
 extern crate redis;
 extern crate threadpool;
+extern crate bincode;
+
+extern crate pdf;
+extern crate mysql;
+extern crate astaprint;
+
 
 use std::env;
 
@@ -28,23 +34,63 @@ use logger::Logger;
 use threadpool::ThreadPool;
 
 use redis::{
+    create_redis_pool,
     queue::TaskQueue,
     store::Store,
 };
 
 use astaprint::{
     jobs::{
-        pdf::dispatch,
+        info::JobInfo,
+        options::JobOptions,
         task::{
             DispatcherState,
             DispatcherTask,
         },
     },
-    pool::{
-        create_mysql_pool,
-        create_redis_pool,
-    },
 };
+use mysql::{
+    create_mysql_pool,
+    jobs::insert::insert_into_jobs,
+};
+
+use pdf::sanitize;
+
+pub fn dispatch(task: DispatcherTask, state: DispatcherState)
+{
+    let hex_uid = hex::encode(&task.uid[..]);
+    info!("{} {} started", task.user_id, &hex_uid[..8]);
+
+    let data = state.redis_store.get(task.uid).expect("getting file from store");
+
+    let result = sanitize(data);
+
+    let connection = state.mysql_pool.get().expect("getting mysql connection from pool");
+
+    let info: Vec<u8> = bincode::serialize(&JobInfo {
+        filename: task.filename,
+        title: result.title,
+        pagecount: result.pagecount,
+        colored: result.colored,
+        a3: result.a3,
+    }).expect("serializing JobInfo");
+
+    let options: Vec<u8> = bincode::serialize(&JobOptions::default())
+        .expect("serializing JobOptions");
+
+    insert_into_jobs(
+        task.user_id,
+        info,
+        options,
+        result.pdf,
+        result.pdf_bw,
+        result.preview_0,
+        result.preview_1,
+        result.preview_2,
+        result.preview_3,
+        &connection
+    ).expect("inserting job into table");
+}
 
 fn main()
 {
@@ -55,7 +101,10 @@ fn main()
 
     let redis_store = Store::from(redis_pool.clone());
 
-    let mysql_pool = create_mysql_pool(10);
+    let mysql_url = env::var("ASTAPRINT_DATABASE_URL")
+        .expect("reading mysql url from environment");
+    
+    let mysql_pool = create_mysql_pool(&mysql_url, 10);
 
     let thread_pool = ThreadPool::new(20);
 

@@ -21,9 +21,14 @@ extern crate log;
 extern crate diesel;
 extern crate threadpool;
 
+extern crate astaprint;
+
 extern crate logger;
 extern crate r2d2_redis;
 extern crate redis;
+
+extern crate mysql;
+extern crate snmp;
 
 use std::{
     env,
@@ -46,7 +51,15 @@ use r2d2_redis::{
 };
 
 use logger::Logger;
-use redis::queue::TaskQueue;
+use redis::{
+    create_redis_pool,
+    queue::TaskQueue,
+};
+
+use mysql::{
+    create_mysql_pool,
+    printers::select::select_device_ids,
+};
 
 use astaprint::printers::{
     queue::task::{
@@ -54,18 +67,16 @@ use astaprint::printers::{
         WorkerState,
         WorkerTask,
     },
-    select_device_ids,
-    snmp::PrinterInterface,
 };
 
-use astaprint::pool::{
-    create_mysql_pool,
-    create_redis_pool,
+
+use snmp::{
+    PrinterInterface,
 };
 
 
 fn spawn_worker(
-    device_id: u16,
+    device_id: u32,
     redis_pool: RedisPool<RedisConnectionManager>,
     mysql_pool: MysqlPool<ConnectionManager<MysqlConnection>>,
 ) -> thread::JoinHandle<()>
@@ -74,8 +85,11 @@ fn spawn_worker(
 
     let printer_interface =
         PrinterInterface::from_device_id(device_id, &connection);
+
     let name = format!("worker::{}", device_id);
+
     let thread_pool = ThreadPool::new(8);
+
     let taskqueue: TaskQueue<WorkerTask, WorkerState> = TaskQueue::new(
         &name,
         WorkerState {
@@ -103,12 +117,15 @@ fn main()
 
     let mut handles: Vec<thread::JoinHandle<()>> = Vec::new();
 
-    let mysql_pool = create_mysql_pool(10);
+    let mysql_url = env::var("ASTAPRINT_DATABASE_URL")
+        .expect("reading mysql url from environment");
+
+    let mysql_pool = create_mysql_pool(&mysql_url, 10);
 
     let connection =
         mysql_pool.get().expect("getting mysql connection from pool");
 
-    for id in select_device_ids(&connection) {
+    for id in select_device_ids(&connection).expect("selecting device ids") {
         let redis_pool = create_redis_pool(&redis_url, 3);
 
         handles.push(spawn_worker(id, redis_pool, mysql_pool.clone()));

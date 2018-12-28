@@ -35,26 +35,25 @@ use crate::{
     },
 };
 
-/*
-    let hex_uid = hex::encode(&task.uid[..]);
-    info!("{} {} started", task.user_id, &hex_uid[..8]);
-
-    let mut data = state.redis_store.get(task.uid).expect("getting file from store");
-    */
 
 #[derive(Debug, Clone)]
 pub struct DispatchResult
 {
     pub pdf: Vec<u8>,
     pub pdf_bw: Vec<u8>,
+    pub preview_0: Vec<u8>,
+    pub preview_1: Option<Vec<u8>>,
+    pub preview_2: Option<Vec<u8>>,
+    pub preview_3: Option<Vec<u8>>,
     pub title: String,
     pub a3: bool,
     pub pagecount: u32,
     pub colored: u32,
 }
-pub fn dispatch(mut pdf: Vec<u8>) -> DispatchResult
+
+pub fn sanitize(mut pdf: Vec<u8>) -> DispatchResult
 {
-    let pdf_document = PDFDocument::new(&pdf[..], "");
+    let mut pdf_document = PDFDocument::new(&pdf[..], "");
 
     let title = pdf_document.title.clone()
         .unwrap_or(String::from(""));
@@ -68,7 +67,9 @@ pub fn dispatch(mut pdf: Vec<u8>) -> DispatchResult
 
         pdf = pdfjam(pdf, &page_info).expect("jamming pdf to valid format");
 
-        page_info = PDFDocument::new(&pdf[..], "").get_pageinfo();
+        pdf_document = PDFDocument::new(&pdf[..], "");
+
+        page_info = pdf_document.get_pageinfo();
     }
 
     let a3 = match page_info.size {
@@ -80,8 +81,13 @@ pub fn dispatch(mut pdf: Vec<u8>) -> DispatchResult
     let (pdf_bw, colored) = ghostscript(&pdf[..])
         .expect("running ghostscript");
 
+    let preview_0 = pdf_document.render_preview(0).unwrap();
+    let preview_1 = pdf_document.render_preview(1);
+    let preview_2 = pdf_document.render_preview(2);
+    let preview_3 = pdf_document.render_preview(3);
+
     DispatchResult {
-        pdf, pdf_bw, title, a3, pagecount, colored,
+        pdf, pdf_bw, preview_0, preview_1, preview_2, preview_3, title, a3, pagecount, colored,
     }
 }
 
