@@ -21,8 +21,13 @@ use bigdecimal::BigDecimal;
 extern crate astaprint;
 use astaprint::{
     journal::insert,
-    pool::*,
 };
+
+extern crate mysql;
+use mysql::create_mysql_pool;
+
+extern crate redis;
+use redis::create_redis_pool;
 
 use std::{
     env,
@@ -37,8 +42,12 @@ fn main()
     }
     let value = BigDecimal::from_str(&arg[2]).unwrap();
     let user_id: u32 = arg[1].parse().unwrap();
-    let redis_pool = create_redis_pool(&env::var("ASTAPRINT_REDIS_URL").unwrap(), 3);
-    let mysql_pool = create_mysql_pool(3);
+    let redis_pool =
+        create_redis_pool(&env::var("ASTAPRINT_REDIS_URL").unwrap(), 3);
 
-    insert(user_id, value, &arg[3], redis_pool, mysql_pool.get().unwrap()).unwrap();
+    let url = env::var("ASTAPRINT_DATABASE_URL").unwrap();
+    let mysql_pool = create_mysql_pool(&url, 3);
+
+    insert(user_id, value, &arg[3], redis_pool, &mysql_pool.get().unwrap())
+        .unwrap();
 }

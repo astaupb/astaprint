@@ -20,12 +20,14 @@ use bigdecimal::BigDecimal;
 
 extern crate astaprint;
 use astaprint::{
-    pool::{
-        create_mysql_pool,
-        create_redis_pool,
-    },
     user::add::add_user,
 };
+
+extern crate mysql;
+use mysql::create_mysql_pool;
+
+extern crate redis;
+use redis::create_redis_pool;
 extern crate diesel;
 
 use std::{
@@ -37,7 +39,11 @@ use std::{
 
 fn main()
 {
-    let redis_url = env::var("ASTAPRINT_REDIS_URL").expect("reading ASTAPRINT_REDIS_URL from environment");
+    let redis_url = env::var("ASTAPRINT_REDIS_URL")
+        .expect("reading ASTAPRINT_REDIS_URL from environment");
+
+    let mysql_url = env::var("ASTAPRINT_DATABASE_URL")
+        .expect("reading mysql url from environment");
 
     let mut file = File::open("dump.tsv").unwrap();
 
@@ -47,10 +53,12 @@ fn main()
 
     let mut user_list: Vec<&str> = contents.split("\r\n").collect();
 
-    let mysql_pool = create_mysql_pool(10);
+    let mysql_pool = create_mysql_pool(&mysql_url, 10);
     let redis_pool = create_redis_pool(&redis_url, 10);
+
     let mut user_count = 0;
     let connection = mysql_pool.get().unwrap();
+
     while user_list.len() > 0 {
         let mut end = 32;
         if user_list.len() < 32 {
@@ -62,39 +70,39 @@ fn main()
             if split.len() < 3 {
                 break;
             }
-            let card: u64 = split[0].parse().unwrap();
+            println!("parsing {}", split[0]);
+            let card: u32 = split[0].parse().unwrap();
             let pin: u32 = match split[1].parse() {
                 Ok(pin) => pin,
                 Err(_) => break,
             };
+            continue;
             use diesel::{
-                update, prelude::*,
+                prelude::*,
+                update,
             };
+            /*
             println!("{} {}", card, pin);
             use astaprint::user::table::*;
             update(user::table.filter(user::name.eq(split[0])))
-                .set((
-                    user::card.eq(Some(card)),
-                    user::pin.eq(Some(pin)),
-                    ))
+                .set((user::card.eq(Some(card)), user::pin.eq(Some(pin))))
                 .execute(&connection)
                 .expect("updating user");
-            /*
-            let locked = split[2] == "1";
-            let connection = mysql_pool.get().unwrap();
-            match add_user(
-                split[0],
-                split[1],
-                locked,
-                BigDecimal::from_str("0.0").unwrap(),
-                "imported",
-                redis_pool.clone(),
-                connection,
-            ) {
-                Ok(_) => println!("{} {} imported..", split[0], split[1]),
-                Err(e) => println!("{}: {:?}", split[0], e),
-            }
-            */
+                */
+            // let locked = split[2] == "1";
+            // let connection = mysql_pool.get().unwrap();
+            // match add_user(
+            // split[0],
+            // split[1],
+            // locked,
+            // BigDecimal::from_str("0.0").unwrap(),
+            // "imported",
+            // redis_pool.clone(),
+            // connection,
+            // ) {
+            // Ok(_) => println!("{} {} imported..", split[0], split[1]),
+            // Err(e) => println!("{}: {:?}", split[0], e),
+            // }
         }
         println!("{} imported", user_count);
     }
