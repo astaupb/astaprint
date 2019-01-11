@@ -117,11 +117,6 @@ paths:
           schema:
             type: string
           description: Filename on the original filesystem
-        - in: query
-          name: color
-          schema:
-            type: boolean
-          description: decides if the job should stay colored or not (default is false)
     get:
       operationId: getJobQueue
       tags:
