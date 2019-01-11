@@ -114,7 +114,7 @@ pub fn select_user_token_id_by_hash(
 }
 
 pub fn select_user_id_by_card_credentials(
-    card: Vec<u8>,
+    card: u64,
     pin: u32,
     connection: &MysqlConnection,
 ) -> QueryResult<Option<u32>>
@@ -155,3 +155,4 @@ pub fn select_user_by_name_optional(
         .first(connection)
         .optional()
 }
+

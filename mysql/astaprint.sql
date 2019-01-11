@@ -16,9 +16,9 @@
 --  You should have received a copy of the GNU Affero General Public License
 --  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-DROP DATABASE IF EXISTS `astaprint_test`;
-CREATE DATABASE `astaprint_test`;
-USE `astaprint_test`;
+DROP DATABASE IF EXISTS `astaprint`;
+CREATE DATABASE `astaprint`;
+USE `astaprint`;
 source user.sql;
 source admin.sql;
 source journal.sql;

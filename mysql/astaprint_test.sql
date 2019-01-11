@@ -1,4 +1,4 @@
---  AStAPrint - Database - User Tables
+--  AStAPrint - Database
 --  Copyright (C) 2018  AStA der Universität Paderborn
 --
 --  Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
@@ -16,23 +16,12 @@
 --  You should have received a copy of the GNU Affero General Public License
 --  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-CREATE TABLE `user`(
-  `id` INT UNSIGNED UNIQUE PRIMARY KEY AUTO_INCREMENT,
-  `name` VARCHAR(32) UNIQUE NOT NULL,
-  `hash` BINARY(64) NOT NULL,
-  `salt` BINARY(16) NOT NULL,
-  `options` BINARY(128),
-  `card` BIGINT UNSIGNED UNIQUE,
-  `pin` INT UNSIGNED,
-  `locked`  BOOLEAN NOT NULL DEFAULT false,
-  `created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP);
+DROP DATABASE IF EXISTS `astaprint_test`;
+CREATE DATABASE `astaprint_test`;
+USE `astaprint_test`;
+source user.sql;
+source admin.sql;
+source journal.sql;
+source jobs.sql;
+source printers.sql;
 
-CREATE TABLE `user_tokens`(
-  `id` INT UNSIGNED UNIQUE PRIMARY KEY AUTO_INCREMENT,
-  `user_id` INT UNSIGNED NOT NULL,
-  `user_agent` VARCHAR(128) NOT NULL,
-  `ip` VARCHAR(48) NOT NULL,
-  `location` VARCHAR(64) NOT NULL,
-  `hash` BINARY(64) NOT NULL,
-  `created` TIMESTAMP NOT NULL);

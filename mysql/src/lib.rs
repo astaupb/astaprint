@@ -16,6 +16,8 @@ use diesel::{
     },
 };
 
+use std::env;
+
 pub fn create_mysql_pool(
     url: &str,
     max_size: u32,
@@ -25,6 +27,16 @@ pub fn create_mysql_pool(
         .max_size(max_size)
         .build(ConnectionManager::<MysqlConnection>::new(url))
         .expect("creating Mysql Connection Pool")
+}
+
+pub fn get_pool(
+) -> Pool<ConnectionManager<MysqlConnection>>
+{
+    create_mysql_pool(
+        &env::var("ASTAPRINT_DATABASE_URL")
+            .expect("reading database url from environment"),
+        1,
+    )
 }
 #[cfg(test)]
 mod tests

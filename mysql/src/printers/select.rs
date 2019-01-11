@@ -55,3 +55,9 @@ pub fn select_device_id_by_ip(ip: &str, connection: &MysqlConnection) -> QueryRe
     printers::table.select(printers::device_id).filter(printers::ip.eq(ip)).first(connection)
 }
 
+pub fn select_all_ips(connection: &MysqlConnection) -> QueryResult<Vec<String>>
+{
+    printers::table
+        .select(printers::ip)
+        .load(connection)
+}
