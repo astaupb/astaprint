@@ -1,0 +1,7 @@
+[package]
+name = "sodium"
+version = "0.1.0"
+authors = ["Gerrit Pape <papeg@mail.upb.de>"]
+edition = "2018"
+
+[dependencies]
