@@ -1,0 +1,13 @@
+[package]
+name = "model"
+version = "0.1.0"
+authors = ["Gerrit Pape <papeg@mail.upb.de>"]
+edition = "2018"
+
+[dependencies]
+sodium = {path = "../sodium"}
+bincode = "*"
+chrono = "*"
+serde = "*"
+serde_derive = "*"
+hex = "*"
