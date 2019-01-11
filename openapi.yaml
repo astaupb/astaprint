@@ -139,6 +139,21 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
   '/jobs/queue/options':
+    get:
+      operationId: getDefaultOptions
+      tags:
+        - Jobs
+      summary: Set default options for uploaded job
+      security:
+        - token: []
+      responses:
+        '202':
+          description: Success -
+          content:
+            type: application/json
+
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
     put:
       operationId: setDefaultOptions
       tags:
