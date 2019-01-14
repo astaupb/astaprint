@@ -22,6 +22,8 @@ use jobs::{
     options::JobOptions,
 };
 
+use bincode;
+
 #[derive(Debug)]
 pub struct JobData
 {
@@ -30,9 +32,20 @@ pub struct JobData
     pub options: JobOptions,
     pub created: NaiveDateTime,
 }
-impl JobData
-{
 
+impl From<(u32, Vec<u32>, Vec<u32>, NaiveDateTime)> for JobData
+{
+    fn from(data: (u32, Vec<u8>, Vec<u8>, NaiveDateTime)) -> JobData
+    {
+        JobData {
+            id: data.0,
+            info: bincode::deserialize(&data.1[..])
+                .expect("deserializing JobInfo"),
+            options: bincode::deserialze(&data.2[..])
+                .expect("deserializing JobOptions"),
+            created: data.3,
+        } 
+    }
 }
 
 

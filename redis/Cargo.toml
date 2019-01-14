@@ -10,4 +10,4 @@ r2d2_redis = "*"
 bincode = "*"
 serde = "*"
 threadpool = "*"
-astacrypto = {path = "../crypto"}
+sodium = {path = "../sodium"}

@@ -4,32 +4,26 @@
 /// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
 ///
 /// This program is free software: you can redistribute it and/or modify
-/// it under the terms of the GNU Affero General Public License as published by
-/// the Free Software Foundation, either version 3 of the License, or
-/// (at your option) any later version.
+/// it under the terms of the GNU Affero General Public License as
+/// published by the Free Software Foundation, either version 3 of the
+/// License, or (at your option) any later version.
 ///
 /// This program is distributed in the hope that it will be useful,
 /// but WITHOUT ANY WARRANTY; without even the implied warranty of
 /// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 /// GNU Affero General Public License for more details.
 ///
-/// You should have received a copy of the GNU Affero General Public License
-/// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+/// You should have received a copy of the GNU Affero General Public
+/// License along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use rocket::{
     http::Status,
     request::Request,
-    response::status::{
-        BadRequest,
-        NoContent,
-    },
-
-    response::{
         Responder,
         Response,
     },
     State,
 };
-use rocket_contrib::Json;
+use rocket_contrib::json::Json;
 
 use diesel::{
     prelude::*,
@@ -48,12 +42,13 @@ use bigdecimal::BigDecimal;
 use chrono::NaiveDateTime;
 use std::str::FromStr;
 
-use astacrypto::pwhash::PasswordHash;
+use sodium::pwhash::PasswordHash;
 
 use journal::insert;
 
 use mysql::user::{
-    insert::*, select::*,
+    insert::*,
+    select::*,
 };
 
 table! {
@@ -100,8 +95,12 @@ impl<'r> Responder<'r> for RegisterResponse
     {
         Response::build()
             .status(match self.0 {
-                RegisterError::UsernameTaken => Status::new(470, "Username Taken"),
-                RegisterError::InvalidUsername => Status::new(471, "Invalid Username"),
+                RegisterError::UsernameTaken => {
+                    Status::new(470, "Username Taken")
+                },
+                RegisterError::InvalidUsername => {
+                    Status::new(471, "Invalid Username")
+                },
             })
             .ok()
     }
@@ -114,21 +113,28 @@ fn register<'a>(
     redis_pool: State<Pool<RedisConnectionManager>>,
 ) -> QueryResult<Result<Result<NoContent, RegisterResponse>, BadRequest<&'a str>>>
 {
-    let connection = mysql_pool.get().expect("getting mysql connection from pool");
+    let connection =
+        mysql_pool.get().expect("getting mysql connection from pool");
 
-    if user.username.chars().any(|c| !c.is_alphanumeric()) || user.username.bytes().count() > 32 {
+    if user.username.chars().any(|c| !c.is_alphanumeric())
+        || user.username.bytes().count() > 32
+    {
         return Ok(Ok(Err(RegisterResponse(RegisterError::InvalidUsername))));
     }
 
     let (hash, salt) = PasswordHash::create(&user.password);
 
-    match insert_into_user(&user.username, hash, salt, false, &connection)
-    {
+    match insert_into_user(&user.username, hash, salt, false, &connection) {
         Err(err) => {
             if let DatabaseError(UniqueViolation, _) = err {
-                info!("sometried to register with already taken username {}", &user.username);
+                info!(
+                    "sometried to register with already taken username {}",
+                    &user.username
+                );
 
-                return Ok(Ok(Err(RegisterResponse(RegisterError::UsernameTaken))));
+                return Ok(Ok(Err(RegisterResponse(
+                    RegisterError::UsernameTaken,
+                ))));
             } else {
                 return Err(err);
             }
@@ -139,7 +145,13 @@ fn register<'a>(
 
             let credit = BigDecimal::from_str("0.00").unwrap();
 
-            insert(user_id, credit, "registerd in beta", redis_pool.inner().clone(), &connection)?;
+            insert(
+                user_id,
+                credit,
+                "registerd in beta",
+                redis_pool.inner().clone(),
+                &connection,
+            )?;
 
             info!("{}#{} registered", &user.username, user_id);
 

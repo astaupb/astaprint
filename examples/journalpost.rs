@@ -18,10 +18,8 @@
 extern crate bigdecimal;
 use bigdecimal::BigDecimal;
 
-extern crate astaprint;
-use astaprint::{
-    journal::insert,
-};
+extern crate legacy;
+use legacy::tds::insert_transaction;
 
 extern crate mysql;
 use mysql::create_mysql_pool;
@@ -48,6 +46,5 @@ fn main()
     let url = env::var("ASTAPRINT_DATABASE_URL").unwrap();
     let mysql_pool = create_mysql_pool(&url, 3);
 
-    insert(user_id, value, &arg[3], redis_pool, &mysql_pool.get().unwrap())
-        .unwrap();
+    insert_transaction(user_id, value, &arg[3], redis_pool.clone());
 }

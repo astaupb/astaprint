@@ -1,5 +1,4 @@
-#![feature(plugin, custom_derive, custom_attribute)]
-#![plugin(rocket_codegen)]
+#![feature(proc_macro_hygiene, decl_macro)]
 /// AStAPrint - lib.rs
 /// Copyright (C) 2018  AStA der Universität Paderborn
 ///
@@ -27,19 +26,21 @@ extern crate serde_derive;
 extern crate bincode;
 extern crate hex;
 
-#[macro_use]
 extern crate diesel;
 
 extern crate maxminddb;
+#[macro_use]
 extern crate rocket;
 extern crate rocket_contrib;
 
 extern crate r2d2_redis;
 extern crate redis;
 
+extern crate legacy;
+extern crate model;
 extern crate mysql;
-extern crate snmp;
 extern crate pdf;
+extern crate snmp;
 
 extern crate threadpool;
 
@@ -52,11 +53,9 @@ extern crate poppler;
 
 extern crate lpr;
 
-extern crate astacrypto;
+extern crate sodium;
 
 // routes
 pub mod jobs;
-pub mod journal;
 pub mod printers;
-pub mod register;
 pub mod user;

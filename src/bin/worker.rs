@@ -21,14 +21,13 @@ extern crate log;
 extern crate diesel;
 extern crate threadpool;
 
-extern crate astaprint;
-
 extern crate logger;
 extern crate r2d2_redis;
 extern crate redis;
 
 extern crate mysql;
 extern crate snmp;
+extern crate model;
 
 use std::{
     env,
@@ -61,18 +60,14 @@ use mysql::{
     printers::select::select_device_ids,
 };
 
-use astaprint::printers::{
-    queue::task::{
-        work,
-        WorkerState,
-        WorkerTask,
-    },
+use model::task::worker::{
+    WorkerState, WorkerTask,
 };
+extern crate astaprint;
+use astaprint::printers::queue::work;
 
 
-use snmp::{
-    PrinterInterface,
-};
+use snmp::PrinterInterface;
 
 
 fn spawn_worker(

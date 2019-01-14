@@ -1,4 +1,4 @@
-/// AStAPrint
+/// AStAPrin - Jobs - DispatcherTask
 /// Copyright (C) 2018  AStA der Universität Paderborn
 ///
 /// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
@@ -15,42 +15,28 @@
 ///
 /// You should have received a copy of the GNU Affero General Public
 /// License along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use bigdecimal::{
-    BigDecimal,
-    ToPrimitive,
-};
-
+/// 
 use diesel::{
-    prelude::*,
-    result::QueryResult,
+    mysql::MysqlConnection,
+    r2d2::{
+        ConnectionManager,
+        Pool,
+    },
 };
 
-use rocket_contrib::json::Json;
+use redis::store::Store;
 
-use mysql::journal::select::*;
-
-use user::guard::UserGuard;
-
-#[get("/credit")]
-pub fn credit(user: UserGuard) -> QueryResult<Json<f64>>
+#[derive(Clone)]
+pub struct DispatcherState
 {
-    let credit: BigDecimal = get_credit(user.id, &user.connection)?;
-
-    info!("{} fetched credit {}", user.id, credit);
-
-    Ok(Json(credit.to_f64().unwrap()))
+    pub mysql_pool: Pool<ConnectionManager<MysqlConnection>>,
+    pub redis_store: Store,
 }
 
-pub fn get_credit(
-    user_id: u32,
-    connection: &MysqlConnection,
-) -> QueryResult<BigDecimal>
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct DispatcherTask
 {
-    let mut credit_id: u32 =
-        select_latest_journal_id_of_user(user_id, connection)?.unwrap();
-    // calculated credit has offset of one from journal
-    credit_id += 1;
-
-    let credit: BigDecimal = select_credit_by_id(credit_id, connection)?;
-    Ok(credit)
+    pub user_id: u32,
+    pub filename: String,
+    pub uid: Vec<u8>,
 }

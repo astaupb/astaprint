@@ -5,38 +5,32 @@ use rocket::response::Redirect;
 /// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
 ///
 /// This program is free software: you can redistribute it and/or modify
-/// it under the terms of the GNU Affero General Public License as published by
-/// the Free Software Foundation, either version 3 of the License, or
-/// (at your option) any later version.
+/// it under the terms of the GNU Affero General Public License as
+/// published by the Free Software Foundation, either version 3 of the
+/// License, or (at your option) any later version.
 ///
 /// This program is distributed in the hope that it will be useful,
 /// but WITHOUT ANY WARRANTY; without even the implied warranty of
 /// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 /// GNU Affero General Public License for more details.
 ///
-/// You should have received a copy of the GNU Affero General Public License
-/// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use rocket_contrib::Json;
+/// You should have received a copy of the GNU Affero General Public
+/// License along with this program.  If not, see <https://www.gnu.org/licenses/>.
+use rocket_contrib::json::Json;
 
 use bigdecimal::ToPrimitive;
 
-use diesel::{
-    QueryResult,
-};
+use diesel::QueryResult;
 
-use journal::credit::get_credit;
+use legacy::tds::get_credit;
 
-use user::{
-    guard::UserGuard,
-};
+use user::guard::UserGuard;
 
-use mysql::user::{
-    select::*,
-};
+use mysql::user::select::*;
 
 
 #[derive(Serialize, Debug)]
-struct UserInfo
+pub struct UserInfo
 {
     id: u32,
     name: String,
@@ -46,16 +40,17 @@ struct UserInfo
 }
 
 #[get("/")]
-fn get_user_info(user: UserGuard) -> QueryResult<Json<UserInfo>>
+pub fn get_user_info(user: UserGuard) -> QueryResult<Json<UserInfo>>
 {
     let id = user.id;
     let tokens: Vec<u32> = select_token_ids_of_user(user.id, &user.connection)?;
 
     let tokens = tokens.len();
 
-    let credit = get_credit(user.id, &user.connection)?.to_f64().unwrap();
+    let credit = get_credit(user.id).to_f64().unwrap();
 
-    let name: String = select_user_name_by_id(user.id, &user.connection)?.unwrap();
+    let name: String =
+        select_user_name_by_id(user.id, &user.connection)?.unwrap();
 
     Ok(Json(UserInfo {
         id,
@@ -67,9 +62,10 @@ fn get_user_info(user: UserGuard) -> QueryResult<Json<UserInfo>>
 }
 
 #[get("/name")]
-fn fetch_username(user: UserGuard) -> QueryResult<Json<String>>
+pub fn fetch_username(user: UserGuard) -> QueryResult<Json<String>>
 {
-    let username: String = select_user_name_by_id(user.id, &user.connection)?.unwrap();
+    let username: String =
+        select_user_name_by_id(user.id, &user.connection)?.unwrap();
 
     info!("{} fetched username", user.id);
 

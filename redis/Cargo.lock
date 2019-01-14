@@ -9,10 +9,6 @@ version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
-name = "astacrypto"
-version = "0.1.0"
-
-[[package]]
 name = "bincode"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -301,11 +297,11 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 name = "redis"
 version = "0.1.0"
 dependencies = [
- "astacrypto 0.1.0",
  "bincode 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "r2d2_redis 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde 1.0.80 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sodium 0.1.0",
  "threadpool 1.7.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -381,6 +377,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "unreachable 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
+
+[[package]]
+name = "sodium"
+version = "0.1.0"
 
 [[package]]
 name = "stable_deref_trait"

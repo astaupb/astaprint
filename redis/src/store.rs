@@ -24,7 +24,7 @@ use r2d2_redis::{
     RedisConnectionManager,
 };
 
-use astacrypto::random_bytes;
+use sodium::random_bytes;
 
 #[derive(Debug, Clone)]
 pub struct Store

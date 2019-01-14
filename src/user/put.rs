@@ -4,36 +4,30 @@
 /// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
 ///
 /// This program is free software: you can redistribute it and/or modify
-/// it under the terms of the GNU Affero General Public License as published by
-/// the Free Software Foundation, either version 3 of the License, or
-/// (at your option) any later version.
+/// it under the terms of the GNU Affero General Public License as
+/// published by the Free Software Foundation, either version 3 of the
+/// License, or (at your option) any later version.
 ///
 /// This program is distributed in the hope that it will be useful,
 /// but WITHOUT ANY WARRANTY; without even the implied warranty of
 /// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 /// GNU Affero General Public License for more details.
 ///
-/// You should have received a copy of the GNU Affero General Public License
-/// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use rocket::response::status::{
-    BadRequest,
-    NoContent,
-    Reset,
-};
-use rocket_contrib::Json;
+/// You should have received a copy of the GNU Affero General Public
+/// License along with this program.  If not, see <https://www.gnu.org/licenses/>.
+use rocket::http::Status;
 
-use diesel::{
-    QueryResult,
-};
+use rocket_contrib::json::Json;
 
-use astacrypto::PasswordHash;
+use diesel::QueryResult;
 
-use crate::user::{
-    guard::UserGuard,
-};
+use sodium::PasswordHash;
+
+use crate::user::guard::UserGuard;
 
 use mysql::user::{
-    select::*, update::*,
+    select::*,
+    update::*,
 };
 
 #[derive(Deserialize, Debug)]
@@ -44,16 +38,16 @@ struct PasswordChange
 }
 
 #[derive(Deserialize, Debug)]
-struct PasswordChangeBody
+pub struct PasswordChangeBody
 {
     password: PasswordChange,
 }
 
 #[put("/password", data = "<body>")]
-fn change_password(
+pub fn change_password(
     user: UserGuard,
     body: Json<PasswordChangeBody>,
-) -> QueryResult<Result<NoContent, BadRequest<&'static str>>>
+) -> QueryResult<Status>
 {
     let (hash, salt): (Vec<u8>, Vec<u8>) =
         select_hash_and_salt(user.id, &user.connection)?;
@@ -61,27 +55,28 @@ fn change_password(
     if PasswordHash::with_salt(&body.password.old, &salt[..]) == hash {
         let (hash, salt) = PasswordHash::create(&body.password.new);
 
-        update_hash_and_salt(
-            user.id, hash, salt, &user.connection,
-        )?;
+        update_hash_and_salt(user.id, hash, salt, &user.connection)?;
 
         info!("{} changed password", user.id);
 
-        Ok(Ok(NoContent))
+        Ok(Status::new(204, "No Content"))
     } else {
         info!("{} delivered wrong old password", user.id);
 
-        Ok(Err(BadRequest(Some("wrong old password"))))
+        Ok(Status::new(400, "Wrong Old Password"))
     }
 }
 
 
 #[put("/name", data = "<new_username>")]
-fn change_username(user: UserGuard, new_username: Json<String>) -> QueryResult<Reset>
+pub fn change_username(
+    user: UserGuard,
+    new_username: Json<String>,
+) -> QueryResult<Status>
 {
     update_user_name(user.id, &new_username, &user.connection)?;
 
     info!("{} changed username", user.id);
 
-    Ok(Reset)
+    Ok(Status::new(205, "Reset Content"))
 }

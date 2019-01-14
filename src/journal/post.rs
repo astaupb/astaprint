@@ -4,20 +4,18 @@
 /// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
 ///
 /// This program is free software: you can redistribute it and/or modify
-/// it under the terms of the GNU Affero General Public License as published by
-/// the Free Software Foundation, either version 3 of the License, or
-/// (at your option) any later version.
+/// it under the terms of the GNU Affero General Public License as
+/// published by the Free Software Foundation, either version 3 of the
+/// License, or (at your option) any later version.
 ///
 /// This program is distributed in the hope that it will be useful,
 /// but WITHOUT ANY WARRANTY; without even the implied warranty of
 /// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 /// GNU Affero General Public License for more details.
 ///
-/// You should have received a copy of the GNU Affero General Public License
-/// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use diesel::{
-    result::QueryResult,
-};
+/// You should have received a copy of the GNU Affero General Public
+/// License along with this program.  If not, see <https://www.gnu.org/licenses/>.
+use diesel::result::QueryResult;
 use r2d2_redis::{
     r2d2::Pool,
     RedisConnectionManager,
@@ -26,23 +24,23 @@ use r2d2_redis::{
 use rocket::{
     http::Status,
     response::{
-        status::NoContent,
+        NoContent,
         Responder,
         Response,
     },
     Request,
     State,
 };
-use rocket_contrib::Json;
+use rocket_contrib::json::Json;
 
 use user::guard::UserGuard;
 
-use journal::{
-    insert,
-};
+use journal::insert;
 
 use mysql::journal::{
-    JournalToken, select::*, update::*,
+    select::*,
+    update::*,
+    JournalToken,
 };
 
 #[derive(Debug)]
@@ -61,7 +59,9 @@ impl<'r> Responder<'r> for JournalPostError
     {
         Response::build()
             .status(match self.0 {
-                TokenAlreadyConsumed => Status::new(472, "token already consumend"),
+                TokenAlreadyConsumed => {
+                    Status::new(472, "token already consumend")
+                },
                 Unauthorized => Status::Unauthorized,
             })
             .ok()
@@ -75,8 +75,9 @@ fn post_to_journal(
     redis: State<Pool<RedisConnectionManager>>,
 ) -> QueryResult<Result<NoContent, JournalPostError>>
 {
-    let token: Option<JournalToken> = select_journal_token_by_value(token.into_inner(), &user.connection)
-        .expect("selecting journal token");
+    let token: Option<JournalToken> =
+        select_journal_token_by_value(token.into_inner(), &user.connection)
+            .expect("selecting journal token");
 
     match token {
         None => return Ok(Err(JournalPostError(Unauthorized))),

@@ -5,9 +5,16 @@ authors = ["Gerrit Pape <papeg@mail.upb.de>"]
 edition = "2018"
 
 [dependencies]
+log = {version = "*", features = ["std", "max_level_debug", "release_max_level_info"]}
+diesel = {version = "*", features = ["mysql", "r2d2", "chrono", "bigdecimal", "numeric"]}
+mysql = {path = "../mysql"}
+redis = {path = "../redis"}
+snmp = {path = "../snmp"}
 sodium = {path = "../sodium"}
+r2d2_redis = "*"
+hex = "*"
 bincode = "*"
 chrono = "*"
+bigdecimal = "*"
 serde = "*"
 serde_derive = "*"
-hex = "*"

@@ -20,45 +20,7 @@ pub mod put;
 
 pub mod pagerange;
 
-use bincode;
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct JobOptions
-{
-    pub duplex: u8,
-    pub copies: u16,
-    pub collate: bool,
-    pub keep: bool,
-    pub a3: bool,
-    pub nup: u8,
-    pub nuppageorder: u8,
-    pub range: String,
-}
-
-impl JobOptions
-{
-    pub fn serialize(&self) -> Vec<u8>
-    {
-        bincode::serialize(&self).expect("serializing JobOptions")
-    }
-}
-
-impl Default for JobOptions
-{
-    fn default() -> JobOptions
-    {
-        JobOptions {
-            duplex: 0,
-            copies: 1,
-            collate: false,
-            keep: false,
-            a3: false,
-            nup: 1,
-            nuppageorder: 0,
-            range: String::from(""),
-        }
-    }
-}
+use model::job::options::JobOptions;
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(untagged)]
@@ -72,6 +34,7 @@ pub enum Value
 #[derive(Serialize, Deserialize, Debug)]
 pub struct JobOptionsUpdate
 {
+    pub color: Option<u8>,
     pub duplex: Option<u8>,
     pub copies: Option<u16>,
     pub collate: Option<bool>,

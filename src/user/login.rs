@@ -4,16 +4,17 @@
 /// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
 ///
 /// This program is free software: you can redistribute it and/or modify
-/// it under the terms of the GNU Affero General Public License as published by
-/// the Free Software Foundation, either version 3 of the License, or
-/// (at your option) any later version.
+/// it under the terms of the GNU Affero General Public License as
+/// published by the Free Software Foundation, either version 3 of the
+/// License, or (at your option) any later version.
 ///
 /// This program is distributed in the hope that it will be useful,
 /// but WITHOUT ANY WARRANTY; without even the implied warranty of
 /// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 /// GNU Affero General Public License for more details.
 ///
-/// You should have received a copy of the GNU Affero General Public License
+/// You should have received a copy of the GNU Affero General Public
+/// License
 use base64;
 
 use rocket::{
@@ -35,11 +36,9 @@ use diesel::{
     },
 };
 
-use crate::user::{
-    key::merge_x_api_key,
-};
+use crate::user::key::merge_x_api_key;
 
-use astacrypto::{
+use sodium::{
     random_bytes,
     GenericHash,
     PasswordHash,
@@ -48,7 +47,9 @@ use astacrypto::{
 use maxminddb::geoip2;
 
 use mysql::user::{
-    User, select::*, insert::*,
+    insert::*,
+    select::*,
+    User,
 };
 
 
@@ -61,7 +62,9 @@ impl<'a, 'r> FromRequest<'a, 'r> for LoginGuard
 {
     type Error = ();
 
-    fn from_request(request: &'a Request<'r>) -> request::Outcome<LoginGuard, ()>
+    fn from_request(
+        request: &'a Request<'r>,
+    ) -> request::Outcome<LoginGuard, ()>
     {
         let header = request.headers();
 
@@ -84,10 +87,11 @@ impl<'a, 'r> FromRequest<'a, 'r> for LoginGuard
             return Outcome::Failure((Status::BadRequest, ()));
         }
 
-        let decoded: Vec<u8> = match base64::decode_config(auth[1], base64::URL_SAFE) {
-            Ok(decoded) => decoded,
-            Err(_) => return Outcome::Failure((Status::BadRequest, ())),
-        };
+        let decoded: Vec<u8> =
+            match base64::decode_config(auth[1], base64::URL_SAFE) {
+                Ok(decoded) => decoded,
+                Err(_) => return Outcome::Failure((Status::BadRequest, ())),
+            };
 
         let credentials = match String::from_utf8(decoded) {
             Ok(credentials) => credentials,
@@ -99,7 +103,8 @@ impl<'a, 'r> FromRequest<'a, 'r> for LoginGuard
             return Outcome::Failure((Status::BadRequest, ()));
         }
 
-        let pool = request.guard::<State<Pool<ConnectionManager<MysqlConnection>>>>()?;
+        let pool = request
+            .guard::<State<Pool<ConnectionManager<MysqlConnection>>>>()?;
 
         let connection = pool.get().expect("retrieving connection from pool");
 
@@ -115,7 +120,8 @@ impl<'a, 'r> FromRequest<'a, 'r> for LoginGuard
             return Outcome::Failure((Status::Unauthorized, ()));
         }
 
-        if PasswordHash::with_salt(credentials[1], &user.salt[..]) != user.hash {
+        if PasswordHash::with_salt(credentials[1], &user.salt[..]) != user.hash
+        {
             return Outcome::Failure((Status::Unauthorized, ()));
         }
 
@@ -141,9 +147,11 @@ impl<'a, 'r> FromRequest<'a, 'r> for LoginGuard
             String::from(user_agent[0])
         };
 
-        let mmdb_reader = request.guard::<State<maxminddb::OwnedReaderFile<'_>>>()?;
+        let mmdb_reader =
+            request.guard::<State<maxminddb::OwnedReaderFile<'_>>>()?;
 
-        let city: geoip2::City = mmdb_reader.lookup(remote.ip()).expect("looking up ip");
+        let city: geoip2::City =
+            mmdb_reader.lookup(remote.ip()).expect("looking up ip");
 
         let names_map = city
             .city
@@ -151,7 +159,8 @@ impl<'a, 'r> FromRequest<'a, 'r> for LoginGuard
             .names
             .expect("getting names from city entry");
 
-        let city = names_map.get("en").expect("getting english entry from names_map");
+        let city =
+            names_map.get("en").expect("getting english entry from names_map");
 
 
         match insert_into_user_tokens(
@@ -161,8 +170,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for LoginGuard
             &city,
             hash,
             &connection,
-        )
-        {
+        ) {
             Ok(_) => {
                 info!("{} logged in ", user.id);
                 Outcome::Success(LoginGuard {

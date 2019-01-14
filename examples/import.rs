@@ -18,10 +18,7 @@
 extern crate bigdecimal;
 use bigdecimal::BigDecimal;
 
-extern crate astaprint;
-use astaprint::{
-    user::add::add_user,
-};
+use user::add::add_user;
 
 extern crate mysql;
 use mysql::create_mysql_pool;

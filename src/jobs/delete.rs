@@ -4,37 +4,32 @@
 /// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
 ///
 /// This program is free software: you can redistribute it and/or modify
-/// it under the terms of the GNU Affero General Public License as published by
-/// the Free Software Foundation, either version 3 of the License, or
-/// (at your option) any later version.
+/// it under the terms of the GNU Affero General Public License as
+/// published by the Free Software Foundation, either version 3 of the
+/// License, or (at your option) any later version.
 ///
 /// This program is distributed in the hope that it will be useful,
 /// but WITHOUT ANY WARRANTY; without even the implied warranty of
 /// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 /// GNU Affero General Public License for more details.
 ///
-/// You should have received a copy of the GNU Affero General Public License
-/// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use diesel::{
-    result::QueryResult,
-};
+/// You should have received a copy of the GNU Affero General Public
+/// License along with this program.  If not, see <https://www.gnu.org/licenses/>.
+use diesel::result::QueryResult;
 
-use rocket::response::status::Reset;
+use rocket::http::Status;
 
-use mysql::{
-    jobs::{delete::*},
-};
+use mysql::jobs::delete::*;
 use user::guard::UserGuard;
 
 
-
 #[delete("/<id>")]
-pub fn delete_job(user: UserGuard, id: u32) -> QueryResult<Option<Reset>>
+pub fn delete_job(user: UserGuard, id: u32) -> QueryResult<Option<Status>>
 {
     let deleted = delete_job_by_id(id, user.id, &user.connection)?;
 
     Ok(if deleted == 1 {
-        Some(Reset)
+        Some(Status::new(205, "Reset Content"))
     } else {
         None
     })

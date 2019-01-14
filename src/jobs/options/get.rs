@@ -4,22 +4,20 @@
 /// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
 ///
 /// This program is free software: you can redistribute it and/or modify
-/// it under the terms of the GNU Affero General Public License as published by
-/// the Free Software Foundation, either version 3 of the License, or
-/// (at your option) any later version.
+/// it under the terms of the GNU Affero General Public License as
+/// published by the Free Software Foundation, either version 3 of the
+/// License, or (at your option) any later version.
 ///
 /// This program is distributed in the hope that it will be useful,
 /// but WITHOUT ANY WARRANTY; without even the implied warranty of
 /// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 /// GNU Affero General Public License for more details.
 ///
-/// You should have received a copy of the GNU Affero General Public License
-/// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use diesel::{
-    result::QueryResult,
-};
+/// You should have received a copy of the GNU Affero General Public
+/// License along with this program.  If not, see <https://www.gnu.org/licenses/>.
+use diesel::result::QueryResult;
 
-use rocket_contrib::Json;
+use rocket_contrib::json::Json;
 
 use jobs::{
     options::Value,
@@ -29,13 +27,18 @@ use jobs::{
 use user::guard::UserGuard;
 
 #[get("/<id>/options/<option>")]
-fn fetch_single_option(user: UserGuard, id: u32, option: String) -> QueryResult<Option<Json<Value>>>
+pub fn fetch_single_option(
+    user: UserGuard,
+    id: u32,
+    option: String,
+) -> QueryResult<Option<Json<Value>>>
 {
-    let result: Option<Vec<u8>> = 
+    let result: Option<Vec<u8>> =
         select_job_options(id, user.id, &user.connection)?;
 
     Ok(result.and_then(|serialized| {
-        let options: JobOptions = bincode::deserialize(&serialized[..]).expect("deserializing JobOptions");
+        let options: JobOptions = bincode::deserialize(&serialized[..])
+            .expect("deserializing JobOptions");
 
         match option.as_ref() {
             "duplex" => Some(Json(Value::I(u16::from(options.duplex)))),
@@ -45,20 +48,26 @@ fn fetch_single_option(user: UserGuard, id: u32, option: String) -> QueryResult<
             "a3" => Some(Json(Value::B(options.a3))),
             "range" => Some(Json(Value::S(options.range))),
             "nup" => Some(Json(Value::I(u16::from(options.nup)))),
-            "nuppageorder" => Some(Json(Value::I(u16::from(options.nuppageorder)))),
+            "nuppageorder" => {
+                Some(Json(Value::I(u16::from(options.nuppageorder))))
+            },
             &_ => None,
         }
     }))
 }
 
 #[get("/<id>/options")]
-fn fetch_options(user: UserGuard, id: u32) -> QueryResult<Option<Json<JobOptions>>>
+pub fn fetch_options(
+    user: UserGuard,
+    id: u32,
+) -> QueryResult<Option<Json<JobOptions>>>
 {
     let result: Option<Vec<u8>> =
         select_job_options(id, user.id, &user.connection)?;
 
     Ok(result.map(|serialized| {
-        let options: JobOptions = bincode::deserialize(&serialized[..]).expect("deserializing JobOptions");
+        let options: JobOptions = bincode::deserialize(&serialized[..])
+            .expect("deserializing JobOptions");
         Json(options)
     }))
 }

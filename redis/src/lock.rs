@@ -32,7 +32,7 @@ use std::{
     time,
 };
 
-use astacrypto::random_bytes;
+use sodium::random_bytes;
 
 #[derive(Debug)]
 pub struct Lock

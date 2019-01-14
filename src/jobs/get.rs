@@ -1,85 +1,77 @@
 /// AStAPrint - Jobs GET Routes
 /// Copyright (C) 2018  AStA der Universität Paderborn
-///
 // Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
-///
 /// This program is free software: you can redistribute it and/or modify
-/// it under the terms of the GNU Affero General Public License as published by
-/// the Free Software Foundation, either version 3 of the License, or
-/// (at your option) any later version.
+/// it under the terms of the GNU Affero General Public License as
+/// published by the Free Software Foundation, either version 3 of the
+/// License, or (at your option) any later version.
 ///
 /// This program is distributed in the hope that it will be useful,
 /// but WITHOUT ANY WARRANTY; without even the implied warranty of
 /// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 /// GNU Affero General Public License for more details.
 ///
-/// You should have received a copy of the GNU Affero General Public License
-/// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use diesel::{
-    QueryResult,
-};
+/// You should have received a copy of the GNU Affero General Public
+/// License along with this program.  If not, see <https://www.gnu.org/licenses/>.
+use diesel::QueryResult;
 
 use chrono::NaiveDateTime;
 
-use rocket_contrib::Json;
+use rocket_contrib::json::Json;
 
-use jobs::{
-    Job,
+use mysql::jobs::{
+    select::*,
 };
-use mysql::{
-    jobs::{
-        select::*,
-    },
-};
+use model::job::Job;
 use user::guard::UserGuard;
 
 #[get("/<id>")]
-fn fetch_job(user: UserGuard, id: u32) -> QueryResult<Option<Json<Job>>>
+pub fn fetch_job(user: UserGuard, id: u32) -> QueryResult<Option<Json<Job>>>
 {
-    let job: Option<(u32, Vec<u8>, Vec<u8>, NaiveDateTime)> = select_single_job_of_user(id, user.id, &user.connection)?;
+    let job: Option<(u32, Vec<u8>, Vec<u8>, NaiveDateTime)> =
+        select_single_job_of_user(id, user.id, &user.connection)?;
 
     Ok(job.map(|x| Json(Job::from(x))))
 }
 
 #[get("/")]
-fn jobs(user: UserGuard) -> QueryResult<Json<Vec<Job>>>
+pub fn jobs(user: UserGuard) -> QueryResult<Json<Vec<Job>>>
 {
-    let jobs: Vec<(u32, Vec<u8>, Vec<u8>, NaiveDateTime)>
-        = select_all_jobs_of_user(user.id, &user.connection)?;
+    let jobs: Vec<(u32, Vec<u8>, Vec<u8>, NaiveDateTime)> =
+        select_all_jobs_of_user(user.id, &user.connection)?;
 
     Ok(Json(jobs.iter().map(|x| Job::from(x.clone())).collect()))
 }
 
 #[get("/<id>/pdf")]
-fn fetch_pdf(user: UserGuard, id: u32) -> QueryResult<Option<Vec<u8>>>
+pub fn fetch_pdf(user: UserGuard, id: u32) -> QueryResult<Option<Vec<u8>>>
 {
-    Ok(select_pdf(id, user.id, &user.connection)
-        .expect("selecting pdf"))
+    Ok(select_pdf(id, user.id, &user.connection).expect("selecting pdf"))
 }
 
 #[get("/<id>/preview/0")]
-fn fetch_preview_0(user: UserGuard, id: u32) -> QueryResult<Option<Vec<u8>>>
+pub fn fetch_preview_0(user: UserGuard, id: u32) -> QueryResult<Option<Vec<u8>>>
 {
     Ok(select_preview_0(id, user.id, &user.connection)
         .expect("selecting preview 0"))
 }
 
 #[get("/<id>/preview/1")]
-fn fetch_preview_1(user: UserGuard, id: u32) -> QueryResult<Option<Vec<u8>>>
+pub fn fetch_preview_1(user: UserGuard, id: u32) -> QueryResult<Option<Vec<u8>>>
 {
     Ok(select_preview_1(id, user.id, &user.connection)
         .expect("selection preview 1"))
 }
 
 #[get("/<id>/preview/2")]
-fn fetch_preview_2(user: UserGuard, id: u32) -> QueryResult<Option<Vec<u8>>>
+pub fn fetch_preview_2(user: UserGuard, id: u32) -> QueryResult<Option<Vec<u8>>>
 {
     Ok(select_preview_2(id, user.id, &user.connection)
         .expect("selection preview 2"))
 }
 
 #[get("/<id>/preview/3")]
-fn fetch_preview_3(user: UserGuard, id: u32) -> QueryResult<Option<Vec<u8>>>
+pub fn fetch_preview_3(user: UserGuard, id: u32) -> QueryResult<Option<Vec<u8>>>
 {
     Ok(select_preview_3(id, user.id, &user.connection)
         .expect("selection preview 2"))

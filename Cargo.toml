@@ -3,13 +3,19 @@ name = "astaprint"
 version = "0.1.0"
 authors = ["Gerrit Pape <gerrit.pape@asta.upb.de>"]
 
+[lib]
+name = "astaprint"
+path = "src/lib.rs"
+
 [dependencies]
-astacrypto = {path = "./crypto"}
+sodium = {path = "./sodium"}
+model = {path = "./model"}
 redis = {path = "./redis"}
 mysql = {path = "./mysql"}
 pdf = {path = "./pdf"}
 snmp = {path = "./snmp"}
 logger = {path = "./logger"}
+legacy = {path = "./legacy"}
 log = {version = "*", features = ["std", "max_level_debug", "release_max_level_info"]}
 chrono = "*"
 serde = "*"
@@ -22,10 +28,10 @@ diesel = {version = "*", features = ["mysql", "r2d2", "chrono", "bigdecimal", "n
 r2d2_redis = "*"
 threadpool = "*"
 bigdecimal = "0.0.11"
-rocket = "0.3"
-rocket_codegen = "0.3"
-rocket_contrib = "0.3"
-rocket_cors = "0.3"
+rocket = "0.4"
+rocket_codegen = "0.4"
+rocket_contrib = "0.4"
+rocket_cors = "0.4"
 maxminddb = "0.11"
 base64 = "*"
 lpr = "0.1.4"
