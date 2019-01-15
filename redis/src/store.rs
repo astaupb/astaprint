@@ -67,7 +67,7 @@ impl Store
 
         let value = connection.get(key.clone())?;
 
-        let _removed_keys = connection.del(key)?;
+        connection.del(key)?;
         
         Ok(value)
     }

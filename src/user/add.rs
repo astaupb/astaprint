@@ -15,13 +15,8 @@
 ///
 /// You should have received a copy of the GNU Affero General Public
 /// License along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use bigdecimal::BigDecimal;
 
 use diesel::prelude::*;
-use r2d2_redis::{
-    r2d2::Pool,
-    RedisConnectionManager,
-};
 
 use sodium::PasswordHash;
 
@@ -29,6 +24,7 @@ use mysql::user::{
     insert::*,
     select::*,
 };
+
 #[derive(Debug)]
 pub enum UserAddError
 {
@@ -41,9 +37,6 @@ pub fn add_user(
     password: &str,
     pin: Option<u32>,
     locked: bool,
-    _credit: BigDecimal,
-    _description: &str,
-    _redis: Pool<RedisConnectionManager>,
     connection: &MysqlConnection,
 ) -> Result<(), UserAddError>
 {
@@ -66,13 +59,6 @@ pub fn add_user(
                 .expect("inserting user");
         },
     }
-
-    // let user_id: u32 = select_user_id_by_name(name, connection)
-    // .expect("selecting user id")
-    // .expect("id is some");
-    //
-    // insert_transaction(user_id, credit, description, redis);
-
 
     Ok(())
 }

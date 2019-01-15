@@ -56,7 +56,7 @@ pub fn sanitize(mut pdf: Vec<u8>) -> DispatchResult
     let mut pdf_document = PDFDocument::new(&pdf[..], "");
 
     let title = pdf_document.title.clone()
-        .unwrap_or(String::from(""));
+        .unwrap_or_else(|| String::from(""));
 
     let pagecount = pdf_document.get_pagecount();
 

@@ -89,10 +89,10 @@ impl PDFDocument
 
         let page = &self.pages[number];
 
-        let mut surface = ImageSurface::create(ARgb32, w as i32, h as i32)
+        let surface = ImageSurface::create(ARgb32, w as i32, h as i32)
             .expect("creating cairo image surface for preview rendering");
 
-        let mut context = Context::new(&mut surface);
+        let mut context = Context::new(&surface);
 
         context.save();
 

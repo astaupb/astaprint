@@ -67,7 +67,7 @@ pub fn upload_job<'a>(
     let task = DispatcherTask {
         user_id: user.id,
         uid,
-        filename: filename.unwrap_or("empty".into()),
+        filename: filename.unwrap_or_else(|| "empty".into()),
     };
 
     taskqueue.send(&task).expect("sending task to queue");

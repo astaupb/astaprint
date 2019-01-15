@@ -48,9 +48,9 @@ impl PageInfo
 {
     pub fn from_points(w: f64, h: f64) -> PageInfo
     {
-        let orientation = match w > h {
-            true => PageOrientation::Landscape,
-            false => PageOrientation::Portrait,
+        let orientation = if w > h {
+            PageOrientation::Landscape } else {
+            PageOrientation::Portrait
         };
 
         let (x, y) = match orientation {
@@ -110,14 +110,15 @@ impl PageInfo
             .for_each(|_info| portrait_count += 1);
 
         PageInfo {
-            size: Is::Almost(match pageinfo.len() - a4_count > a4_count {
-                true => PageSize::A3,
-                false => PageSize::A4,
+            size: Is::Almost(if pageinfo.len() - a4_count > a4_count {
+                PageSize::A3 } else {
+                PageSize::A4
             }),
-            orientation: match pageinfo.len() - portrait_count > portrait_count
-            {
-                true => PageOrientation::Landscape,
-                false => PageOrientation::Portrait,
+            orientation: if pageinfo.len() - portrait_count > portrait_count
+                {
+                    PageOrientation::Landscape
+                } else {
+                    PageOrientation::Portrait
             },
         }
     }

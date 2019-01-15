@@ -59,7 +59,7 @@ impl Lock
             .expect("getting redis from pool");
 
         let result: RedisResult<Vec<u8>> = redis.get(&self.name);
-        result.is_ok() && result.unwrap().len() > 0
+        result.is_ok() && result.unwrap().is_empty()
     }
 
     pub fn grab(&mut self)

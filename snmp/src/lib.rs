@@ -94,7 +94,7 @@ impl PrinterInterface
 
 fn parse_oid(oid: &str) -> Vec<u64>
 {
-    oid.split(".")
+    oid.split('.')
         .map(|x| u64::from_str(x).expect("converting oid str to u64"))
         .collect()
 }

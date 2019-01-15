@@ -21,7 +21,7 @@ pub fn get_all_tokens(user: UserGuard)
 
     info!("{} fetched all tokens", user.id);
 
-    Ok(Json(tokens.iter().map(|row| UserTokenResponse::from(row)).collect()))
+    Ok(Json(tokens.iter().map(UserTokenResponse::from).collect()))
 }
 
 #[get("/<token_id>")]
@@ -32,5 +32,7 @@ pub fn get_single_token(
 {
     let token: Option<UserToken> =
         select_single_user_token_optional(user.id, token_id, &user.connection)?;
-    Ok(token.map(|x| Json(UserTokenResponse::from(&x))))
+    Ok(token
+        .map(|row| Json(UserTokenResponse::from(&row)))
+    )
 }

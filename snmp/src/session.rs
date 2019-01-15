@@ -92,7 +92,7 @@ impl SnmpSession
 
             snmp_pdu_add_variable(
                 pdu,
-                &mut oid[0],
+                &oid[0],
                 oid.len(),
                 ASN_INTEGER,
                 value_ptr as *const os::raw::c_void,
@@ -127,7 +127,7 @@ impl SnmpSession
 
             pdu = snmp_pdu_create(SNMP_MSG_GET);
 
-            snmp_add_null_var(pdu, &mut oid[0], oid.len());
+            snmp_add_null_var(pdu, &oid[0], oid.len());
 
             if snmp_synch_response(self.ptr, pdu, &mut response) == STAT_SUCCESS
             {

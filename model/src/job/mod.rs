@@ -62,7 +62,7 @@ impl Job
             count *= 2;
         }
 
-        count * self.options.copies as u32
+        count * u32::from(self.options.copies)
     }
 
     pub fn translate_for_printer(&mut self, uid: &[u8], user_id: u32, mut data: Vec<u8>) -> Vec<u8>

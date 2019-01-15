@@ -70,12 +70,12 @@ impl<'a, 'r> FromRequest<'a, 'r> for LoginGuard
 
         let user_agent: Vec<_> = header.get("user-agent").collect();
 
-        if user_agent.len() == 0 {
+        if user_agent.is_empty() {
             return Outcome::Failure((Status::BadRequest, ()));
         }
         let header: Vec<_> = header.get("authorization").collect();
 
-        if header.len() == 0 {
+        if header.is_empty() {
             return Outcome::Failure((Status::BadRequest, ()));
         }
 
@@ -149,18 +149,14 @@ impl<'a, 'r> FromRequest<'a, 'r> for LoginGuard
 
         let city: String = match mmdb_reader.lookup::<geoip2::City>(remote.ip()) {
             Ok(city) => {
-                let names_map = city
+                city
                     .city
                     .expect("getting city entry from city record")
                     .names
-                    .expect("getting names from city entry");
-
-                format!(
-                    "{}",
-                    names_map
-                        .get("en")
-                        .expect("getting english entry from names_map")
-                )
+                    .expect("getting names from city entry")
+                    .get("en")
+                    .expect("getting english entry from names_map")
+                    .to_string()
             },
             Err(_) => String::from("unknown"),
         };

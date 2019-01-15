@@ -60,7 +60,7 @@ pub fn work(task: WorkerTask, state: WorkerState)
         job_row.created,
     ));
 
-    let mut buf: Vec<u8> =
+    let buf: Vec<u8> =
         job.translate_for_printer(&task.uid[..], task.user_id, job_row.pdf);
 
     let mut snmp_session = SnmpSession::new(state.printer_interface.clone());
@@ -87,7 +87,8 @@ pub fn work(task: WorkerTask, state: WorkerState)
         &state.printer_interface.ip,
         20000, // socket timeout in ms
     );
-    lpr_connection.print(&mut buf).expect("printing job with lpr");
+
+    lpr_connection.print(&buf).expect("printing job with lpr");
 
     let print_count = job.pages_to_print();
 
@@ -122,7 +123,7 @@ pub fn work(task: WorkerTask, state: WorkerState)
             loop_count += 1;
         }
 
-        if (current.total - counter_base.total) == print_count as i64 {
+        if (current.total - counter_base.total) == i64::from(print_count) {
             debug!("current: {:?}", current);
             break true;
         }
@@ -152,6 +153,7 @@ pub fn work(task: WorkerTask, state: WorkerState)
     accounting.finish();
 
     debug!("{} keep: {} - completed: {}", hex_uid, job.options.keep, completed);
+
     if !job.options.keep && completed {
         delete_job_by_id(job.id, task.user_id, &connection)
             .expect("deleting job from table");
