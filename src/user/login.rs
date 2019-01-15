@@ -150,17 +150,23 @@ impl<'a, 'r> FromRequest<'a, 'r> for LoginGuard
         let mmdb_reader =
             request.guard::<State<maxminddb::OwnedReaderFile<'_>>>()?;
 
-        let city: geoip2::City =
-            mmdb_reader.lookup(remote.ip()).expect("looking up ip");
+        let city: String =
+            match mmdb_reader.lookup::<geoip2::City>(remote.ip()) {
+                Ok(city) => {
+                    let names_map = city
+                        .city
+                        .expect("getting city entry from city record")
+                        .names
+                        .expect("getting names from city entry");
 
-        let names_map = city
-            .city
-            .expect("getting city entry from city record")
-            .names
-            .expect("getting names from city entry");
-
-        let city =
-            names_map.get("en").expect("getting english entry from names_map");
+                    format!("{}",
+                        names_map.get("en").expect("getting english entry from names_map")
+                    )
+                },
+                Err(_) => {
+                    String::from("unknown")
+                }
+            };
 
 
         match insert_into_user_tokens(
