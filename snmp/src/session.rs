@@ -6,13 +6,11 @@ use crate::{
     PrinterInterface,
     counter::CounterValues,
     status::StatusValues,
-    info::InfoValues,
 };
 
 use std::{
     ffi::{
         CString, 
-        CStr,
     },
     mem,
     os,
@@ -158,20 +156,18 @@ impl SnmpSession
             print_bw: self.get_integer(&mut self.interface.counter.print_bw.clone())? as i64,
         })
     }
-    /*
     pub fn get_status(&self) -> Result<StatusValues, SnmpErr>
     {
-        Ok(StatusValues::from(
-            self.get_integer_bulk(self.interface.status.to_oid_vec())?
-        ))
+        Ok(StatusValues {
+            scan: self.get_integer(&mut self.interface.status.scan.clone()[..])? as i64,
+            copy: self.get_integer(&mut self.interface.status.copy.clone()[..])? as i64,
+            toner: self.get_integer(&mut self.interface.status.toner.clone()[..])? as i64,
+            tray_1: self.get_integer(&mut self.interface.status.tray_1.clone()[..])? as i64,
+            tray_2: self.get_integer(&mut self.interface.status.tray_2.clone()[..])? as i64,
+            tray_3: self.get_integer(&mut self.interface.status.tray_3.clone()[..])? as i64,
+            tray_4: self.get_integer(&mut self.interface.status.tray_4.clone()[..])? as i64,
+        })
     }
-    pub fn get_info(&self) -> Result<InfoValues, SnmpErr>
-    {
-        Ok(InfoValues::from(
-            self.get_string_bulk(self.interface.info.to_oid_vec())? 
-        )) 
-    }
-    */
 
     pub fn get_energy_stat(&self) -> Result<u64, SnmpErr>
     {

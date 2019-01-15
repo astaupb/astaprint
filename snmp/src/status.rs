@@ -5,13 +5,13 @@ use mysql::printers::PrinterStatus;
 pub struct StatusOids
 {
     //uptime: Vec<u64>,
-    scan: Vec<u64>,
-    copy: Vec<u64>,
-    toner: Vec<u64>,
-    tray_1: Vec<u64>,
-    tray_2: Vec<u64>,
-    tray_3: Vec<u64>,
-    tray_4: Vec<u64>,
+    pub scan: Vec<u64>,
+    pub copy: Vec<u64>,
+    pub toner: Vec<u64>,
+    pub tray_1: Vec<u64>,
+    pub tray_2: Vec<u64>,
+    pub tray_3: Vec<u64>,
+    pub tray_4: Vec<u64>,
 }
 
 impl StatusOids
@@ -53,13 +53,13 @@ impl<'a> From<&'a PrinterStatus> for StatusOids
 #[derive(Debug, Clone)]
 pub struct StatusValues
 {
-    scan: i64,
-    copy: i64,
-    toner: i64,
-    tray_1: i64,
-    tray_2: i64,
-    tray_3: i64,
-    tray_4: i64,
+    pub scan: i64,
+    pub copy: i64,
+    pub toner: i64,
+    pub tray_1: i64,
+    pub tray_2: i64,
+    pub tray_3: i64,
+    pub tray_4: i64,
 }
 
 impl From<Vec<i64>> for StatusValues
