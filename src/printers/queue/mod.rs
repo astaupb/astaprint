@@ -68,16 +68,16 @@ pub fn work(task: WorkerTask, state: WorkerState)
 
     let mut snmp_session = SnmpSession::new(state.printer_interface.clone());
 
+    let counter_base =
+        snmp_session.get_counter().expect("reading base counter value");
+
     let mut accounting =
-        Accounting::new(task.user_id, state.mysql_pool, state.redis_pool);
+        Accounting::new(task.user_id, counter_base.clone(), job.options.color, state.mysql_pool, state.redis_pool);
 
     if accounting.not_enough_credit() {
         info!("not enough credit for one page, aborting");
         return;
     }
-
-    let counter_base =
-        snmp_session.get_counter().expect("reading base counter value");
 
     debug!("counter_base: {:?}", counter_base);
 
@@ -117,7 +117,7 @@ pub fn work(task: WorkerTask, state: WorkerState)
             debug!("current: {:?}", current);
             last_value = current.total;
             loop_count = 0;
-            accounting.set_value(&(current.clone() - counter_base.clone()));
+            accounting.set_value(current.clone() - counter_base.clone());
         } else {
             loop_count += 1;
         }
@@ -151,7 +151,7 @@ pub fn work(task: WorkerTask, state: WorkerState)
 
     let current = snmp_session.get_counter().expect("getting counter values");
 
-    accounting.set_value(&(current.clone() - counter_base.clone()));
+    accounting.set_value(current.clone() - counter_base.clone());
     accounting.finish();
 
     debug!("{} keep: {} - completed: {}", hex_uid, job.options.keep, completed);

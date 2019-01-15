@@ -44,7 +44,7 @@ pub struct Lock
 
 impl Lock
 {
-    pub fn new(name: String, pool: Pool<RedisConnectionManager>) -> Lock
+    pub fn new(name: &str, pool: Pool<RedisConnectionManager>) -> Lock
     {
         Lock {
             name: String::from(name),

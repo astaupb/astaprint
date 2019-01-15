@@ -39,11 +39,11 @@ use sodium::random_bytes;
 
 use mysql::jobs::select::*;
 
-#[post("/<device_id>?<id>")]
+#[post("/<device_id>/queue?<id>")]
 pub fn print_job(
     user: UserGuard,
-    device_id: u16,
-    queues: State<HashMap<u16, TaskQueueClient<WorkerTask>>>,
+    device_id: u32,
+    queues: State<HashMap<u32, TaskQueueClient<WorkerTask>>>,
     id: u32,
 ) -> QueryResult<Option<Accepted<Json<String>>>>
 {

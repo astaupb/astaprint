@@ -115,13 +115,15 @@ pub mod tests
     };
     fn dump_printer_objects(interface: PrinterInterface)
     {
-        let snmp = SnmpSession::new(interface); 
+        let mut snmp = SnmpSession::new(interface); 
         let counter = snmp.get_counter();
         println!("{:?}", counter);
+        /*
         let status = snmp.get_status();
         println!("{:?}", status);
         let info = snmp.get_info();
         println!("{:?}", info);
+        */
     }
     #[test]
     pub fn single_printer()
@@ -140,7 +142,7 @@ pub mod tests
         for id in id_s {
             let interface = PrinterInterface::from_device_id(id, &pool.get().unwrap());
             print!("{}: ", interface.ip);
-            let snmp = SnmpSession::new(interface);
+            let mut snmp = SnmpSession::new(interface);
             println!("{:?}", snmp.get_counter());
         }
     }

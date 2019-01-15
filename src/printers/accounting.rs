@@ -37,11 +37,14 @@ use redis::lock::Lock;
 
 use snmp::counter::CounterValues;
 
+use journal::lock::JournalLock;
+
 pub struct Accounting
 {
     user_id: u32,
     pub lock: Lock,
     baseprice_cent: u32,
+    counter: CounterValues,
     credit: BigDecimal,
     value: BigDecimal,
     mysql_pool: Pool<ConnectionManager<MysqlConnection>>,
@@ -52,17 +55,19 @@ impl Accounting
 {
     pub fn new(
         user_id: u32,
+        counter: CounterValues,
+        color: bool,
         mysql_pool: Pool<ConnectionManager<MysqlConnection>>,
         redis_pool: Pool<RedisConnectionManager>,
     ) -> Accounting
     {
-        let mut lock = Lock::new(format!("{}", user_id), redis_pool.clone());
+        let baseprice_cent = if color {20} else {5};
+
+        let mut lock = Lock::new(&format!("{}", user_id), redis_pool.clone());
 
         if lock.is_grabbed() {
             info!("accounting for {} locked", &user_id);
         }
-
-        let baseprice_cent = 5;
 
         lock.grab();
 
@@ -77,6 +82,7 @@ impl Accounting
             user_id,
             lock,
             baseprice_cent,
+            counter,
             credit,
             value,
             mysql_pool,
@@ -93,15 +99,17 @@ impl Accounting
 
     /// sets the value which will be accounted given a counter diff as parameter
     /// returns true if there's enough credit for another page
-    pub fn set_value(&mut self, counter: &CounterValues)
+    pub fn set_value(&mut self, counter: CounterValues)
     {
-        // let value_cent = counter.print_black * 2
-        // + counter.print_color.unwrap_or(0) * 10
-        // + counter.copy_black * 2
-        // + counter.copy_color.unwrap_or(0) * 10;
-        let value_cent = counter.total * 5;
+        let value_cent = counter.copy_bw * 5
+            + counter.print_bw * 5
+            + (counter.copy_total - counter.copy_bw) * 20
+            + (counter.print_total - counter.print_bw) * 20;
+
+        self.counter = counter;
+
         debug!("calculated value: {}", value_cent);
-        self.value = -(BigDecimal::from_u32(value_cent as u32).unwrap()
+        self.value = - (BigDecimal::from_u32(value_cent as u32).unwrap()
             / BigDecimal::from_u32(100).unwrap());
     }
 
@@ -114,11 +122,14 @@ impl Accounting
                 .expect("getting mysql connection from pool");
 
             let credit = &self.credit + &self.value;
+
+            let _lock = JournalLock::from(self.redis_pool.clone());
+
             insert_transaction(
                 self.user_id,
                 self.value,
                 "Print Job",
-                self.redis_pool,
+                false,
             );
 
             info!("inserted new credit for {}: {}", &self.user_id, &credit);

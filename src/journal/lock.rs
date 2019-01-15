@@ -14,7 +14,7 @@ impl From<Pool<RedisConnectionManager>> for JournalLock
 {
     fn from(pool: Pool<RedisConnectionManager>) -> JournalLock
     {
-        let mut lock = Lock::new(String::from("journal"), pool);
+        let mut lock = Lock::new("journal", pool);
         lock.grab();
         JournalLock {
             lock,

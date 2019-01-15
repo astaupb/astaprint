@@ -15,29 +15,8 @@
 ///
 /// You should have received a copy of the GNU Affero General Public
 /// License along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use bigdecimal::BigDecimal;
-
-use journal::lock::JournalLock;
-
-use r2d2_redis::{
-    r2d2::Pool,
-    RedisConnectionManager,
-};
 
 pub mod get;
 
 pub mod credit;
 pub mod lock;
-
-pub fn insert(
-    user_id: u32,
-    value: BigDecimal,
-    description: &str,
-    redis: Pool<RedisConnectionManager>,
-)
-{
-    let _lock = JournalLock::from(redis);
-
-    //insert_into_journal(user_id, value, description, connection)?;
-
-}

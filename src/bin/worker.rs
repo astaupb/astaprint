@@ -121,7 +121,7 @@ fn main()
         mysql_pool.get().expect("getting mysql connection from pool");
 
     for id in select_device_ids(&connection).expect("selecting device ids") {
-        let redis_pool = create_redis_pool(&redis_url, 3);
+        let redis_pool = create_redis_pool(&redis_url, 20);
 
         handles.push(spawn_worker(id, redis_pool, mysql_pool.clone()));
     }

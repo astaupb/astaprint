@@ -25,7 +25,6 @@ extern crate model;
 
 extern crate base64;
 
-#[macro_use]
 extern crate logger;
 
 extern crate mysql;

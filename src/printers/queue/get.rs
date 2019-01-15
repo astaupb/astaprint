@@ -38,8 +38,8 @@ pub enum QueueElement
 #[get("/<device_id>/queue")]
 pub fn get_queue(
     user: UserGuard,
-    device_id: u16,
-    queues: State<HashMap<u16, TaskQueueClient<WorkerTask>>>,
+    device_id: u32,
+    queues: State<HashMap<u32, TaskQueueClient<WorkerTask>>>,
 ) -> Option<Json<Vec<QueueElement>>>
 {
     let queue = match queues.get(&device_id) {

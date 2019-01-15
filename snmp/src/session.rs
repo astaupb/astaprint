@@ -147,141 +147,31 @@ impl SnmpSession
             }
         }
     }
-    pub fn get_string_bulk(&self, oids: Vec<&Vec<u64>>) -> Result<Vec<CString>, SnmpErr>
+
+    pub fn get_counter(&mut self) -> Result<CounterValues, SnmpErr>
     {
-        let pdu: *mut Struct_snmp_pdu;
-
-        let mut response: *mut Struct_snmp_pdu;
-
-        let mut response_values: Vec<&CStr> = Vec::with_capacity(oids.len());
-
-        let bulk_len = oids.len();
-
-        unsafe {
-            response = mem::uninitialized();
-
-            pdu = snmp_pdu_create(SNMP_MSG_GETBULK);
-
-            (*pdu).errstat = bulk_len as i64; // errstat is non_repeaters in GETBULK
-            (*pdu).errindex = bulk_len as i64; // errindex in max_repetitions in GETBULK
-
-            for oid in oids {
-                snmp_add_null_var(pdu, &oid[0], oid.len());
-            }
-
-            if snmp_synch_response(self.ptr, pdu, &mut response) == STAT_SUCCESS
-            {
-                if (*response).errstat == SNMP_ERR_NOERROR {
-                    while !(*response).variables.is_null() {
-                        {
-                            let mut buf: [i8; 42] = [0; 42];
-                            snprint_asciistring(
-                                buf.as_mut_ptr(),
-                                42,
-                                *(*(*response).variables).val.string(),
-                                (*(*response).variables).val_len, 
-                            );
-                            response_values.push(
-                                CStr::from_ptr(buf.as_mut_ptr())
-                            );
-                        }
-                        (*response).variables =
-                            (*(*response).variables).next_variable;
-                    }
-                    if response_values.len() == bulk_len {
-                        Ok(response_values.iter()
-                            .map(|x|
-                                CString::from(*x)
-                            )
-                            .collect()
-                        )
-                    } else {
-                        Err(SnmpErr::BulkErr) 
-                    }
-                } else {
-                    Err(SnmpErr::ResponseErr)
-                }
-            } else {
-                Err(SnmpErr::SessionErr)
-            }
-        }
+        Ok(CounterValues {
+            total: self.get_integer(&mut self.interface.counter.total.clone()[..])? as i64,
+            copy_total: self.get_integer(&mut self.interface.counter.copy_total.clone()[..])? as i64,
+            copy_bw: self.get_integer(&mut self.interface.counter.copy_bw.clone()[..])? as i64,
+            print_total: self.get_integer(&mut self.interface.counter.print_total.clone())? as i64,
+            print_bw: self.get_integer(&mut self.interface.counter.print_bw.clone())? as i64,
+        })
     }
-
-    pub fn get_integer_bulk(&self, oids: Vec<&Vec<u64>>) -> Result<Vec<i64>, SnmpErr>
-    {
-        let pdu: *mut Struct_snmp_pdu;
-
-        let mut response: *mut Struct_snmp_pdu;
-
-        let mut response_values: Vec<i64> = Vec::with_capacity(oids.len());
-
-        let bulk_len = oids.len();
-
-        unsafe {
-            response = mem::uninitialized();
-
-            pdu = snmp_pdu_create(SNMP_MSG_GETBULK);
-
-            (*pdu).errstat = bulk_len as i64; // errstat is non_repeaters in GETBULK
-            (*pdu).errindex = bulk_len as i64; // errindex in max_repetitions in GETBULK
-
-            for oid in oids {
-                snmp_add_null_var(pdu, &oid[0], oid.len());
-            }
-
-            if snmp_synch_response(self.ptr, pdu, &mut response) == STAT_SUCCESS
-            {
-                if (*response).errstat == SNMP_ERR_NOERROR {
-                    while !(*response).variables.is_null() {
-                        if (*(*response).variables)._type == ASN_INTEGER {
-                            println!("{:?}", (*(*response).variables)._type);
-                            response_values.push(
-                                **(*(*response).variables).val.integer() as i64
-                            );
-                        } else if (*(*response).variables)._type == ASN_OCTET_STR {
-                            response_values.push(
-                                **(*(*response).variables).val.integer() as i64
-                            );
-                        } else {
-                            println!("unknown type: {}", (*(*response).variables)._type);
-                            return Err(SnmpErr::TypeErr);
-                        }
-                        (*response).variables =
-                            (*(*response).variables).next_variable;
-                    }
-                    if response_values.len() == bulk_len {
-                        Ok(response_values)
-                    } else {
-                        Err(SnmpErr::BulkErr) 
-                    }
-                } else {
-                    Err(SnmpErr::ResponseErr)
-                }
-            } else {
-                Err(SnmpErr::SessionErr)
-            }
-        }
-    }
-    pub fn get_counter(&self) -> Result<CounterValues, SnmpErr>
-    {
-        Ok(CounterValues::from(
-            self.get_integer_bulk(self.interface.counter.to_oid_vec())?
-        ))
-    }
-
+    /*
     pub fn get_status(&self) -> Result<StatusValues, SnmpErr>
     {
         Ok(StatusValues::from(
             self.get_integer_bulk(self.interface.status.to_oid_vec())?
         ))
     }
-
     pub fn get_info(&self) -> Result<InfoValues, SnmpErr>
     {
         Ok(InfoValues::from(
             self.get_string_bulk(self.interface.info.to_oid_vec())? 
         )) 
     }
+    */
 
     pub fn get_energy_stat(&self) -> Result<u64, SnmpErr>
     {
