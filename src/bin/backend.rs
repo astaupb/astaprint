@@ -19,17 +19,17 @@
 
 #[macro_use]
 extern crate rocket;
+extern crate model;
 extern crate rocket_contrib;
 extern crate rocket_cors;
-extern crate model;
 
 extern crate base64;
 
 extern crate logger;
 
+extern crate astaprint;
 extern crate mysql;
 extern crate redis;
-extern crate astaprint;
 
 use std::{
     collections::HashMap,
@@ -75,15 +75,13 @@ use astaprint::{
         },
     },
     journal::{
-//        credit::*,
+        credit::*,
         get::*,
- //       post::*,
     },
     printers::queue::{
         get::*,
         post::*,
     },
-//    register::*,
     user::{
         get::*,
         post::*,
@@ -145,14 +143,11 @@ fn rocket() -> rocket::Rocket
     let mut worker_queues: HashMap<u32, TaskQueueClient<WorkerTask>> =
         HashMap::new();
 
-    let connection =
-        mysql_pool.get().expect("getting mysql connection from pool");
+    let connection = mysql_pool.get().expect("getting mysql connection from pool");
 
     let redis_pool = create_redis_pool(&url, 20);
 
-    for device_id in
-        select_device_ids(&connection).expect("selecting device ids")
-    {
+    for device_id in select_device_ids(&connection).expect("selecting device ids") {
         let pool = redis_pool.clone();
         worker_queues.insert(
             device_id,
@@ -183,8 +178,6 @@ fn rocket() -> rocket::Rocket
                 fetch_options,
                 fetch_single_option,
                 fetch_info,
-                // fetch_single_info,
-                // -> do we really need this?
                 get_dispatcher_queue,
                 upload_job,
                 delete_job,
@@ -218,8 +211,7 @@ fn rocket() -> rocket::Rocket
             ],
         )
         .mount("/printers", routes![print_job, get_queue])
-        .mount("/journal", routes![journal])//, credit, post_to_journal])
-    //    .mount("/register", routes![register])
+        .mount("/journal", routes![journal, credit])
         .attach(cors())
 }
 

@@ -57,6 +57,6 @@ extern crate sodium;
 
 // routes
 pub mod jobs;
+pub mod journal;
 pub mod printers;
 pub mod user;
-pub mod journal;

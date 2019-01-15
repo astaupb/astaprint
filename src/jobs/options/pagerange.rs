@@ -75,10 +75,8 @@ impl<'a> FromStr for PageRange
         let mut page_singles: Vec<u32> =
             steps.iter().filter_map(|s| s.parse().ok()).collect();
 
-        let page_differences: Vec<PageDifference> = steps
-            .iter()
-            .filter_map(|s| PageDifference::from_str(s).ok())
-            .collect();
+        let page_differences: Vec<PageDifference> =
+            steps.iter().filter_map(|s| PageDifference::from_str(s).ok()).collect();
 
         for diff in page_differences.iter() {
             for page in diff.minuend..=diff.subtrahend {

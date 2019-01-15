@@ -19,9 +19,9 @@
 extern crate log;
 extern crate bincode;
 extern crate logger;
+extern crate model;
 extern crate redis;
 extern crate threadpool;
-extern crate model;
 
 extern crate mysql;
 extern crate pdf;

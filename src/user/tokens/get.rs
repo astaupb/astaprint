@@ -13,9 +13,8 @@ use mysql::user::{
 
 
 #[get("/")]
-pub fn get_all_tokens(
-    user: UserGuard,
-) -> QueryResult<Json<Vec<UserTokenResponse>>>
+pub fn get_all_tokens(user: UserGuard)
+    -> QueryResult<Json<Vec<UserTokenResponse>>>
 {
     let tokens: Vec<UserToken> =
         select_user_tokens_by_user_id(user.id, &user.connection)?;

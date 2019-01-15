@@ -1,3 +1,4 @@
+pub mod get;
 /// AStAPrint
 /// Copyright (C) 2018  AStA der Universität Paderborn
 ///
@@ -16,19 +17,19 @@
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 pub mod post;
-pub mod get;
 
 use pdf::sanitize;
 
 use mysql::jobs::insert::insert_into_jobs;
 
 use model::{
-    task::dispatcher::{
-        DispatcherTask, DispatcherState,
-    },
     job::{
         info::JobInfo,
         options::JobOptions,
+    },
+    task::dispatcher::{
+        DispatcherState,
+        DispatcherTask,
     },
 };
 
@@ -55,8 +56,7 @@ pub fn dispatch(task: DispatcherTask, state: DispatcherState)
     let hex_uid = hex::encode(&task.uid[..]);
     info!("{} {} started", task.user_id, &hex_uid[..8]);
 
-    let data =
-        state.redis_store.get(task.uid).expect("getting file from store");
+    let data = state.redis_store.get(task.uid).expect("getting file from store");
 
     let result = sanitize(data);
 
@@ -72,8 +72,8 @@ pub fn dispatch(task: DispatcherTask, state: DispatcherState)
     })
     .expect("serializing JobInfo");
 
-    let options: Vec<u8> = bincode::serialize(&JobOptions::default())
-        .expect("serializing JobOptions");
+    let options: Vec<u8> =
+        bincode::serialize(&JobOptions::default()).expect("serializing JobOptions");
 
     insert_into_jobs(
         task.user_id,

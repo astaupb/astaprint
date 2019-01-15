@@ -55,8 +55,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for UserGuard
 {
     type Error = ();
 
-    fn from_request(request: &'a Request<'r>)
-        -> request::Outcome<UserGuard, ()>
+    fn from_request(request: &'a Request<'r>) -> request::Outcome<UserGuard, ()>
     {
         let key: Vec<_> = request.headers().get("x-api-key").collect();
 
@@ -64,8 +63,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for UserGuard
             info!("invalid x-api-key header {:?}", key);
             return Outcome::Failure((Status::BadRequest, ()));
         }
-        let buf: Vec<u8> = match base64::decode_config(key[0], base64::URL_SAFE)
-        {
+        let buf: Vec<u8> = match base64::decode_config(key[0], base64::URL_SAFE) {
             Ok(buf) => buf,
             Err(_) => return Outcome::Failure((Status::BadRequest, ())),
         };
@@ -78,8 +76,8 @@ impl<'a, 'r> FromRequest<'a, 'r> for UserGuard
             Err(_) => return Outcome::Failure((Status::BadRequest, ())),
         };
 
-        let pool = request
-            .guard::<State<Pool<ConnectionManager<MysqlConnection>>>>()?;
+        let pool =
+            request.guard::<State<Pool<ConnectionManager<MysqlConnection>>>>()?;
 
         let connection = match pool.get() {
             Ok(connection) => connection,

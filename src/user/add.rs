@@ -67,13 +67,11 @@ pub fn add_user(
         },
     }
 
-    /*
-    let user_id: u32 = select_user_id_by_name(name, connection)
-        .expect("selecting user id")
-        .expect("id is some");
-
-    insert_transaction(user_id, credit, description, redis);
-    */
+    // let user_id: u32 = select_user_id_by_name(name, connection)
+    // .expect("selecting user id")
+    // .expect("id is some");
+    //
+    // insert_transaction(user_id, credit, description, redis);
 
 
     Ok(())

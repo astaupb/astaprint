@@ -15,9 +15,7 @@
 ///
 /// You should have received a copy of the GNU Affero General Public
 /// License along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use model::task::dispatcher::{
-    DispatcherTask,
-};
+use model::task::dispatcher::DispatcherTask;
 
 use jobs::queue::DispatcherTaskResponse;
 

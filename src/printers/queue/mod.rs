@@ -15,17 +15,16 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 pub mod get;
 pub mod post;
 
 use model::{
-    job::{
-        Job,
-    },
+    job::Job,
     task::worker::{
-        WorkerTask, WorkerState,
-},};
+        WorkerState,
+        WorkerTask,
+    },
+};
 
 use std::{
     thread,
@@ -41,9 +40,7 @@ use mysql::jobs::{
     select::*,
     Job as JobRow,
 };
-use snmp::{
-    session::SnmpSession,
-};
+use snmp::session::SnmpSession;
 
 pub fn work(task: WorkerTask, state: WorkerState)
 {
@@ -53,8 +50,8 @@ pub fn work(task: WorkerTask, state: WorkerState)
     let connection =
         state.mysql_pool.get().expect("getting connection from mysql pool");
 
-    let job_row: JobRow = select_job(task.job_id, &connection)
-        .expect("selecting job from database");
+    let job_row: JobRow =
+        select_job(task.job_id, &connection).expect("selecting job from database");
 
     let mut job = Job::from((
         job_row.id,
@@ -71,8 +68,13 @@ pub fn work(task: WorkerTask, state: WorkerState)
     let counter_base =
         snmp_session.get_counter().expect("reading base counter value");
 
-    let mut accounting =
-        Accounting::new(task.user_id, counter_base.clone(), job.options.color, state.mysql_pool, state.redis_pool);
+    let mut accounting = Accounting::new(
+        task.user_id,
+        counter_base.clone(),
+        job.options.color,
+        state.mysql_pool,
+        state.redis_pool,
+    );
 
     if accounting.not_enough_credit() {
         info!("not enough credit for one page, aborting");
@@ -91,9 +93,8 @@ pub fn work(task: WorkerTask, state: WorkerState)
 
     // check energy status before initial waiting
     // 1 == ready
-    let energy_stat = snmp_session
-        .get_energy_stat()
-        .expect("getting energy status of device");
+    let energy_stat =
+        snmp_session.get_energy_stat().expect("getting energy status of device");
     debug!("energy stat: {}", &energy_stat);
     thread::sleep(time::Duration::from_millis(match energy_stat {
         1 => 2000,
@@ -109,8 +110,7 @@ pub fn work(task: WorkerTask, state: WorkerState)
 
     let completed = loop {
         thread::sleep(time::Duration::from_millis(20));
-        let current =
-            snmp_session.get_counter().expect("getting counter values");
+        let current = snmp_session.get_counter().expect("getting counter values");
 
         // reset loop count if another page is printed
         if current.total > last_value {
@@ -129,10 +129,7 @@ pub fn work(task: WorkerTask, state: WorkerState)
 
         if accounting.not_enough_credit() {
             debug!("current: {:?}", current);
-            info!(
-                "{} {} no credit left, clearing jobqueue",
-                hex_uid, task.user_id
-            );
+            info!("{} {} no credit left, clearing jobqueue", hex_uid, task.user_id);
             break false;
         }
 

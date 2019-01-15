@@ -1,5 +1,5 @@
 required_version = "1.0.1"
-max_width = 80
+max_width = 84
 hard_tabs = false
 tab_spaces = 4
 newline_style = "Unix"

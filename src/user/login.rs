@@ -62,9 +62,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for LoginGuard
 {
     type Error = ();
 
-    fn from_request(
-        request: &'a Request<'r>,
-    ) -> request::Outcome<LoginGuard, ()>
+    fn from_request(request: &'a Request<'r>) -> request::Outcome<LoginGuard, ()>
     {
         let header = request.headers();
 
@@ -103,8 +101,8 @@ impl<'a, 'r> FromRequest<'a, 'r> for LoginGuard
             return Outcome::Failure((Status::BadRequest, ()));
         }
 
-        let pool = request
-            .guard::<State<Pool<ConnectionManager<MysqlConnection>>>>()?;
+        let pool =
+            request.guard::<State<Pool<ConnectionManager<MysqlConnection>>>>()?;
 
         let connection = pool.get().expect("retrieving connection from pool");
 
@@ -120,8 +118,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for LoginGuard
             return Outcome::Failure((Status::Unauthorized, ()));
         }
 
-        if PasswordHash::with_salt(credentials[1], &user.salt[..]) != user.hash
-        {
+        if PasswordHash::with_salt(credentials[1], &user.salt[..]) != user.hash {
             return Outcome::Failure((Status::Unauthorized, ()));
         }
 
@@ -150,23 +147,23 @@ impl<'a, 'r> FromRequest<'a, 'r> for LoginGuard
         let mmdb_reader =
             request.guard::<State<maxminddb::OwnedReaderFile<'_>>>()?;
 
-        let city: String =
-            match mmdb_reader.lookup::<geoip2::City>(remote.ip()) {
-                Ok(city) => {
-                    let names_map = city
-                        .city
-                        .expect("getting city entry from city record")
-                        .names
-                        .expect("getting names from city entry");
+        let city: String = match mmdb_reader.lookup::<geoip2::City>(remote.ip()) {
+            Ok(city) => {
+                let names_map = city
+                    .city
+                    .expect("getting city entry from city record")
+                    .names
+                    .expect("getting names from city entry");
 
-                    format!("{}",
-                        names_map.get("en").expect("getting english entry from names_map")
-                    )
-                },
-                Err(_) => {
-                    String::from("unknown")
-                }
-            };
+                format!(
+                    "{}",
+                    names_map
+                        .get("en")
+                        .expect("getting english entry from names_map")
+                )
+            },
+            Err(_) => String::from("unknown"),
+        };
 
 
         match insert_into_user_tokens(

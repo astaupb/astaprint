@@ -61,7 +61,11 @@ impl Accounting
         redis_pool: Pool<RedisConnectionManager>,
     ) -> Accounting
     {
-        let baseprice_cent = if color {20} else {5};
+        let baseprice_cent = if color {
+            20
+        } else {
+            5
+        };
 
         let mut lock = Lock::new(&format!("{}", user_id), redis_pool.clone());
 
@@ -71,8 +75,7 @@ impl Accounting
 
         lock.grab();
 
-        let _connection =
-            mysql_pool.get().expect("gettting connection from pool");
+        let _connection = mysql_pool.get().expect("gettting connection from pool");
 
         let credit = get_credit(user_id);
 
@@ -109,28 +112,21 @@ impl Accounting
         self.counter = counter;
 
         debug!("calculated value: {}", value_cent);
-        self.value = - (BigDecimal::from_u32(value_cent as u32).unwrap()
+        self.value = -(BigDecimal::from_u32(value_cent as u32).unwrap()
             / BigDecimal::from_u32(100).unwrap());
     }
 
     pub fn finish(self)
     {
         if self.value < BigDecimal::from_u32(0).unwrap() {
-            let _connection = self
-                .mysql_pool
-                .get()
-                .expect("getting mysql connection from pool");
+            let _connection =
+                self.mysql_pool.get().expect("getting mysql connection from pool");
 
             let credit = &self.credit + &self.value;
 
             let _lock = JournalLock::from(self.redis_pool.clone());
 
-            insert_transaction(
-                self.user_id,
-                self.value,
-                "Print Job",
-                false,
-            );
+            insert_transaction(self.user_id, self.value, "Print Job", false);
 
             info!("inserted new credit for {}: {}", &self.user_id, &credit);
         } else {

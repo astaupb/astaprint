@@ -19,10 +19,8 @@ use chrono::NaiveDateTime;
 
 use rocket_contrib::json::Json;
 
-use mysql::jobs::{
-    select::*,
-};
 use model::job::Job;
+use mysql::jobs::select::*;
 use user::guard::UserGuard;
 
 #[get("/<id>")]

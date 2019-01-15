@@ -57,8 +57,7 @@ pub fn update_single_option(
     let mut options: JobOptions = match result {
         None => return Ok(Ok(None)),
         Some(options) => {
-            bincode::deserialize(&options[..])
-                .expect("deserializing JobOptions")
+            bincode::deserialize(&options[..]).expect("deserializing JobOptions")
         },
     };
     match (option.as_ref(), value.into_inner()) {
@@ -112,15 +111,13 @@ pub fn update_options(
     let mut options: JobOptions = match result {
         None => return Ok(Ok(None)),
         Some(options) => {
-            bincode::deserialize(&options[..])
-                .expect("deserializing JobOptions")
+            bincode::deserialize(&options[..]).expect("deserializing JobOptions")
         },
     };
 
     options.merge(options_update.into_inner());
 
-    let serialized =
-        bincode::serialize(&options).expect("serializing JobOptions");
+    let serialized = bincode::serialize(&options).expect("serializing JobOptions");
 
     update_job_options(id, user.id, serialized, &user.connection)?;
 

@@ -25,9 +25,9 @@ extern crate logger;
 extern crate r2d2_redis;
 extern crate redis;
 
+extern crate model;
 extern crate mysql;
 extern crate snmp;
-extern crate model;
 
 use std::{
     env,
@@ -61,7 +61,8 @@ use mysql::{
 };
 
 use model::task::worker::{
-    WorkerState, WorkerTask,
+    WorkerState,
+    WorkerTask,
 };
 extern crate astaprint;
 use astaprint::printers::queue::work;
@@ -117,8 +118,7 @@ fn main()
 
     let mysql_pool = create_mysql_pool(&mysql_url, 10);
 
-    let connection =
-        mysql_pool.get().expect("getting mysql connection from pool");
+    let connection = mysql_pool.get().expect("getting mysql connection from pool");
 
     for id in select_device_ids(&connection).expect("selecting device ids") {
         let redis_pool = create_redis_pool(&redis_url, 20);

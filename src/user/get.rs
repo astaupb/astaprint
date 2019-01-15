@@ -49,8 +49,7 @@ pub fn get_user_info(user: UserGuard) -> QueryResult<Json<UserInfo>>
 
     let credit = get_credit(user.id).to_f64().unwrap();
 
-    let name: String =
-        select_user_name_by_id(user.id, &user.connection)?.unwrap();
+    let name: String = select_user_name_by_id(user.id, &user.connection)?.unwrap();
 
     Ok(Json(UserInfo {
         id,

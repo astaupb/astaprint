@@ -48,9 +48,7 @@ pub fn fetch_single_option(
             "a3" => Some(Json(Value::B(options.a3))),
             "range" => Some(Json(Value::S(options.range))),
             "nup" => Some(Json(Value::I(u16::from(options.nup)))),
-            "nuppageorder" => {
-                Some(Json(Value::I(u16::from(options.nuppageorder))))
-            },
+            "nuppageorder" => Some(Json(Value::I(u16::from(options.nuppageorder)))),
             &_ => None,
         }
     }))

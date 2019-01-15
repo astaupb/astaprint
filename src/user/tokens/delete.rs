@@ -1,6 +1,6 @@
 use diesel::QueryResult;
-use user::guard::UserGuard;
 use rocket::http::Status;
+use user::guard::UserGuard;
 
 use mysql::user::delete::*;
 
