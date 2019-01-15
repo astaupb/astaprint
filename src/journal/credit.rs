@@ -20,37 +20,18 @@ use bigdecimal::{
     ToPrimitive,
 };
 
-use diesel::{
-    prelude::*,
-    result::QueryResult,
-};
-
 use rocket_contrib::json::Json;
 
-use mysql::journal::select::*;
+use legacy::tds::get_credit;
 
 use user::guard::UserGuard;
 
 #[get("/credit")]
-pub fn credit(user: UserGuard) -> QueryResult<Json<f64>>
+pub fn credit(user: UserGuard) -> Json<f64>
 {
-    let credit: BigDecimal = get_credit(user.id, &user.connection)?;
+    let credit: BigDecimal = get_credit(user.id);
 
     info!("{} fetched credit {}", user.id, credit);
 
-    Ok(Json(credit.to_f64().unwrap()))
-}
-
-pub fn get_credit(
-    user_id: u32,
-    connection: &MysqlConnection,
-) -> QueryResult<BigDecimal>
-{
-    let mut credit_id: u32 =
-        select_latest_journal_id_of_user(user_id, connection)?.unwrap();
-    // calculated credit has offset of one from journal
-    credit_id += 1;
-
-    let credit: BigDecimal = select_credit_by_id(credit_id, connection)?;
-    Ok(credit)
+    Json(credit.to_f64().unwrap())
 }

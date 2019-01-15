@@ -15,25 +15,17 @@
 ///
 /// You should have received a copy of the GNU Affero General Public
 /// License along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use diesel::result::QueryResult;
-
 use rocket_contrib::json::Json;
 
 use user::guard::UserGuard;
 
-use mysql::journal::{
-    select::*,
-    Journal,
-};
+use model::journal::Transaction;
 
-use journal::response::JournalResponse;
+use legacy::tds::get_journal;
 
 
 #[get("/")]
-fn journal(user: UserGuard) -> QueryResult<Json<Vec<JournalResponse>>>
+pub fn journal(user: UserGuard) -> Json<Vec<Transaction>>
 {
-    let journal: Vec<Journal> =
-        select_journal_of_user(user.id, &user.connection)?;
-
-    Ok(Json(journal.iter().map(|row| JournalResponse::from(row)).collect()))
+    Json(get_journal(user.id))
 }

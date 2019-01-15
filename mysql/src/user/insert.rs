@@ -28,6 +28,7 @@ pub fn insert_into_user(
     name: &str,
     hash: Vec<u8>,
     salt: Vec<u8>,
+    pin: Option<u32>,
     locked: bool,
     connection: &MysqlConnection,
 ) -> QueryResult<usize>
@@ -38,6 +39,29 @@ pub fn insert_into_user(
             user::locked.eq(locked),
             user::hash.eq(hash),
             user::salt.eq(salt),
+            user::pin.eq(pin),
+        ))
+    .execute(connection)
+}
+
+pub fn insert_into_user_with_id(
+    id: u32,
+    name: &str,
+    hash: Vec<u8>,
+    salt: Vec<u8>,
+    pin: Option<u32>,
+    locked: bool,
+    connection: &MysqlConnection,
+) -> QueryResult<usize>
+{
+    insert_into(user::table)
+        .values((
+            user::id.eq(id),
+            user::name.eq(name),
+            user::locked.eq(locked),
+            user::hash.eq(hash),
+            user::salt.eq(salt),
+            user::pin.eq(pin),
         ))
     .execute(connection)
 }

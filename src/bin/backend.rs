@@ -75,13 +75,11 @@ use astaprint::{
             post::*,
         },
     },
-    /*
     journal::{
-        credit::*,
+//        credit::*,
         get::*,
-        post::*,
+ //       post::*,
     },
-    */
     printers::queue::{
         get::*,
         post::*,
@@ -221,7 +219,7 @@ fn rocket() -> rocket::Rocket
             ],
         )
         .mount("/printers", routes![print_job, get_queue])
-   // .mount("/journal", routes![journal, credit, post_to_journal])
+        .mount("/journal", routes![journal])//, credit, post_to_journal])
     //    .mount("/register", routes![register])
         .attach(cors())
 }

@@ -25,8 +25,6 @@ use r2d2_redis::{
 
 use sodium::PasswordHash;
 
-use legacy::tds::insert_transaction;
-
 use mysql::user::{
     insert::*,
     select::*,
@@ -38,12 +36,14 @@ pub enum UserAddError
 }
 
 pub fn add_user(
+    id: Option<u32>,
     name: &str,
     password: &str,
+    pin: Option<u32>,
     locked: bool,
-    credit: BigDecimal,
-    description: &str,
-    redis: Pool<RedisConnectionManager>,
+    _credit: BigDecimal,
+    _description: &str,
+    _redis: Pool<RedisConnectionManager>,
     connection: &MysqlConnection,
 ) -> Result<(), UserAddError>
 {
@@ -56,14 +56,24 @@ pub fn add_user(
 
     let (hash, salt) = PasswordHash::create(password);
 
-    insert_into_user(name, hash, salt, locked, connection)
-        .expect("inserting user");
+    match id {
+        Some(id) => {
+            insert_into_user_with_id(id, name, hash, salt, pin, locked, connection)
+                .expect("inserting user with id");
+        },
+        None => {
+            insert_into_user(name, hash, salt, pin, locked, connection)
+                .expect("inserting user");
+        },
+    }
 
+    /*
     let user_id: u32 = select_user_id_by_name(name, connection)
         .expect("selecting user id")
         .expect("id is some");
 
     insert_transaction(user_id, credit, description, redis);
+    */
 
 
     Ok(())

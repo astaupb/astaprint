@@ -59,3 +59,4 @@ extern crate sodium;
 pub mod jobs;
 pub mod printers;
 pub mod user;
+pub mod journal;

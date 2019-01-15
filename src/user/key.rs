@@ -51,7 +51,7 @@ fn transmuting()
 {
     use sodium::random_bytes;
     let user_id: u32 = 420;
-    let token = random_bytes(108);
+    let token = random_bytes(128);
     let merged = merge_x_api_key(user_id, token.clone()).unwrap();
     let (user_id_splitted, token_splitted) = split_x_api_key(merged).unwrap();
     assert_eq!(user_id, user_id_splitted);
