@@ -18,7 +18,8 @@
 extern crate bigdecimal;
 use bigdecimal::BigDecimal;
 
-use user::add::add_user;
+extern crate astaprint;
+use astaprint::user::add::add_user;
 
 extern crate mysql;
 use mysql::create_mysql_pool;
@@ -68,38 +69,23 @@ fn main()
                 break;
             }
             println!("parsing {}", split[0]);
-            let card: u32 = split[0].parse().unwrap();
-            let pin: u32 = match split[1].parse() {
-                Ok(pin) => pin,
-                Err(_) => break,
-            };
-            continue;
-            use diesel::{
-                prelude::*,
-                update,
-            };
-            /*
-            println!("{} {}", card, pin);
-            use astaprint::user::table::*;
-            update(user::table.filter(user::name.eq(split[0])))
-                .set((user::card.eq(Some(card)), user::pin.eq(Some(pin))))
-                .execute(&connection)
-                .expect("updating user");
-                */
-            // let locked = split[2] == "1";
-            // let connection = mysql_pool.get().unwrap();
-            // match add_user(
-            // split[0],
-            // split[1],
-            // locked,
-            // BigDecimal::from_str("0.0").unwrap(),
-            // "imported",
-            // redis_pool.clone(),
-            // connection,
-            // ) {
-            // Ok(_) => println!("{} {} imported..", split[0], split[1]),
-            // Err(e) => println!("{}: {:?}", split[0], e),
-            // }
+            let id: u32 = split[0].parse().unwrap();
+            let pin: u32 = split[1].parse().unwrap_or(99999);
+            let locked = split[2] == "1";
+            match add_user(
+                Some(id),
+                split[0],
+                split[1],
+                Some(pin),
+                locked,
+                BigDecimal::from_str("0.0").unwrap(),
+                "imported",
+                redis_pool.clone(),
+                &connection,
+            ) {
+                Ok(_) => println!("{} {} imported..", split[0], split[1]),
+                Err(e) => println!("{}: {:?}", split[0], e),
+            }
         }
         println!("{} imported", user_count);
     }
