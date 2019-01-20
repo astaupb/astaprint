@@ -66,6 +66,7 @@ use logger::Logger;
 use astaprint::{
     admin::{
         get::*,
+        put::*,
         tokens::*,
     },
     jobs::{
@@ -179,7 +180,7 @@ fn rocket() -> rocket::Rocket
         .manage(dispatcher_queue)
         .manage(worker_queues)
         .mount("/", routes![api_reference])
-        .mount("/", routes![get_user, get_user_journal, get_all_users, post_admin_token])
+        .mount("/", routes![get_user, get_user_journal, get_all_users, change_user_locked, post_admin_token])
         .mount(
             "/jobs/",
             routes![

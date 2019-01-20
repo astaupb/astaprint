@@ -19,6 +19,7 @@ pub mod guard;
 pub mod login;
 pub mod tokens;
 
+pub mod put;
 pub mod get;
 
 use chrono::{

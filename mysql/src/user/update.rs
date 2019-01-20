@@ -16,3 +16,10 @@ pub fn update_user_name(user_id: u32, name: &str, connection: &MysqlConnection) 
         .set(user::name.eq(name))
         .execute(connection)
 }
+
+pub fn update_locked(user_id: u32, locked: bool, connection: &MysqlConnection) -> QueryResult<usize>
+{
+    update(user::table.filter(user::id.eq(user_id)))
+        .set(user::locked.eq(locked))
+        .execute(connection)
+}
