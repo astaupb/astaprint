@@ -19,7 +19,6 @@
 extern crate log;
 
 extern crate diesel;
-extern crate threadpool;
 
 extern crate logger;
 extern crate r2d2_redis;
@@ -41,8 +40,6 @@ use diesel::{
         Pool as MysqlPool,
     },
 };
-
-use threadpool::ThreadPool;
 
 use r2d2_redis::{
     r2d2::Pool as RedisPool,
@@ -86,8 +83,6 @@ fn spawn_worker(
 
     let name = format!("worker::{}", device_id);
 
-    let thread_pool = ThreadPool::new(8);
-
     let taskqueue: TaskQueue<WorkerTask, WorkerState, WorkerCommand> =
         TaskQueue::new(
             &name,
@@ -97,7 +92,6 @@ fn spawn_worker(
                 redis_pool: redis_pool.clone(),
             },
             redis_pool,
-            thread_pool,
         );
 
     thread::spawn(move || {

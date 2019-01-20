@@ -21,6 +21,7 @@ pub mod post;
 use pdf::sanitize;
 
 use mysql::jobs::insert::insert_into_jobs;
+use threadpool::ThreadPool;
 
 use model::{
     job::{
@@ -51,45 +52,52 @@ impl<'a> From<&'a DispatcherTask> for DispatcherTaskResponse
     }
 }
 
-pub fn dispatch(task: DispatcherTask, state: DispatcherState)
+pub fn dispatch(
+    task: DispatcherTask,
+    state: DispatcherState,
+    thread_pool: ThreadPool,
+)
 {
-    let hex_uid = hex::encode(&task.uid[..]);
-    info!("{} {} started", task.user_id, &hex_uid[..8]);
+    thread_pool.execute(move || {
+        let hex_uid = hex::encode(&task.uid[..]);
+        info!("{} {} started", task.user_id, &hex_uid[..8]);
 
-    let data = state.redis_store.get(task.uid).expect("getting file from store");
+        let data =
+            state.redis_store.get(task.uid).expect("getting file from store");
 
-    let result = sanitize(data);
+        let result = sanitize(data);
 
-    let connection =
-        state.mysql_pool.get().expect("getting mysql connection from pool");
+        let connection =
+            state.mysql_pool.get().expect("getting mysql connection from pool");
 
-    let info: Vec<u8> = bincode::serialize(&JobInfo {
-        filename: task.filename,
-        title: result.title,
-        pagecount: result.pagecount,
-        colored: result.colored,
-        a3: result.a3,
-    })
-    .expect("serializing JobInfo");
+        let info: Vec<u8> = bincode::serialize(&JobInfo {
+            filename: task.filename,
+            title: result.title,
+            pagecount: result.pagecount,
+            colored: result.colored,
+            a3: result.a3,
+        })
+        .expect("serializing JobInfo");
 
-    let options: Vec<u8> =
-        bincode::serialize(&JobOptions::default()).expect("serializing JobOptions");
+        let options: Vec<u8> = bincode::serialize(&JobOptions::default())
+            .expect("serializing JobOptions");
 
-    insert_into_jobs(
-        task.user_id,
-        info,
-        options,
-        result.pdf,
-        result.pdf_bw,
-        result.preview_0,
-        result.preview_1,
-        result.preview_2,
-        result.preview_3,
-        &connection,
-    )
-    .expect("inserting job into table");
-    info!(
-        "{} finished, pagecount: {}, colored: {}, a3: {}",
-        hex_uid, result.pagecount, result.colored, result.a3
-    );
+        insert_into_jobs(
+            task.user_id,
+            info,
+            options,
+            result.pdf,
+            result.pdf_bw,
+            result.preview_0,
+            result.preview_1,
+            result.preview_2,
+            result.preview_3,
+            &connection,
+        )
+        .expect("inserting job into table");
+        info!(
+            "{} finished, pagecount: {}, colored: {}, a3: {}",
+            hex_uid, result.pagecount, result.colored, result.a3
+        );
+    });
 }

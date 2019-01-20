@@ -99,8 +99,9 @@ impl Accounting
     /// returns true if there's enough credit for another page
     pub fn set_value(&mut self, counter: CounterValues)
     {
-        let value_cent =
-            counter.print_bw * 5 + (counter.print_total - counter.print_bw) * 20;
+        let value_cent = (counter.print_bw * 5
+            + (counter.print_total - counter.print_bw) * 20)
+            + (counter.copy_bw * 5 + (counter.copy_total - counter.copy_bw) * 20);
 
         self.counter = counter;
 

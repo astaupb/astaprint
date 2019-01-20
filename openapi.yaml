@@ -143,7 +143,7 @@ paths:
       operationId: getDefaultOptions
       tags:
         - Jobs
-      summary: Set default options for uploaded job
+      summary: Get default options for uploaded job
       security:
         - token: []
       responses:
@@ -991,8 +991,6 @@ components:
       properties:
         value:
           type: number
-        credit:
-          type: number
         timestamp:
           type: string
         description:
@@ -1000,6 +998,8 @@ components:
     JobOptions:
       type: object
       properties:
+        color:
+          type: boolean
         duplex:
           type: integer
           description: 0/1/2
@@ -1027,30 +1027,27 @@ components:
         filename:
           type: string
           description: original filename on client
+        title:
+          type: string
+          description: title of pdf file
         pagecount:
           type: integer
           description: pagecount of original document
-        color:
-          type: boolean
-          description: as detected at dispatch
+        colored:
+          type: integer
+          description: number of colored pages
         a3:
           type: boolean
           description: as detected at dispatch
-        password:
-          type: string
-          description: password for encrypted pdf
     Job:
       type: object
       properties:
-        uid:
-          type: string
-          description: base64 encoded
+        id:
+          type: integer
+          description: id of job
         timestamp:
           type: integer
           format: int64
-        user_id:
-          type: integer
-          format: uint32
         info:
           $ref: '#/components/schemas/JobInfo'
         options:
@@ -1064,18 +1061,16 @@ components:
           user_id:
             type: integer
             format: uint32
-          color:
-            type: boolean
     User:
       type: object
       properties:
+        id:
+          type: integer
         name:
           type: string
-        user_id:
-          type: integer
         credit:
           type: number
-        active_tokens:
+        tokens:
           type: integer
         token_id:
           type: integer
@@ -1113,17 +1108,17 @@ components:
       type: object
       properties:
         uid:
-          type: integer
+          type: string
         user_id:
-          type: integer
-        timestamp:
           type: integer
     Queue:
       type: object
       properties:
-        current:
-          $ref: '#/components/schemas/QueueItem'
-        waiting:
+        incoming:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueueItem'
+        processing:
           type: array
           items:
             $ref: '#/components/schemas/QueueItem'

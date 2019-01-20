@@ -13,8 +13,6 @@ use serde::{
     Serialize,
 };
 
-use threadpool::ThreadPool;
-
 use std::{
     fmt::Debug,
     marker::PhantomData,
@@ -32,7 +30,6 @@ pub trait Unique
 pub struct TaskQueue<T, D, C>
 {
     redis_pool: Pool<RedisConnectionManager>,
-    thread_pool: ThreadPool,
     data: D,
     task: PhantomData<T>,
     command: PhantomData<C>,
@@ -50,7 +47,6 @@ where
         name: &str,
         data: D,
         redis_pool: Pool<RedisConnectionManager>,
-        thread_pool: ThreadPool,
     ) -> TaskQueue<T, D, C>
     {
         TaskQueue {
@@ -58,7 +54,6 @@ where
             command: PhantomData::<C>,
             data,
             redis_pool,
-            thread_pool,
             incoming: format!("{}::incoming", name),
             processing: format!("{}::processing", name),
         }

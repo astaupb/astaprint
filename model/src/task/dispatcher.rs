@@ -24,6 +24,8 @@ use diesel::{
     },
 };
 
+use threadpool::ThreadPool;
+
 use redis::store::Store;
 
 #[derive(Clone)]
@@ -31,6 +33,7 @@ pub struct DispatcherState
 {
     pub mysql_pool: Pool<ConnectionManager<MysqlConnection>>,
     pub redis_store: Store,
+    pub thread_pool: ThreadPool,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

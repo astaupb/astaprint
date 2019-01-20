@@ -82,7 +82,6 @@ pub fn work(
 
     debug!("counter_base: {:?}", counter_base);
 
-    //
     // check energy status before initial waiting
     // 1 == ready
     let energy_stat =
@@ -174,7 +173,7 @@ pub fn work(
             break false;
         }
 
-        if hungup && loop_count > 1100 && !print_jobs.is_empty() {
+        if hungup && loop_count > 1100 {
             warn!("{} {} jobs timeout", hex_uid, task.user_id);
             break false;
         }

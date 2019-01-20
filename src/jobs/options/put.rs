@@ -27,8 +27,6 @@ use model::job::options::JobOptions;
 use jobs::{
     options::{
         pagerange::PageRange,
-        JobOptionsUpdate,
-        Update,
         Value::{
             self,
             B,
@@ -98,28 +96,17 @@ pub fn update_single_option(
     Ok(Ok(Some(Status::new(205, "Reset Content"))))
 }
 
-#[put("/<id>/options", data = "<options_update>")]
+#[put("/<id>/options", data = "<options>")]
 pub fn update_options(
     user: UserGuard,
     id: u32,
-    options_update: Json<JobOptionsUpdate>,
-) -> QueryResult<Result<Option<Status>, Status>>
+    options: Json<JobOptions>,
+) -> QueryResult<Status>
 {
-    let result: Option<Vec<u8>> =
-        select_job_options(id, user.id, &user.connection)?;
-
-    let mut options: JobOptions = match result {
-        None => return Ok(Ok(None)),
-        Some(options) => {
-            bincode::deserialize(&options[..]).expect("deserializing JobOptions")
-        },
-    };
-
-    options.merge(options_update.into_inner());
-
-    let serialized = bincode::serialize(&options).expect("serializing JobOptions");
+    let serialized =
+        bincode::serialize(&options.into_inner()).expect("serializing JobOptions");
 
     update_job_options(id, user.id, serialized, &user.connection)?;
 
-    Ok(Ok(Some(Status::new(205, "Reset Content"))))
+    Ok(Status::new(205, "Reset Content"))
 }
