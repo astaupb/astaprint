@@ -56,7 +56,8 @@ use mysql::{
 use model::task::{
     dispatcher::DispatcherTask,
     worker::{
-        WorkerTask, WorkerCommand,
+        WorkerCommand,
+        WorkerTask,
     },
 };
 
@@ -81,6 +82,7 @@ use astaprint::{
         get::*,
     },
     printers::queue::{
+        delete::*,
         get::*,
         post::*,
     },
@@ -142,8 +144,10 @@ fn rocket() -> rocket::Rocket
 
     let redis_store = Store::from(redis_pool);
 
-    let mut worker_queues: HashMap<u32, TaskQueueClient<WorkerTask, WorkerCommand>> =
-        HashMap::new();
+    let mut worker_queues: HashMap<
+        u32,
+        TaskQueueClient<WorkerTask, WorkerCommand>,
+    > = HashMap::new();
 
     let connection = mysql_pool.get().expect("getting mysql connection from pool");
 
@@ -212,7 +216,7 @@ fn rocket() -> rocket::Rocket
                 delete_single_token
             ],
         )
-        .mount("/printers", routes![print_job, get_queue])
+        .mount("/printers", routes![print_job, get_queue, delete_queue])
         .mount("/journal", routes![journal, credit])
         .attach(cors())
 }

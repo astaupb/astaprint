@@ -71,7 +71,7 @@ fn main()
                 locked,
                 &connection,
             ) {
-                Ok(_) => (),//println!("{} {} imported..", split[0], split[1]),
+                Ok(_) => (), // println!("{} {} imported..", split[0], split[1]),
                 Err(e) => println!("{}: {:?}", split[1], e),
             }
         }

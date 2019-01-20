@@ -15,7 +15,6 @@
 ///
 /// You should have received a copy of the GNU Affero General Public
 /// License along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 use diesel::{
     prelude::*,
     result::Error,
@@ -53,8 +52,7 @@ pub fn add_user(
     connection: &MysqlConnection,
 ) -> Result<(), UserAddError>
 {
-    let user_id: Option<u32> =
-        select_user_id_by_name(name, connection)?;
+    let user_id: Option<u32> = select_user_id_by_name(name, connection)?;
 
     if user_id.is_some() {
         return Err(UserAddError::UsernameExists);
@@ -64,7 +62,9 @@ pub fn add_user(
 
     match id {
         Some(id) => {
-            insert_into_user_with_id(id, name, hash, salt, card, pin, locked, connection)?;
+            insert_into_user_with_id(
+                id, name, hash, salt, card, pin, locked, connection,
+            )?;
         },
         None => {
             insert_into_user(name, hash, salt, card, pin, locked, connection)?;

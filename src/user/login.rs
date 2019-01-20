@@ -149,8 +149,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for LoginGuard
 
         let city: String = match mmdb_reader.lookup::<geoip2::City>(remote.ip()) {
             Ok(city) => {
-                city
-                    .city
+                city.city
                     .expect("getting city entry from city record")
                     .names
                     .expect("getting names from city entry")

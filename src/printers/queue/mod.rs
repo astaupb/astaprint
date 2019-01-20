@@ -1,3 +1,4 @@
+pub mod delete;
 /// AStAPrint
 /// Copyright (C) 2018  AStA der Universität Paderborn
 ///
@@ -21,9 +22,9 @@ pub mod post;
 use model::{
     job::Job,
     task::worker::{
+        WorkerCommand,
         WorkerState,
         WorkerTask,
-        WorkerCommand,
     },
 };
 
@@ -43,12 +44,17 @@ use mysql::jobs::{
 };
 
 use redis::queue::{
-    TaskQueueClient, CommandClient,
+    CommandClient,
+    TaskQueueClient,
 };
 
 use snmp::session::SnmpSession;
 
-pub fn work(task: WorkerTask, state: WorkerState, client: TaskQueueClient<WorkerTask, WorkerCommand>)
+pub fn work(
+    task: WorkerTask,
+    state: WorkerState,
+    client: TaskQueueClient<WorkerTask, WorkerCommand>,
+)
 {
     let hex_uid = hex::encode(&task.uid[..]);
     info!("{} worker thread spawned for {}", hex_uid, task.user_id);
@@ -76,9 +82,7 @@ pub fn work(task: WorkerTask, state: WorkerState, client: TaskQueueClient<Worker
 
     debug!("counter_base: {:?}", counter_base);
 
-/*
-
-*/
+    //
     // check energy status before initial waiting
     // 1 == ready
     let energy_stat =
@@ -99,41 +103,47 @@ pub fn work(task: WorkerTask, state: WorkerState, client: TaskQueueClient<Worker
     let mut last_value = counter_base.total;
     let mut print_jobs: Vec<Job> = Vec::new();
 
+    let receiver = client.get_command_receiver();
     let completed = loop {
-        if let Some(command) = client.receive_command().expect("receiving command") {
-            debug!("{:?}", command);
-            match command {
-                WorkerCommand::Cancel => {
-                    break false;
-                },
-                WorkerCommand::Hungup => {
-                    hungup = true;
-                },
-                WorkerCommand::Print(job_id) => {
-                    let job_row: JobRow =
-                        select_job(job_id, &connection).expect("selecting job from database");
+        match receiver.try_recv() {
+            Ok(command) => {
+                match command {
+                    WorkerCommand::Cancel => {
+                        break false;
+                    },
+                    WorkerCommand::Hungup => {
+                        hungup = true;
+                    },
+                    WorkerCommand::Print(job_id) => {
+                        let job_row: JobRow = select_job(job_id, &connection)
+                            .expect("selecting job from database");
 
-                    let mut job = Job::from((
-                        job_row.id,
-                        job_row.info.clone(),
-                        job_row.options.clone(),
-                        job_row.created,
-                    ));
+                        let mut job = Job::from((
+                            job_row.id,
+                            job_row.info.clone(),
+                            job_row.options.clone(),
+                            job_row.created,
+                        ));
 
-                    let buf: Vec<u8> =
-                        job.translate_for_printer(&task.uid[..], task.user_id, job_row.pdf);
+                        let buf: Vec<u8> = job.translate_for_printer(
+                            &task.uid[..],
+                            task.user_id,
+                            job_row.pdf,
+                        );
 
-                    let mut lpr_connection = LprConnection::new(
-                        &state.printer_interface.ip,
-                        20000, // socket timeout in ms
-                    );
+                        let mut lpr_connection = LprConnection::new(
+                            &state.printer_interface.ip,
+                            20000, // socket timeout in ms
+                        );
 
-                    lpr_connection.print(&buf).expect("printing job with lpr");
+                        lpr_connection.print(&buf).expect("printing job with lpr");
 
-                    print_count += job.pages_to_print();
-                    print_jobs.push(job);
-                },
-            }
+                        print_count += job.pages_to_print();
+                        print_jobs.push(job);
+                    },
+                }
+            },
+            Err(_) => (),
         }
         thread::sleep(time::Duration::from_millis(20));
         let current = snmp_session.get_counter().expect("getting counter values");
@@ -164,7 +174,7 @@ pub fn work(task: WorkerTask, state: WorkerState, client: TaskQueueClient<Worker
             break false;
         }
 
-        if hungup && loop_count > 500 && !print_jobs.is_empty() {
+        if hungup && loop_count > 1100 && !print_jobs.is_empty() {
             warn!("{} {} jobs timeout", hex_uid, task.user_id);
             break false;
         }

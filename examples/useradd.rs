@@ -46,14 +46,6 @@ fn main()
 
     let connection = create_mysql_pool(&mysql_url, 1).get().unwrap();
 
-    add_user(
-        None,
-        &arg[1],
-        &arg[2],
-        None,
-        None,
-        false,
-        &connection,
-    )
-    .expect("adding user");
+    add_user(None, &arg[1], &arg[2], None, None, false, &connection)
+        .expect("adding user");
 }

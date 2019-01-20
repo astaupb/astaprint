@@ -17,19 +17,15 @@
 /// License along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use std::collections::HashMap;
 
-use diesel::result::QueryResult;
-
 use model::task::worker::{
     WorkerCommand,
     WorkerTask,
 };
 
 use rocket::{
-    response::status::Accepted,
+    http::Status,
     State,
 };
-
-use rocket_contrib::json::Json;
 
 use user::guard::UserGuard;
 
@@ -38,40 +34,34 @@ use redis::queue::{
     TaskQueueClient,
 };
 
-use sodium::random_bytes;
-
-#[post("/<device_id>/queue?<id>")]
-pub fn print_job(
-    user: UserGuard,
+#[delete("/<device_id>/queue/<hex_uid>")]
+pub fn delete_queue(
+    _user: UserGuard,
     device_id: u32,
+    hex_uid: String,
     queues: State<HashMap<u32, TaskQueueClient<WorkerTask, WorkerCommand>>>,
-    id: u32,
-) -> QueryResult<Option<Accepted<Json<String>>>>
+) -> Status
 {
+    let uid = match hex::decode(&hex_uid) {
+        Ok(uid) => uid,
+        Err(_) => return Status::new(400, "Bad Request"),
+    };
     let queue = match queues.get(&device_id) {
         Some(queue) => queue,
-        None => return Ok(None),
+        None => return Status::new(404, "Device Not Found"),
     };
+    if queue.remove(uid.clone()).expect("removing task") > 0 {
+        return Status::new(205, "Success - No Content");
+    } else {
+        if queue.get_processing()[0].uid == uid {
+            let client = CommandClient::from((queue, &hex_uid[..]));
+            client
+                .send_command(&WorkerCommand::Cancel)
+                .expect("sending cancel command");
 
-    let uid = random_bytes(20);
-    let hex_uid = hex::encode(&uid[..]);
-
-    let task = WorkerTask {
-        uid,
-        user_id: user.id,
-    };
-
-    queue.send(&task).expect("sending job to worker queue");
-
-    let queue = CommandClient::from((queue, &hex_uid[..]));
-
-    queue
-        .send_command(&WorkerCommand::Print(id))
-        .expect("sending print command to worker");
-
-    queue
-        .send_command(&WorkerCommand::Hungup)
-        .expect("sending hungup command to worker");
-
-    Ok(Some(Accepted(Some(Json(hex_uid)))))
+            return Status::new(205, "Success - No Content");
+        } else {
+            return Status::new(404, "Task Not Found");
+        }
+    }
 }

@@ -52,9 +52,7 @@ use r2d2_redis::{
 use logger::Logger;
 use redis::{
     create_redis_pool,
-    queue::{
-        TaskQueue,
-    },
+    queue::TaskQueue,
 };
 
 use mysql::{
@@ -64,9 +62,9 @@ use mysql::{
 
 
 use model::task::worker::{
+    WorkerCommand,
     WorkerState,
     WorkerTask,
-    WorkerCommand,
 };
 extern crate astaprint;
 use astaprint::printers::queue::work;
@@ -90,16 +88,17 @@ fn spawn_worker(
 
     let thread_pool = ThreadPool::new(8);
 
-    let taskqueue: TaskQueue<WorkerTask, WorkerState, WorkerCommand> = TaskQueue::new(
-        &name,
-        WorkerState {
-            printer_interface,
-            mysql_pool,
-            redis_pool: redis_pool.clone(),
-        },
-        redis_pool,
-        thread_pool,
-    );
+    let taskqueue: TaskQueue<WorkerTask, WorkerState, WorkerCommand> =
+        TaskQueue::new(
+            &name,
+            WorkerState {
+                printer_interface,
+                mysql_pool,
+                redis_pool: redis_pool.clone(),
+            },
+            redis_pool,
+            thread_pool,
+        );
 
     thread::spawn(move || {
         info!("{} listening", device_id);

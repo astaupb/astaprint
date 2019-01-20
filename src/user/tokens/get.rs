@@ -32,7 +32,5 @@ pub fn get_single_token(
 {
     let token: Option<UserToken> =
         select_single_user_token_optional(user.id, token_id, &user.connection)?;
-    Ok(token
-        .map(|row| Json(UserTokenResponse::from(&row)))
-    )
+    Ok(token.map(|row| Json(UserTokenResponse::from(&row))))
 }

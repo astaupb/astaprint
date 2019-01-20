@@ -18,6 +18,8 @@ use threadpool::ThreadPool;
 use std::{
     fmt::Debug,
     marker::PhantomData,
+    sync::mpsc,
+    thread,
 };
 
 pub trait Unique
@@ -170,6 +172,13 @@ where
         }).collect()
     }
 
+    pub fn remove(&self, uid: Vec<u8>) -> RedisResult<u32>
+    {
+        let redis = self.redis_pool.get()
+            .expect("getting connection from pool");
+
+        redis.lrem(&self.incoming, 0, uid)
+    }
     pub fn send(&self, value: &T) -> RedisResult<()>
     {
         let encoded: Vec<u8> = bincode::serialize(value)
@@ -216,6 +225,7 @@ where
         let encoded: Vec<u8> = bincode::serialize(command)
             .expect("serializing command to bincode");
         
+        println!("{:?}", encoded);
         let redis = self.redis_pool.get()
             .expect("gettig connection from pool");
 
@@ -238,5 +248,27 @@ where
                     None
                 }
             )
+    }
+
+    pub fn get_command_receiver(self) -> mpsc::Receiver<C> {
+        let (sender, receiver) = mpsc::channel::<C>();
+        {
+            let redis_pool = self.redis_pool.clone();
+            let queue = self.queue.clone();
+            thread::spawn(move || {
+                let redis = redis_pool.get()
+                    .expect("getting connection from pool");
+                loop {
+                    let binary: Vec<Vec<u8>> = redis.brpop(&queue, 0)
+                        .expect("getting command from queue");
+
+                    let command: C = bincode::deserialize(&binary[1][..])
+                        .expect("deserializing Command");
+
+                    sender.send(command).expect("sending command");
+                }
+            });
+        }
+        receiver
     }
 }
