@@ -54,15 +54,6 @@ pub fn print_job(
         None => return Ok(None),
     };
 
-    let job_options: JobOptions =
-        match select_job_options(id, user.id, &user.connection)? {
-            None => return Ok(None),
-            Some(job_options) => {
-                bincode::deserialize(&job_options)
-                    .expect("deserializing JobOptions")
-            },
-        };
-
     let uid = random_bytes(20);
     let hex_uid = hex::encode(&uid[..]);
 

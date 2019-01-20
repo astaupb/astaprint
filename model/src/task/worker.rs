@@ -1,4 +1,3 @@
-use crate::job::options::JobOptions;
 use sodium::random_bytes;
 
 use diesel::{

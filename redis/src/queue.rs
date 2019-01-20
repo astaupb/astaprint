@@ -20,6 +20,12 @@ use std::{
     marker::PhantomData,
 };
 
+pub trait Unique
+{
+    fn uid(&self) -> Vec<u8>;
+    fn hex_uid(&self) -> String;
+}
+
 #[derive(Clone)]
 pub struct TaskQueue<T, D, C>
 {

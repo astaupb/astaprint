@@ -75,7 +75,7 @@ fn main()
 
     info!("listening");
 
-    taskqueue.listen(|task, state, client| {
+    taskqueue.listen(|task, state, _client| {
         dispatch(task, state);
     });
 }
