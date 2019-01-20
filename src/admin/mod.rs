@@ -21,7 +21,9 @@ pub mod tokens;
 
 pub mod get;
 
-use chrono::NaiveDate;
+use chrono::{
+    NaiveDate,
+};
 use diesel::prelude::*;
 use mysql::admin::insert::insert_admin;
 
@@ -42,18 +44,15 @@ impl Admin
 {
     pub fn insert(self, connection: &MysqlConnection) -> QueryResult<usize>
     {
-        insert_admin(
-            (
-                self.first_name,
-                self.last_name,
-                self.login,
-                self.hash,
-                self.salt,
-                self.service,
-                self.locked,
-                self.expires,
-            ),
-            connection,
-        )
+        insert_admin((
+            self.first_name,
+            self.last_name,
+            self.login,
+            self.hash,
+            self.salt,
+            self.service,
+            self.locked,
+            self.expires,
+        ), connection)
     }
 }

@@ -10,6 +10,20 @@ pub fn select_user(connection: &MysqlConnection) -> QueryResult<Vec<User>>
     user::table.select(user::all_columns).load(connection)
 }
 
+pub fn select_user_with_limit_offset(limit: i64, offset: i64, connection: &MysqlConnection) -> QueryResult<Vec<User>>
+{
+    user::table
+        .select(user::all_columns)
+        .limit(limit)
+        .offset(offset)
+        .load(connection)
+}
+
+pub fn select_user_by_id(user_id: u32, connection: &MysqlConnection) -> QueryResult<User>
+{
+    user::table.select(user::all_columns).filter(user::id.eq(user_id)).first(connection)
+}
+
 pub fn select_user_tokens(
     connection: &MysqlConnection,
 ) -> QueryResult<Vec<UserToken>>

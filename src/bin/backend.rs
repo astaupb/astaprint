@@ -178,7 +178,8 @@ fn rocket() -> rocket::Rocket
         .manage(mmdb_reader)
         .manage(dispatcher_queue)
         .manage(worker_queues)
-        .mount("/", routes![api_reference, get_all_users, post_admin_token])
+        .mount("/", routes![api_reference])
+        .mount("/", routes![get_user, get_user_journal, get_all_users, post_admin_token])
         .mount(
             "/jobs/",
             routes![

@@ -1,4 +1,3 @@
-use admin::login::AdminLoginGuard;
 /// AStAPrint - Admin Tokens
 /// Copyright (C) 2018  AStA der Universität Paderborn
 ///
@@ -17,6 +16,7 @@ use admin::login::AdminLoginGuard;
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use rocket_contrib::json::Json;
+use admin::login::AdminLoginGuard;
 #[post("/admin/tokens")]
 pub fn post_admin_token(guard: AdminLoginGuard) -> Json<String>
 {
