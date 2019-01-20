@@ -3,9 +3,11 @@ table! {
         id -> Unsigned<Integer>,
         first_name -> Varchar,
         last_name -> Varchar,
+        login -> Varchar,
         hash -> Binary,
         salt -> Binary,
-        is_service -> Bool,
+        service -> Bool,
+        locked -> Bool,
         expires -> Date,
         created -> Timestamp,
         updated -> Timestamp,
@@ -15,12 +17,11 @@ table! {
 table! {
     admin_tokens (id) {
         id -> Unsigned<Integer>,
-        user_id -> Unsigned<Integer>,
+        admin_id -> Unsigned<Integer>,
         user_agent -> Varchar,
         ip -> Varchar,
         location -> Varchar,
         hash -> Binary,
-        salt -> Binary,
         created -> Timestamp,
     }
 }

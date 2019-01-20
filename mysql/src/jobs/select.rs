@@ -10,12 +10,25 @@ pub fn select_jobs(connection: &MysqlConnection) -> QueryResult<Vec<Job>>
     jobs::table.select(jobs::all_columns).load(connection)
 }
 
-pub fn select_job(id: u32, connection: &MysqlConnection) -> QueryResult<Job>
+pub fn select_full_job(id: u32, connection: &MysqlConnection) -> QueryResult<Option<Job>>
 {
     jobs::table
         .select(jobs::all_columns)
         .filter(jobs::id.eq(id))
         .first(connection)
+        .optional()
+}
+
+pub fn select_job(
+    job_id: u32,
+    connection: &MysqlConnection,
+) -> QueryResult<Option<(u32, Vec<u8>, Vec<u8>, NaiveDateTime)>>
+{
+    jobs::table
+        .select((jobs::id, jobs::info, jobs::options, jobs::created))
+        .filter(jobs::id.eq(job_id))
+        .first(connection)
+        .optional()
 }
 
 pub fn select_all_jobs_of_user(
@@ -29,16 +42,16 @@ pub fn select_all_jobs_of_user(
         .load(connection)
 }
 
-pub fn select_single_job_of_user(
-    job_id: u32,
+pub fn select_job_of_user(
     user_id: u32,
+    job_id: u32,
     connection: &MysqlConnection,
 ) -> QueryResult<Option<(u32, Vec<u8>, Vec<u8>, NaiveDateTime)>>
 {
     jobs::table
         .select((jobs::id, jobs::info, jobs::options, jobs::created))
-        .filter(jobs::user_id.eq(user_id))
         .filter(jobs::id.eq(job_id))
+        .filter(jobs::user_id.eq(user_id))
         .first(connection)
         .optional()
 }

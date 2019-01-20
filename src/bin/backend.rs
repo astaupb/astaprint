@@ -64,6 +64,10 @@ use model::task::{
 use logger::Logger;
 
 use astaprint::{
+    admin::{
+        get::*,
+        tokens::*,
+    },
     jobs::{
         delete::*,
         get::*,
@@ -174,7 +178,7 @@ fn rocket() -> rocket::Rocket
         .manage(mmdb_reader)
         .manage(dispatcher_queue)
         .manage(worker_queues)
-        .mount("/", routes![api_reference])
+        .mount("/", routes![api_reference, get_all_users, post_admin_token])
         .mount(
             "/jobs/",
             routes![

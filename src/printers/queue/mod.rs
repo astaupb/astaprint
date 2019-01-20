@@ -40,7 +40,6 @@ use printers::accounting::Accounting;
 use mysql::jobs::{
     delete::*,
     select::*,
-    Job as JobRow,
 };
 
 use redis::queue::{
@@ -114,31 +113,42 @@ pub fn work(
                         hungup = true;
                     },
                     WorkerCommand::Print(job_id) => {
-                        let job_row: JobRow = select_job(job_id, &connection)
-                            .expect("selecting job from database");
+                        if let Some(job_row) = select_full_job(job_id, &connection)
+                            .expect("selecting job from database")
+                        {
+                            let mut job = Job::from((
+                                job_row.id,
+                                job_row.info.clone(),
+                                job_row.options.clone(),
+                                job_row.created,
+                            ));
 
-                        let mut job = Job::from((
-                            job_row.id,
-                            job_row.info.clone(),
-                            job_row.options.clone(),
-                            job_row.created,
-                        ));
+                            let color = job.options.color;
 
-                        let buf: Vec<u8> = job.translate_for_printer(
-                            &task.uid[..],
-                            task.user_id,
-                            job_row.pdf,
-                        );
+                            let buf: Vec<u8> = job.translate_for_printer(
+                                &task.uid[..],
+                                task.user_id,
+                                if color {
+                                    job_row.pdf
+                                } else {
+                                    job_row.pdf_bw
+                                },
+                            );
 
-                        let mut lpr_connection = LprConnection::new(
-                            &state.printer_interface.ip,
-                            20000, // socket timeout in ms
-                        );
+                            let mut lpr_connection = LprConnection::new(
+                                &state.printer_interface.ip,
+                                20000, // socket timeout in ms
+                            );
 
-                        lpr_connection.print(&buf).expect("printing job with lpr");
+                            lpr_connection
+                                .print(&buf)
+                                .expect("printing job with lpr");
 
-                        print_count += job.pages_to_print();
-                        print_jobs.push(job);
+                            print_count += job.pages_to_print();
+                            print_jobs.push(job);
+                        } else {
+                            println!("failed to find job with id {}", job_id);
+                        }
                     },
                 }
             },

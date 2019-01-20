@@ -27,7 +27,7 @@ use user::guard::UserGuard;
 pub fn fetch_job(user: UserGuard, id: u32) -> QueryResult<Option<Json<Job>>>
 {
     let job: Option<(u32, Vec<u8>, Vec<u8>, NaiveDateTime)> =
-        select_single_job_of_user(id, user.id, &user.connection)?;
+        select_job_of_user(id, user.id, &user.connection)?;
 
     Ok(job.map(|x| Json(Job::from(x))))
 }

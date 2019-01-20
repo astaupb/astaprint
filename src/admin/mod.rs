@@ -15,36 +15,45 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use chrono::{
-    NaiveDate,
-    NaiveDateTime,
-};
-use self::table::*;
+pub mod guard;
+pub mod login;
+pub mod tokens;
 
-#[derive(Identifiable, Queryable, Insertable, Debug)]
-#[table_name = "admin"]
+pub mod get;
+
+use chrono::NaiveDate;
+use diesel::prelude::*;
+use mysql::admin::insert::insert_admin;
+
+#[derive(Debug, Clone)]
 pub struct Admin
 {
-    pub id: u32,
     pub first_name: String,
     pub last_name: String,
-    pub password_hash: Vec<u8>,
-    pub password_salt: Vec<u8>,
-    pub is_service: bool,
-    pub expires: NaiveDate,
-    pub created: NaiveDateTime,
-    pub updated: NaiveDateTime,
-}
-
-#[derive(Identifiable, Queryable, Insertable, Associations, Debug)]
-#[table_name = "admin_tokens"]
-pub struct AdminToken
-{
-    pub id: u32,
-    pub user_id: u32,
-    pub user_agent: String,
-    pub ip: String,
-    pub location: String,
+    pub login: String,
     pub hash: Vec<u8>,
     pub salt: Vec<u8>,
+    pub service: bool,
+    pub locked: bool,
+    pub expires: NaiveDate,
+}
+
+impl Admin
+{
+    pub fn insert(self, connection: &MysqlConnection) -> QueryResult<usize>
+    {
+        insert_admin(
+            (
+                self.first_name,
+                self.last_name,
+                self.login,
+                self.hash,
+                self.salt,
+                self.service,
+                self.locked,
+                self.expires,
+            ),
+            connection,
+        )
+    }
 }
