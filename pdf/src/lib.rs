@@ -78,7 +78,7 @@ pub fn sanitize(mut pdf: Vec<u8>) -> DispatchResult
         _ => panic!("pdfjam does not work"),
     };
 
-    let (pdf_bw, colored) = ghostscript(&pdf[..])
+    let (pdf_bw, non_colored) = ghostscript(&pdf[..])
         .expect("running ghostscript");
 
     let preview_0 = pdf_document.render_preview(0).unwrap();
@@ -87,7 +87,7 @@ pub fn sanitize(mut pdf: Vec<u8>) -> DispatchResult
     let preview_3 = pdf_document.render_preview(3);
 
     DispatchResult {
-        pdf, pdf_bw, preview_0, preview_1, preview_2, preview_3, title, a3, pagecount, colored,
+        pdf, pdf_bw, preview_0, preview_1, preview_2, preview_3, title, a3, pagecount, colored: pagecount - non_colored,
     }
 }
 

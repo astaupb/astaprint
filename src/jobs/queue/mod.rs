@@ -88,4 +88,5 @@ pub fn dispatch(task: DispatcherTask, state: DispatcherState)
         &connection,
     )
     .expect("inserting job into table");
+    info!("{} finished, pagecount: {}, colored: {}, a3: {}", hex_uid, result.pagecount, result.colored, result.a3);
 }

@@ -155,25 +155,19 @@ pub fn ghostscript(data: &[u8]) -> io::Result<(Vec<u8>, u32)>
         .wait_with_output()
         .expect("waiting for gs_inkcov");
 
-    let mut colored = 0;
+    let mut non_colored = 0;
     for line in String::from_utf8_lossy(&gs_inkcov.stdout[..]).lines() {
         if line.ends_with("CMYK OK")
         && line.starts_with(" 0.00000  0.00000  0.00000  ") {
-            colored += 1;
+            non_colored += 1;
+            debug!("non_colored: {}", non_colored);
         }
     }
-    let gs_pdfbw = gs_pdfbw
+    let _gs_pdfbw = gs_pdfbw
         .wait_with_output()
         .expect("waiting for gs_pdfwrite_bw"); 
 
-    for line in String::from_utf8_lossy(&gs_pdfbw.stdout).lines() {
-        if line.contains("Substituting") || line.contains("Loading") {
-            warn!("{:?}", line);
-            continue;
-        }
-    }
-
     rename(&outfile, &path)?;
 
-    Ok((TmpFile::remove(&path)?, colored))
+    Ok((TmpFile::remove(&path)?, non_colored))
 }

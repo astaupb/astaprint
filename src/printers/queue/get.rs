@@ -31,7 +31,7 @@ use redis::queue::TaskQueueClient;
 pub struct WorkerTaskResponse
 {
     user_id: u32,
-    uid: String, 
+    uid: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -67,7 +67,7 @@ pub fn get_queue(
     Some(Json(
         WorkerQueueResponse{
             incoming: queue.get_incoming().iter().map(|task| {
-                WorkerTaskResponse::from(task) 
+                WorkerTaskResponse::from(task)
             }).collect(),
             processing: queue.get_processing().iter().map(|task| {
                 WorkerTaskResponse::from(task)
