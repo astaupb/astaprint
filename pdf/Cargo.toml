@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies]
 sodium = {path = "../sodium"}
-log = {version = "*", features = ["std", "max_level_debug", "release_max_level_info"]}
-hex = "*"
+log = {version = "0.4", features = ["std", "max_level_debug", "release_max_level_info"]}
+hex = "0.3"
 cairo-rs = { version= "0.3.0", features = ["png"]}
 poppler = {git = "https://git.uni-paderborn.de/asta/poppler-rs", rev="69ea0bc"}

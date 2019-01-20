@@ -99,7 +99,7 @@ dependencies = [
  "cairo-rs 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "hex 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
- "poppler 0.2.3 (git+https://git.uni-paderborn.de/asta/poppler-rs?rev=69ea0bc)",
+ "poppler 0.2.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "sodium 0.1.0",
 ]
 
@@ -110,8 +110,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "poppler"
-version = "0.2.3"
-source = "git+https://git.uni-paderborn.de/asta/poppler-rs?rev=69ea0bc#69ea0bcee4ede7505bcecf4150491f7519ed013c"
+version = "0.2.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "cairo-rs 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "cairo-sys-rs 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -143,5 +143,5 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum libc 0.2.45 (registry+https://github.com/rust-lang/crates.io-index)" = "2d2857ec59fadc0773853c664d2d18e7198e83883e7060b63c924cb077bd5c74"
 "checksum log 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)" = "c84ec4b527950aa83a329754b01dbe3f58361d1c5efacd1f6d68c494d08a17c6"
 "checksum pkg-config 0.3.14 (registry+https://github.com/rust-lang/crates.io-index)" = "676e8eb2b1b4c9043511a9b7bea0915320d7e502b0a079fb03f9635a5252b18c"
-"checksum poppler 0.2.3 (git+https://git.uni-paderborn.de/asta/poppler-rs?rev=69ea0bc)" = "<none>"
+"checksum poppler 0.2.4 (registry+https://github.com/rust-lang/crates.io-index)" = "f1ee0334e693d2ba0dc89a77e166a63f38ef9ec5761996aeb0dece4a51da217a"
 "checksum winapi 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)" = "167dc9d6949a9b857f3451275e911c3f44255842c1f7a76f33c55103a909087a"

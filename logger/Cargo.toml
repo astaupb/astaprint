@@ -5,5 +5,5 @@ authors = ["Gerrit Pape <papeg@mail.upb.de>"]
 edition = "2018"
 
 [dependencies]
-log = {version = "*", features = ["std"]}
-chrono = "*"
+log = {version = "0.4", features = ["std"]}
+chrono = "0.4"

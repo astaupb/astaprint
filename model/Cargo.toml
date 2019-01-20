@@ -5,17 +5,17 @@ authors = ["Gerrit Pape <papeg@mail.upb.de>"]
 edition = "2018"
 
 [dependencies]
-log = {version = "*", features = ["std", "max_level_debug", "release_max_level_info"]}
-diesel = {version = "*", features = ["mysql", "r2d2", "chrono", "bigdecimal", "numeric"]}
+log = {version = "0.4", features = ["std", "max_level_debug", "release_max_level_info"]}
+diesel = {version = "1.3", features = ["mysql", "r2d2", "chrono", "bigdecimal", "numeric"]}
 mysql = {path = "../mysql"}
 redis = {path = "../redis"}
 snmp = {path = "../snmp"}
 sodium = {path = "../sodium"}
 r2d2_redis = "*"
-hex = "*"
-bincode = "*"
-chrono = "*"
-bigdecimal = "*"
-serde = "*"
-serde_derive = "*"
-threadpool = "*"
+hex = "0.3"
+bincode = "1.0"
+chrono = "0.4"
+bigdecimal = "0.0.11"
+serde = "1.0"
+serde_derive = "1.0"
+threadpool = "1.7"
