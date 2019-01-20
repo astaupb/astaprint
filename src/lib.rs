@@ -48,9 +48,6 @@ extern crate base64;
 extern crate bigdecimal;
 extern crate chrono;
 
-extern crate cairo;
-extern crate poppler;
-
 extern crate lpr;
 
 extern crate sodium;

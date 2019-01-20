@@ -5,10 +5,10 @@ authors = ["Gerrit Pape <papeg@mail.upb.de>"]
 edition = "2018"
 
 [dependencies]
-log = "*"
-hex = "*"
-r2d2_redis = "*"
-bincode = "*"
-serde = "*"
-threadpool = "*"
+log = "0.4"
+hex = "0.3"
+r2d2_redis = "0.8"
+bincode = "1.0"
+serde = "1.0"
+threadpool = "1.7"
 sodium = {path = "../sodium"}
