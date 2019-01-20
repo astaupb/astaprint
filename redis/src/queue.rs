@@ -107,7 +107,6 @@ pub struct TaskQueueClient<T, C>
     redis_pool: Pool<RedisConnectionManager>,
     incoming: String,
     processing: String,
-    command_queue: Option<String>,
 }
 
 impl<'a, T, D, C> From<&'a TaskQueue<T, D, C>> for TaskQueueClient<T, C>
@@ -120,14 +119,13 @@ impl<'a, T, D, C> From<&'a TaskQueue<T, D, C>> for TaskQueueClient<T, C>
             redis_pool: queue.redis_pool.clone(),
             incoming: queue.incoming.clone(),
             processing: queue.processing.clone(),
-            command_queue: None,
         }
     }
 }
 
 impl<T, C> TaskQueueClient<T, C>
 where
-    T: 'static + Serialize + DeserializeOwned + Debug,
+    T: 'static + Serialize + DeserializeOwned + Unique + Debug,
     C: 'static + Serialize + DeserializeOwned + Debug + Send + Clone,
 {
     pub fn new(
@@ -141,13 +139,7 @@ where
             redis_pool,
             incoming: format!("{}::incoming", name),
             processing: format!("{}::processing", name),
-            command_queue: None,
         }
-    }
-
-    pub fn set_uid(&mut self, uid: &str)
-    {
-        self.command_queue = Some(format!("{}::{}", self.processing, uid));
     }
 
     pub fn get_processing(&self) -> Vec<T>
@@ -187,9 +179,38 @@ where
             .expect("getting connection from pool");
 
         redis.lpush(&self.incoming, encoded)?;
+
         Ok(())
     }
+}
 
+#[derive(Clone)]
+pub struct CommandClient<T, C>
+{
+    task: PhantomData<T>,
+    command: PhantomData<C>,
+    redis_pool: Pool<RedisConnectionManager>,
+    queue: String,
+}
+
+impl<'a, T, C> From<(&'a TaskQueueClient<T, C>, &'a str)> for CommandClient<T, C>
+{
+    fn from((client, uid): (&TaskQueueClient<T, C>, &str)) -> CommandClient<T, C>
+    {
+        CommandClient {
+            task: client.task,
+            command: client.command,
+            redis_pool: client.redis_pool.clone(),
+            queue: format!("{}::{}", client.processing, uid),
+        }
+    }
+}
+
+impl<T, C> CommandClient<T, C>
+where
+    T: 'static + Serialize + DeserializeOwned + Unique + Debug,
+    C: 'static + Serialize + DeserializeOwned + Debug + Send + Clone,
+{
     pub fn send_command(&self, command: &C) -> RedisResult<()>
     {
         let encoded: Vec<u8> = bincode::serialize(command)
@@ -198,7 +219,7 @@ where
         let redis = self.redis_pool.get()
             .expect("gettig connection from pool");
 
-        redis.lpush(&self.command_queue.clone().unwrap(), encoded)?;
+        redis.lpush(&self.queue, encoded)?;
 
         Ok(())
     }
@@ -208,7 +229,7 @@ where
         let redis = self.redis_pool.get()
             .expect("getting redis connection from pool");
 
-        redis.rpop(self.command_queue.clone().unwrap())
+        redis.rpop(&self.queue)
             .map(|value: Value|
                 if let Value::Data(binary) = value {
                     Some(bincode::deserialize(&binary[..])

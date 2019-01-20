@@ -42,15 +42,17 @@ use mysql::jobs::{
     Job as JobRow,
 };
 
-use redis::queue::TaskQueueClient;
+use redis::queue::{
+    TaskQueueClient, CommandClient,
+};
 
 use snmp::session::SnmpSession;
 
-pub fn work(task: WorkerTask, state: WorkerState, mut client: TaskQueueClient<WorkerTask, WorkerCommand>)
+pub fn work(task: WorkerTask, state: WorkerState, client: TaskQueueClient<WorkerTask, WorkerCommand>)
 {
     let hex_uid = hex::encode(&task.uid[..]);
     info!("{} worker thread spawned for {}", hex_uid, task.user_id);
-    client.set_uid(&hex_uid);
+    let client = CommandClient::from((&client, &hex_uid[..]));
 
     let connection =
         state.mysql_pool.get().expect("getting connection from mysql pool");

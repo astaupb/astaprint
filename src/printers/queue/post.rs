@@ -22,8 +22,9 @@ use std::{
 use diesel::result::QueryResult;
 
 use model::{
-    job::options::JobOptions,
-    task::worker::WorkerTask,
+    task::worker::{
+        WorkerTask, WorkerCommand,
+    },
 };
 
 use rocket::{
@@ -35,17 +36,17 @@ use rocket_contrib::json::Json;
 
 use user::guard::UserGuard;
 
-use redis::queue::TaskQueueClient;
+use redis::queue::{
+    TaskQueueClient, CommandClient,
+};
 
 use sodium::random_bytes;
-
-use mysql::jobs::select::*;
 
 #[post("/<device_id>/queue?<id>")]
 pub fn print_job(
     user: UserGuard,
     device_id: u32,
-    queues: State<HashMap<u32, TaskQueueClient<WorkerTask, ()>>>,
+    queues: State<HashMap<u32, TaskQueueClient<WorkerTask, WorkerCommand>>>,
     id: u32,
 ) -> QueryResult<Option<Accepted<Json<String>>>>
 {
@@ -63,6 +64,14 @@ pub fn print_job(
     };
 
     queue.send(&task).expect("sending job to worker queue");
+
+    let queue = CommandClient::from((queue, &hex_uid[..]));
+
+    queue.send_command(&WorkerCommand::Print(id))
+        .expect("sending print command to worker");
+
+    queue.send_command(&WorkerCommand::Hungup)
+        .expect("sending hungup command to worker");
 
     Ok(Some(Accepted(Some(Json(hex_uid)))))
 }

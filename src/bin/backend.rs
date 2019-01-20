@@ -55,7 +55,9 @@ use mysql::{
 
 use model::task::{
     dispatcher::DispatcherTask,
-    worker::WorkerTask,
+    worker::{
+        WorkerTask, WorkerCommand,
+    },
 };
 
 use logger::Logger;
@@ -140,7 +142,7 @@ fn rocket() -> rocket::Rocket
 
     let redis_store = Store::from(redis_pool);
 
-    let mut worker_queues: HashMap<u32, TaskQueueClient<WorkerTask, ()>> =
+    let mut worker_queues: HashMap<u32, TaskQueueClient<WorkerTask, WorkerCommand>> =
         HashMap::new();
 
     let connection = mysql_pool.get().expect("getting mysql connection from pool");
