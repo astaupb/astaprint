@@ -16,7 +16,10 @@
 /// You should have received a copy of the GNU Affero General Public
 /// License along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use diesel::prelude::*;
+use diesel::{
+    prelude::*,
+    result::Error,
+};
 
 use sodium::PasswordHash;
 
@@ -29,19 +32,29 @@ use mysql::user::{
 pub enum UserAddError
 {
     UsernameExists,
+    InsertError(Error),
+}
+
+impl From<Error> for UserAddError
+{
+    fn from(err: Error) -> UserAddError
+    {
+        UserAddError::InsertError(err)
+    }
 }
 
 pub fn add_user(
     id: Option<u32>,
     name: &str,
     password: &str,
+    card: Option<u64>,
     pin: Option<u32>,
     locked: bool,
     connection: &MysqlConnection,
 ) -> Result<(), UserAddError>
 {
     let user_id: Option<u32> =
-        select_user_id_by_name(name, connection).expect("getting username");
+        select_user_id_by_name(name, connection)?;
 
     if user_id.is_some() {
         return Err(UserAddError::UsernameExists);
@@ -51,12 +64,10 @@ pub fn add_user(
 
     match id {
         Some(id) => {
-            insert_into_user_with_id(id, name, hash, salt, pin, locked, connection)
-                .expect("inserting user with id");
+            insert_into_user_with_id(id, name, hash, salt, card, pin, locked, connection)?;
         },
         None => {
-            insert_into_user(name, hash, salt, pin, locked, connection)
-                .expect("inserting user");
+            insert_into_user(name, hash, salt, card, pin, locked, connection)?;
         },
     }
 

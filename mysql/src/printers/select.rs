@@ -61,3 +61,11 @@ pub fn select_all_ips(connection: &MysqlConnection) -> QueryResult<Vec<String>>
         .select(printers::ip)
         .load(connection)
 }
+
+pub fn select_all_ips_downstairs(connection: &MysqlConnection) -> QueryResult<Vec<String>>
+{
+    printers::table
+        .select(printers::ip)
+        .filter(printers::location.ne("BI_2.107"))
+        .load(connection)
+}

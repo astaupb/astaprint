@@ -23,6 +23,7 @@ use model::{
     task::worker::{
         WorkerState,
         WorkerTask,
+        WorkerCommand,
     },
 };
 
@@ -40,28 +41,19 @@ use mysql::jobs::{
     select::*,
     Job as JobRow,
 };
+
+use redis::queue::TaskQueueClient;
+
 use snmp::session::SnmpSession;
 
-pub fn work(task: WorkerTask, state: WorkerState)
+pub fn work(task: WorkerTask, state: WorkerState, mut client: TaskQueueClient<WorkerTask, WorkerCommand>)
 {
     let hex_uid = hex::encode(&task.uid[..]);
-    info!("{} print thread spawned for {}", hex_uid, task.user_id);
+    info!("{} worker thread spawned for {}", hex_uid, task.user_id);
+    client.set_uid(&hex_uid);
 
     let connection =
         state.mysql_pool.get().expect("getting connection from mysql pool");
-
-    let job_row: JobRow =
-        select_job(task.job_id, &connection).expect("selecting job from database");
-
-    let mut job = Job::from((
-        job_row.id,
-        job_row.info.clone(),
-        job_row.options.clone(),
-        job_row.created,
-    ));
-
-    let buf: Vec<u8> =
-        job.translate_for_printer(&task.uid[..], task.user_id, job_row.pdf);
 
     let mut snmp_session = SnmpSession::new(state.printer_interface.clone());
 
@@ -71,7 +63,6 @@ pub fn work(task: WorkerTask, state: WorkerState)
     let mut accounting = Accounting::new(
         task.user_id,
         counter_base.clone(),
-        job.options.color,
         state.mysql_pool,
         state.redis_pool,
     );
@@ -83,15 +74,9 @@ pub fn work(task: WorkerTask, state: WorkerState)
 
     debug!("counter_base: {:?}", counter_base);
 
-    let mut lpr_connection = LprConnection::new(
-        &state.printer_interface.ip,
-        20000, // socket timeout in ms
-    );
+/*
 
-    lpr_connection.print(&buf).expect("printing job with lpr");
-
-    let print_count = job.pages_to_print();
-
+*/
     // check energy status before initial waiting
     // 1 == ready
     let energy_stat =
@@ -107,9 +92,47 @@ pub fn work(task: WorkerTask, state: WorkerState)
         },
     }));
     let mut loop_count = 0;
+    let mut print_count = 0;
+    let mut hungup = false;
     let mut last_value = counter_base.total;
+    let mut print_jobs: Vec<Job> = Vec::new();
 
     let completed = loop {
+        if let Some(command) = client.receive_command().expect("receiving command") {
+            debug!("{:?}", command);
+            match command {
+                WorkerCommand::Cancel => {
+                    break false;
+                },
+                WorkerCommand::Hungup => {
+                    hungup = true;
+                },
+                WorkerCommand::Print(job_id) => {
+                    let job_row: JobRow =
+                        select_job(job_id, &connection).expect("selecting job from database");
+
+                    let mut job = Job::from((
+                        job_row.id,
+                        job_row.info.clone(),
+                        job_row.options.clone(),
+                        job_row.created,
+                    ));
+
+                    let buf: Vec<u8> =
+                        job.translate_for_printer(&task.uid[..], task.user_id, job_row.pdf);
+
+                    let mut lpr_connection = LprConnection::new(
+                        &state.printer_interface.ip,
+                        20000, // socket timeout in ms
+                    );
+
+                    lpr_connection.print(&buf).expect("printing job with lpr");
+
+                    print_count += job.pages_to_print();
+                    print_jobs.push(job);
+                },
+            }
+        }
         thread::sleep(time::Duration::from_millis(20));
         let current = snmp_session.get_counter().expect("getting counter values");
 
@@ -121,11 +144,16 @@ pub fn work(task: WorkerTask, state: WorkerState)
             accounting.set_value(current.clone() - counter_base.clone());
         } else {
             loop_count += 1;
+            if loop_count % 200 == 0 {
+                debug!("loop_count: {:?}", loop_count);
+            }
         }
 
-        if (current.total - counter_base.total) == i64::from(print_count) {
-            debug!("current: {:?}", current);
-            break true;
+        if hungup && !print_jobs.is_empty() {
+            if (current.total - counter_base.total) == i64::from(print_count) {
+                debug!("current: {:?}", current);
+                break true;
+            }
         }
 
         if accounting.not_enough_credit() {
@@ -134,9 +162,8 @@ pub fn work(task: WorkerTask, state: WorkerState)
             break false;
         }
 
-        if loop_count > 800 {
-            debug!("current: {:?}", current);
-            warn!("{} {} timeout", hex_uid, task.user_id);
+        if hungup && loop_count > 500 && !print_jobs.is_empty() {
+            warn!("{} {} jobs timeout", hex_uid, task.user_id);
             break false;
         }
     };
@@ -152,11 +179,15 @@ pub fn work(task: WorkerTask, state: WorkerState)
     accounting.set_value(current.clone() - counter_base.clone());
     accounting.finish();
 
-    debug!("{} keep: {} - completed: {}", hex_uid, job.options.keep, completed);
+    debug!("{} completed: {}, print_jobs: {:?}", hex_uid, completed, print_jobs);
 
-    if !job.options.keep && completed {
-        delete_job_by_id(job.id, task.user_id, &connection)
-            .expect("deleting job from table");
+    if completed {
+        for job in print_jobs {
+            if !job.options.keep {
+                delete_job_by_id(job.id, &connection)
+                    .expect("deleting job from table");
+            }
+        }
     }
 
     info!("{} finished", hex_uid);

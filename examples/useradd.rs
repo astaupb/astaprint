@@ -18,6 +18,7 @@
 extern crate bigdecimal;
 use bigdecimal::BigDecimal;
 
+extern crate astaprint;
 use astaprint::user::add::add_user;
 
 extern crate mysql;
@@ -46,12 +47,12 @@ fn main()
     let connection = create_mysql_pool(&mysql_url, 1).get().unwrap();
 
     add_user(
+        None,
         &arg[1],
         &arg[2],
+        None,
+        None,
         false,
-        BigDecimal::from_str("0.0").unwrap(),
-        "created from example/useradd.rs",
-        create_redis_pool(&redis_url, 1),
         &connection,
     )
     .expect("adding user");

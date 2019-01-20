@@ -30,12 +30,12 @@ use redis::queue::TaskQueueClient;
 #[get("/queue")]
 pub fn get_dispatcher_queue(
     user: UserGuard,
-    queue: State<TaskQueueClient<DispatcherTask>>,
+    queue: State<TaskQueueClient<DispatcherTask, ()>>,
 ) -> Option<Json<Vec<DispatcherTaskResponse>>>
 {
     Some(Json(
         queue
-            .get()
+            .get_processing()
             .iter()
             .filter(|element| element.user_id == user.id)
             .map(|element| (*element).clone())

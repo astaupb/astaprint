@@ -42,9 +42,9 @@ pub fn upload_job<'a>(
     data: Vec<u8>,
     filename: Option<String>,
     password: Option<String>,
-    taskqueue: State<TaskQueueClient<DispatcherTask>>,
+    taskqueue: State<TaskQueueClient<DispatcherTask, ()>>,
     store: State<Store>,
-) -> Result<Result<Accepted<Json<String>>, BadRequest<&'a str>>, io::Error>
+) -> io::Result<Result<Accepted<Json<String>>, BadRequest<&'a str>>>
 {
     if data.len() < 64 {
         return Ok(Err(BadRequest(Some("body too small"))));

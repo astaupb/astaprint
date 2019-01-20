@@ -27,20 +27,37 @@ use user::guard::UserGuard;
 
 use redis::queue::TaskQueueClient;
 
-#[allow(non_camel_case_types)]
-#[derive(Serialize, Deserialize, Debug)]
-pub enum QueueElement
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct WorkerTaskResponse
 {
-    own(WorkerTask),
-    foreign(String),
+    user_id: u32,
+    uid: String, 
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct WorkerQueueResponse
+{
+    incoming: Vec<WorkerTaskResponse>,
+    processing: Vec<WorkerTaskResponse>,
+}
+
+impl<'a> From<&'a WorkerTask> for WorkerTaskResponse
+{
+    fn from(task: &WorkerTask) -> WorkerTaskResponse
+    {
+        WorkerTaskResponse {
+            user_id: task.user_id,
+            uid: hex::encode(&task.uid[..]),
+        }
+    }
 }
 
 #[get("/<device_id>/queue")]
 pub fn get_queue(
-    user: UserGuard,
+    _user: UserGuard,
     device_id: u32,
-    queues: State<HashMap<u32, TaskQueueClient<WorkerTask>>>,
-) -> Option<Json<Vec<QueueElement>>>
+    queues: State<HashMap<u32, TaskQueueClient<WorkerTask, ()>>>,
+) -> Option<Json<WorkerQueueResponse>>
 {
     let queue = match queues.get(&device_id) {
         Some(queue) => queue,
@@ -48,16 +65,13 @@ pub fn get_queue(
     };
 
     Some(Json(
-        queue
-            .get()
-            .iter()
-            .map(|element| {
-                if element.user_id == user.id {
-                    QueueElement::own((*element).clone())
-                } else {
-                    QueueElement::foreign(hex::encode(&element.uid[..]))
-                }
-            })
-            .collect(),
+        WorkerQueueResponse{
+            incoming: queue.get_incoming().iter().map(|task| {
+                WorkerTaskResponse::from(task) 
+            }).collect(),
+            processing: queue.get_processing().iter().map(|task| {
+                WorkerTaskResponse::from(task)
+            }).collect(),
+        }
     ))
 }

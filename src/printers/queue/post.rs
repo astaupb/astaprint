@@ -45,7 +45,7 @@ use mysql::jobs::select::*;
 pub fn print_job(
     user: UserGuard,
     device_id: u32,
-    queues: State<HashMap<u32, TaskQueueClient<WorkerTask>>>,
+    queues: State<HashMap<u32, TaskQueueClient<WorkerTask, ()>>>,
     id: u32,
 ) -> QueryResult<Option<Accepted<Json<String>>>>
 {
@@ -67,10 +67,8 @@ pub fn print_job(
     let hex_uid = hex::encode(&uid[..]);
 
     let task = WorkerTask {
-        job_id: id,
         uid,
         user_id: user.id,
-        options: job_options,
     };
 
     queue.send(&task).expect("sending job to worker queue");

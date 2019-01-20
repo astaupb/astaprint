@@ -56,16 +56,11 @@ impl Accounting
     pub fn new(
         user_id: u32,
         counter: CounterValues,
-        color: bool,
         mysql_pool: Pool<ConnectionManager<MysqlConnection>>,
         redis_pool: Pool<RedisConnectionManager>,
     ) -> Accounting
     {
-        let baseprice_cent = if color {
-            20
-        } else {
-            5
-        };
+        let baseprice_cent = 20;
 
         let mut lock = Lock::new(&format!("{}", user_id), redis_pool.clone());
 
@@ -104,9 +99,7 @@ impl Accounting
     /// returns true if there's enough credit for another page
     pub fn set_value(&mut self, counter: CounterValues)
     {
-        let value_cent = counter.copy_bw * 5
-            + counter.print_bw * 5
-            + (counter.copy_total - counter.copy_bw) * 20
+        let value_cent = counter.print_bw * 5
             + (counter.print_total - counter.print_bw) * 20;
 
         self.counter = counter;

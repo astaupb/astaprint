@@ -68,14 +68,14 @@ fn main()
         mysql_pool,
         redis_store,
     };
-    let taskqueue: TaskQueue<DispatcherTask, DispatcherState> =
+    let taskqueue: TaskQueue<DispatcherTask, DispatcherState, ()> =
         TaskQueue::new("dispatcher", state, redis_pool, thread_pool);
 
     Logger::init().expect("initialising logger");
 
     info!("listening");
 
-    taskqueue.listen(|task, state| {
+    taskqueue.listen(|task, state, client| {
         dispatch(task, state);
     });
 }

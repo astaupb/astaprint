@@ -1,4 +1,4 @@
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct JobOptions
 {
     pub color: bool,

@@ -11,7 +11,7 @@ use self::{
     options::JobOptions,
 };
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Job
 {
     pub id: u32,

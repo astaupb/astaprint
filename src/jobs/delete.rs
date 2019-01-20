@@ -26,7 +26,7 @@ use user::guard::UserGuard;
 #[delete("/<id>")]
 pub fn delete_job(user: UserGuard, id: u32) -> QueryResult<Option<Status>>
 {
-    let deleted = delete_job_by_id(id, user.id, &user.connection)?;
+    let deleted = delete_job_by_id(id, &user.connection)?;
 
     Ok(if deleted == 1 {
         Some(Status::new(205, "Reset Content"))

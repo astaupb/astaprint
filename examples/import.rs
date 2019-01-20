@@ -15,31 +15,22 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-extern crate bigdecimal;
-use bigdecimal::BigDecimal;
-
 extern crate astaprint;
 use astaprint::user::add::add_user;
 
 extern crate mysql;
 use mysql::create_mysql_pool;
 
-extern crate redis;
-use redis::create_redis_pool;
 extern crate diesel;
 
 use std::{
     env,
     fs::File,
     io::Read,
-    str::FromStr,
 };
 
 fn main()
 {
-    let redis_url = env::var("ASTAPRINT_REDIS_URL")
-        .expect("reading ASTAPRINT_REDIS_URL from environment");
-
     let mysql_url = env::var("ASTAPRINT_DATABASE_URL")
         .expect("reading mysql url from environment");
 
@@ -52,7 +43,6 @@ fn main()
     let mut user_list: Vec<&str> = contents.split("\r\n").collect();
 
     let mysql_pool = create_mysql_pool(&mysql_url, 10);
-    let redis_pool = create_redis_pool(&redis_url, 10);
 
     let mut user_count = 0;
     let connection = mysql_pool.get().unwrap();
@@ -65,26 +55,24 @@ fn main()
         user_count += end;
         for user in user_list.drain(..end) {
             let split: Vec<&str> = user.split('\t').collect();
-            if split.len() < 3 {
+            if split.len() < 4 {
                 break;
             }
-            println!("parsing {}", split[0]);
             let id: u32 = split[0].parse().unwrap();
-            let pin: u32 = split[1].parse().unwrap_or(99999);
-            let locked = split[2] == "1";
+            let card: u64 = split[1].parse().unwrap();
+            let pin: u32 = split[2].parse().unwrap_or(99999);
+            let locked = split[3] == "1";
             match add_user(
                 Some(id),
-                split[0],
                 split[1],
+                split[2],
+                Some(card),
                 Some(pin),
                 locked,
-                BigDecimal::from_str("0.0").unwrap(),
-                "imported",
-                redis_pool.clone(),
                 &connection,
             ) {
-                Ok(_) => println!("{} {} imported..", split[0], split[1]),
-                Err(e) => println!("{}: {:?}", split[0], e),
+                Ok(_) => (),//println!("{} {} imported..", split[0], split[1]),
+                Err(e) => println!("{}: {:?}", split[1], e),
             }
         }
         println!("{} imported", user_count);

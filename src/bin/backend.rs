@@ -135,12 +135,12 @@ fn rocket() -> rocket::Rocket
 
     let redis_pool = create_redis_pool(&url, 10);
 
-    let dispatcher_queue: TaskQueueClient<DispatcherTask> =
+    let dispatcher_queue: TaskQueueClient<DispatcherTask, ()> =
         TaskQueueClient::new("dispatcher", redis_pool.clone());
 
     let redis_store = Store::from(redis_pool);
 
-    let mut worker_queues: HashMap<u32, TaskQueueClient<WorkerTask>> =
+    let mut worker_queues: HashMap<u32, TaskQueueClient<WorkerTask, ()>> =
         HashMap::new();
 
     let connection = mysql_pool.get().expect("getting mysql connection from pool");
