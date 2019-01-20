@@ -19,7 +19,7 @@ pub struct UserResponse
 {
     pub id: u32,
     pub name: String,
-    pub credit: f64,
+    pub credit: f32,
     pub options: Option<JobOptions>,
     pub card: Option<u64>,
     pub pin: Option<u32>,
@@ -35,7 +35,7 @@ impl<'a> From<&'a User> for UserResponse
         UserResponse {
             id: user.id,
             name: user.name.clone(),
-            credit: get_credit(user.id).to_f64().unwrap(),
+            credit: get_credit(user.id).to_f32().unwrap(),
             options: user.options.clone().map(|x| {
                 bincode::deserialize(&x[..]).expect("deserializing JobOption")
             }),

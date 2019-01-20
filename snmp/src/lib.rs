@@ -118,9 +118,9 @@ pub mod tests
         let mut snmp = SnmpSession::new(interface); 
         let counter = snmp.get_counter();
         println!("{:?}", counter);
-        /*
         let status = snmp.get_status();
         println!("{:?}", status);
+        /*
         let info = snmp.get_info();
         println!("{:?}", info);
         */
@@ -135,7 +135,7 @@ pub mod tests
             let interface = PrinterInterface::from_device_id(id, &pool.get().unwrap());
             print!("{}: ", interface.ip);
             let mut snmp = SnmpSession::new(interface);
-            println!("{:?}", snmp.get_counter());
+            println!("{:?}", snmp.get_status());
         }
     }
 }

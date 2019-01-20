@@ -11,6 +11,18 @@ pub fn select_printers(
     printers::table.select(printers::all_columns).load(connection)
 }
 
+pub fn select_printer_by_device_id(
+    device_id: u32,
+    connection: &MysqlConnection
+) -> QueryResult<Printer>
+{
+    printers::table
+        .select(printers::all_columns)
+        .filter(printers::device_id.eq(device_id))
+        .first(connection)
+}
+
+
 pub fn select_printer_counter(
     connection: &MysqlConnection,
 ) -> QueryResult<Vec<PrinterCounter>>

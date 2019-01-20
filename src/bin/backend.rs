@@ -86,10 +86,13 @@ use astaprint::{
         credit::*,
         get::*,
     },
-    printers::queue::{
-        delete::*,
+    printers::{
+        queue::{
+            delete::*,
+            get::*,
+            post::*,
+        },
         get::*,
-        post::*,
     },
     user::{
         get::*,
@@ -180,7 +183,8 @@ fn rocket() -> rocket::Rocket
         .manage(dispatcher_queue)
         .manage(worker_queues)
         .mount("/", routes![api_reference])
-        .mount("/", routes![get_user, get_user_journal, get_all_users, change_user_locked, post_admin_token])
+        .mount("/", routes![get_user, get_user_journal, get_all_users, change_user_locked,])
+        .mount("/", routes![get_printers, get_single_printer, post_admin_token])
         .mount(
             "/jobs/",
             routes![
