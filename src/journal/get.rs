@@ -21,11 +21,11 @@ use user::guard::UserGuard;
 
 use model::journal::Transaction;
 
-use legacy::tds::get_journal;
+use legacy::tds::get_journal_of_user;
 
 
 #[get("/")]
 pub fn journal(user: UserGuard) -> Json<Vec<Transaction>>
 {
-    Json(get_journal(user.id))
+    Json(get_journal_of_user(user.id))
 }

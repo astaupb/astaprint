@@ -120,7 +120,7 @@ impl Accounting
 
             let _lock = JournalLock::from(self.redis_pool.clone());
 
-            insert_transaction(self.user_id, self.value, "Print Job", false);
+            insert_transaction(self.user_id, self.value, "Print Job", false, None);
 
             info!("inserted new credit for {}: {}", &self.user_id, &credit);
         } else {

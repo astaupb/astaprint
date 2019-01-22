@@ -10,7 +10,7 @@ use mysql::user::{
 };
 use bigdecimal::ToPrimitive;
 use legacy::tds::{
-    get_credit, get_journal,
+    get_credit, get_journal, get_journal_of_user,
 };
 use rocket_contrib::json::Json;
 
@@ -71,8 +71,18 @@ pub fn get_user(id: u32, admin: AdminGuard) -> QueryResult<Json<UserResponse>>
     )))
 }
 
+#[get("/journal?<desc>&<offset>&<limit>")]
+pub fn get_journal_route(desc: Option<bool>, offset: Option<i32>, limit: Option<i32>, _admin: AdminGuard) -> Json<Vec<Transaction>>
+{
+    Json(get_journal(
+        if desc.unwrap_or(true) {1} else {0},
+        offset.unwrap_or(0),
+        limit.unwrap_or(50),
+    ))
+}
+
 #[get("/users/<id>/journal")]
 pub fn get_user_journal(id: u32, _admin: AdminGuard) -> Json<Vec<Transaction>>
 {
-    Json(get_journal(id))
+    Json(get_journal_of_user(id))
 }

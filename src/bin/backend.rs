@@ -183,7 +183,7 @@ fn rocket() -> rocket::Rocket
         .manage(dispatcher_queue)
         .manage(worker_queues)
         .mount("/", routes![api_reference])
-        .mount("/", routes![get_user, get_user_journal, get_all_users, change_user_locked,])
+        .mount("/", routes![get_user, get_user_journal, get_journal_route, get_all_users, change_user_locked,])
         .mount("/", routes![get_printers, get_single_printer, post_admin_token])
         .mount(
             "/jobs/",
