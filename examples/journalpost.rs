@@ -35,16 +35,17 @@ use std::{
 fn main()
 {
     let arg: Vec<_> = env::args().collect();
-    if arg.len() != 5 {
-        panic!("pass user_id, value, description, without_money");
+    if arg.len() != 6 {
+        panic!("pass user_id, value, description, without_money admin_id");
     }
     let value = BigDecimal::from_str(&arg[2]).unwrap();
     let user_id: u32 = arg[1].parse().unwrap();
+    let admin_id: u32 = arg[5].parse().unwrap();
     let redis_pool =
         create_redis_pool(&env::var("ASTAPRINT_REDIS_URL").unwrap(), 3);
 
     let url = env::var("ASTAPRINT_DATABASE_URL").unwrap();
     let mysql_pool = create_mysql_pool(&url, 3);
 
-    insert_transaction(user_id, value, &arg[3], &arg[4] != "0");
+    insert_transaction(user_id, value, &arg[3], &arg[4] != "0", Some(admin_id));
 }

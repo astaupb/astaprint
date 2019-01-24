@@ -86,10 +86,10 @@ impl<'a, 'r> FromRequest<'a, 'r> for AdminGuard
         };
 
         // select password hash of user which is used as salt
-        let result: QueryResult<Vec<u8>> =
+        let result: QueryResult<Option<Vec<u8>>> =
             select_admin_hash_by_id(admin_id, &connection);
 
-        if let Ok(salt) = result {
+        if let Ok(Some(salt)) = result {
             let hash = GenericHash::with_salt(&token[..], &salt[..]);
 
             match select_admin_token_id_by_hash(admin_id, hash, &connection) {
@@ -106,7 +106,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for AdminGuard
                 },
             }
         } else {
-            info!("could not find user {}", admin_id);
+            info!("could not find hash for user {}", admin_id);
             Outcome::Failure((Status::Unauthorized, ()))
         }
     }

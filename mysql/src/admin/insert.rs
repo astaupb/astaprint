@@ -6,7 +6,7 @@ use diesel::{
 
 use crate::schema::*;
 
-pub fn insert_admin(admin: (String, String, String, Vec<u8>, Vec<u8>, bool, bool, NaiveDate), connection: &MysqlConnection)
+pub fn insert_admin(admin: (String, String, Option<String>, Option<Vec<u8>>, Option<Vec<u8>>, bool, bool, NaiveDate), connection: &MysqlConnection)
     -> QueryResult<usize>
 {
     insert_into(admin::table)

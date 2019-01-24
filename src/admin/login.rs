@@ -118,7 +118,12 @@ impl<'a, 'r> FromRequest<'a, 'r> for AdminLoginGuard
             return Outcome::Failure((Status::Unauthorized, ()));
         }
 
-        if PasswordHash::with_salt(credentials[1], &admin.salt[..]) != admin.hash {
+        let (hash, salt) = match (admin.hash, admin.salt) {
+            (Some(hash), Some(salt)) => (hash, salt),
+            _ => return Outcome::Failure((Status::Unauthorized, ())),
+        };
+
+        if PasswordHash::with_salt(credentials[1], &salt[..]) != hash {
             return Outcome::Failure((Status::Unauthorized, ()));
         }
 
@@ -127,7 +132,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for AdminLoginGuard
 
         // using the password hash as salt for performace reasons
         // and so every token gets invalidated on password change
-        let hash = GenericHash::with_salt(&token[..], &admin.hash[..]);
+        let hash = GenericHash::with_salt(&token[..], &hash[..]);
 
         let x_api_key = match merge_x_api_key(admin.id, token) {
             Ok(key) => key,
