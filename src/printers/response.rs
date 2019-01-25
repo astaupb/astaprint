@@ -1,6 +1,7 @@
 use diesel::prelude::*;
 use snmp::{
     PrinterInterface, session::SnmpSession,
+    status::StatusValues,
 };
 use mysql::printers::Printer;
 #[derive(Serialize, Debug, Clone)]
@@ -16,6 +17,8 @@ pub struct PrinterResponse
     pub has_a3: bool,
     pub coin_operated: bool,
     pub description: String,
+    pub scan: i64,
+    pub copy: i64,
     pub toner: i64,
     pub tray_1: i64,
     pub tray_2: i64,
@@ -29,7 +32,16 @@ impl<'a> From<(&'a Printer, &'a MysqlConnection)> for PrinterResponse
     {
         let status = SnmpSession::new(
             PrinterInterface::from_device_id(printer.device_id, connection)
-        ).get_status().expect("getting printer status");
+        ).get_status()
+            .unwrap_or(StatusValues {
+                scan: -1,
+                copy: -1,
+                toner: -1,
+                tray_1: -1,
+                tray_2: -1,
+                tray_3: -1,
+                tray_4: -1,
+            });
 
         PrinterResponse {
             id: printer.id,
@@ -42,6 +54,8 @@ impl<'a> From<(&'a Printer, &'a MysqlConnection)> for PrinterResponse
             has_a3: printer.has_a3,
             coin_operated: printer.coin_operated,
             description: printer.description.clone(),
+            scan: status.scan,
+            copy: status.copy,
             toner: status.toner,
             tray_1: status.tray_1,
             tray_2: status.tray_2,
