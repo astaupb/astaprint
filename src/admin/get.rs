@@ -11,6 +11,9 @@ use mysql::user::{
 use legacy::tds::{
     get_credit, get_journal, get_journal_of_user,
 };
+
+use journal::credit::decimal_to_cent;
+
 use rocket_contrib::json::Json;
 
 #[derive(Serialize, Debug, Clone)]
@@ -89,10 +92,8 @@ pub fn get_user_journal_as_admin(id: u32, desc: Option<bool>, offset: Option<i32
     ))
 }
 
-use bigdecimal::ToPrimitive;
-
 #[get("/users/<id>/credit")]
-pub fn get_user_credit_as_admin(id: u32) -> Json<f32>
+pub fn get_user_credit_as_admin(id: u32) -> Json<i32>
 {
-    Json(get_credit(id).to_f32().unwrap())
+    Json(decimal_to_cent(get_credit(id)))
 }

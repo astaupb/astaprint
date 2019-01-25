@@ -26,12 +26,16 @@ use legacy::tds::get_credit;
 
 use user::guard::UserGuard;
 
+pub fn decimal_to_cent(dec: BigDecimal) -> i32
+{
+    ((dec * BigDecimal::from(100)).to_i32()).unwrap()
+}
 #[get("/credit")]
-pub fn credit(user: UserGuard) -> Json<f64>
+pub fn credit(user: UserGuard) -> Json<i32>
 {
     let credit: BigDecimal = get_credit(user.id);
 
     info!("{} fetched credit {}", user.id, credit);
 
-    Json(credit.to_f64().unwrap())
+    Json(decimal_to_cent(credit))
 }

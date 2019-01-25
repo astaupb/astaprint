@@ -18,8 +18,6 @@ use rocket::response::Redirect;
 /// License along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use rocket_contrib::json::Json;
 
-use bigdecimal::ToPrimitive;
-
 use diesel::QueryResult;
 
 use legacy::tds::get_credit;
@@ -28,13 +26,14 @@ use user::guard::UserGuard;
 
 use mysql::user::select::*;
 
+use journal::credit::decimal_to_cent;
 
 #[derive(Serialize, Debug)]
 pub struct UserInfo
 {
     id: u32,
     name: String,
-    credit: f64,
+    credit: i32,
     tokens: usize,
     token_id: u32,
 }
@@ -47,7 +46,7 @@ pub fn get_user_info(user: UserGuard) -> QueryResult<Json<UserInfo>>
 
     let tokens = tokens.len();
 
-    let credit = get_credit(user.id).to_f64().unwrap();
+    let credit = decimal_to_cent(get_credit(user.id));
 
     let name: String = select_user_name_by_id(user.id, &user.connection)?.unwrap();
 
