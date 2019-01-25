@@ -17,7 +17,7 @@
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use rocket_contrib::json::Json;
 use admin::login::AdminLoginGuard;
-#[post("/admin/tokens")]
+#[post("/tokens")]
 pub fn post_admin_token(guard: AdminLoginGuard) -> Json<String>
 {
     Json(guard.token)

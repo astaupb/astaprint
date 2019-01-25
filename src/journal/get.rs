@@ -18,14 +18,17 @@
 use rocket_contrib::json::Json;
 
 use user::guard::UserGuard;
+use admin::guard::AdminGuard;
 
 use model::journal::Transaction;
 
-use legacy::tds::get_journal_of_user;
+use legacy::tds::{
+    get_journal_of_user, get_journal,
+};
 
 
 #[get("/?<desc>&<offset>&<limit>")]
-pub fn journal_as_user(desc: Option<bool>, offset: Option<i32>, limit: Option<u32>, user: UserGuard) -> Json<Vec<Transaction>>
+pub fn get_journal_as_user(desc: Option<bool>, offset: Option<i32>, limit: Option<u32>, user: UserGuard) -> Json<Vec<Transaction>>
 {
     Json(get_journal_of_user(
         user.id,
@@ -34,3 +37,14 @@ pub fn journal_as_user(desc: Option<bool>, offset: Option<i32>, limit: Option<u3
         limit.unwrap_or(u32::from(u16::max_value()) * 2),
     ))
 }
+
+#[get("/journal?<desc>&<offset>&<limit>")]
+pub fn get_journal_as_admin(desc: Option<bool>, offset: Option<i32>, limit: Option<u32>, _admin: AdminGuard) -> Json<Vec<Transaction>>
+{
+    Json(get_journal(
+        desc.unwrap_or(true),
+        offset.unwrap_or(0),
+        limit.unwrap_or(100),
+    ))
+}
+

@@ -182,7 +182,7 @@ fn rocket() -> rocket::Rocket
         .manage(mmdb_reader)
         .manage(dispatcher_queue)
         .manage(worker_queues)
-        .mount("/", routes![api_reference]) .mount("/", routes![get_user_as_admin, get_user_credit_as_admin, get_user_journal_as_admin, get_journal_as_admin, get_all_users, change_user_locked,])
+        .mount("/", routes![api_reference]) .mount("/", routes![get_user_as_admin, get_user_credit_as_admin, get_user_journal_as_admin, get_all_users, change_user_locked,])
         .mount("/", routes![get_printers, get_single_printer, post_admin_token])
         .mount(
             "/jobs/",
@@ -226,7 +226,8 @@ fn rocket() -> rocket::Rocket
             ],
         )
         .mount("/printers", routes![print_job, get_queue, delete_queue])
-        .mount("/journal", routes![journal_as_user, credit])
+        .mount("/journal", routes![get_journal_as_user, credit])
+        .mount("/admin", routes![post_admin_token, get_journal_as_admin])
         .attach(cors())
 }
 fn main()

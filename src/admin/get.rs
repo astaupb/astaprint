@@ -9,7 +9,7 @@ use mysql::user::{
     User,
 };
 use legacy::tds::{
-    get_credit, get_journal, get_journal_of_user,
+    get_credit, get_journal_of_user,
 };
 
 use journal::credit::decimal_to_cent;
@@ -69,16 +69,6 @@ pub fn get_user_as_admin(id: u32, admin: AdminGuard) -> QueryResult<Json<UserRes
     Ok(Json(UserResponse::from(
         &select_user_by_id(id, &admin.connection)?
     )))
-}
-
-#[get("/journal?<desc>&<offset>&<limit>", rank = 2)]
-pub fn get_journal_as_admin(desc: Option<bool>, offset: Option<i32>, limit: Option<u32>, _admin: AdminGuard) -> Json<Vec<Transaction>>
-{
-    Json(get_journal(
-        desc.unwrap_or(true),
-        offset.unwrap_or(0),
-        limit.unwrap_or(u32::max_value()),
-    ))
 }
 
 #[get("/users/<id>/journal?<desc>&<offset>&<limit>")]
