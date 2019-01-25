@@ -71,7 +71,7 @@ pub fn get_user_as_admin(id: u32, admin: AdminGuard) -> QueryResult<Json<UserRes
     )))
 }
 
-#[get("/journal?<desc>&<offset>&<limit>")]
+#[get("/journal?<desc>&<offset>&<limit>", rank = 2)]
 pub fn get_journal_as_admin(desc: Option<bool>, offset: Option<i32>, limit: Option<u32>, _admin: AdminGuard) -> Json<Vec<Transaction>>
 {
     Json(get_journal(
