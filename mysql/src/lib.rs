@@ -79,19 +79,7 @@ mod tests
         println!("{:x?}", admin_tokens);
     }
     #[test]
-    fn select_everything_test()
-    {
-        let url = format!(
-            "{}_test",
-            env::var("ASTAPRINT_DATABASE_URL").expect("getting url from env")
-        );
-        let pool = create_mysql_pool(&url, 3);
-        let connection = &pool.get().unwrap();
-        select_everything(connection);
-    }
-
-    #[test]
-    fn select_everything_production()
+    fn test_select_everything()
     {
         let url = env::var("ASTAPRINT_DATABASE_URL").expect("getting url from env");
         let pool = create_mysql_pool(&url, 3);

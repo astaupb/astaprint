@@ -24,8 +24,13 @@ use model::journal::Transaction;
 use legacy::tds::get_journal_of_user;
 
 
-#[get("/")]
-pub fn journal(user: UserGuard) -> Json<Vec<Transaction>>
+#[get("/journal?<desc>&<offset>&<limit>")]
+pub fn journal_as_user(desc: Option<bool>, offset: Option<i32>, limit: Option<u32>, user: UserGuard) -> Json<Vec<Transaction>>
 {
-    Json(get_journal_of_user(user.id))
+    Json(get_journal_of_user(
+        user.id,
+        desc.unwrap_or(true),
+        offset.unwrap_or(0),
+        limit.unwrap_or(u32::max_value()),
+    ))
 }

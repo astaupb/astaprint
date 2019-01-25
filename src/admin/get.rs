@@ -8,7 +8,6 @@ use mysql::user::{
     select::{select_user_with_limit_offset, select_user_by_id},
     User,
 };
-use bigdecimal::ToPrimitive;
 use legacy::tds::{
     get_credit, get_journal, get_journal_of_user,
 };
@@ -19,7 +18,6 @@ pub struct UserResponse
 {
     pub id: u32,
     pub name: String,
-    pub credit: f32,
     pub options: Option<JobOptions>,
     pub card: Option<u64>,
     pub pin: Option<u32>,
@@ -35,7 +33,6 @@ impl<'a> From<&'a User> for UserResponse
         UserResponse {
             id: user.id,
             name: user.name.clone(),
-            credit: get_credit(user.id).to_f32().unwrap(),
             options: user.options.clone().map(|x| {
                 bincode::deserialize(&x[..]).expect("deserializing JobOption")
             }),
@@ -64,7 +61,7 @@ pub fn get_all_users(limit: Option<i64>, offset: Option<i64>, admin: AdminGuard)
 }
 
 #[get("/users/<id>")]
-pub fn get_user(id: u32, admin: AdminGuard) -> QueryResult<Json<UserResponse>>
+pub fn get_user_as_admin(id: u32, admin: AdminGuard) -> QueryResult<Json<UserResponse>>
 {
     Ok(Json(UserResponse::from(
         &select_user_by_id(id, &admin.connection)?
@@ -72,17 +69,30 @@ pub fn get_user(id: u32, admin: AdminGuard) -> QueryResult<Json<UserResponse>>
 }
 
 #[get("/journal?<desc>&<offset>&<limit>")]
-pub fn get_journal_route(desc: Option<bool>, offset: Option<i32>, limit: Option<i32>, _admin: AdminGuard) -> Json<Vec<Transaction>>
+pub fn get_journal_as_admin(desc: Option<bool>, offset: Option<i32>, limit: Option<u32>, _admin: AdminGuard) -> Json<Vec<Transaction>>
 {
     Json(get_journal(
-        if desc.unwrap_or(true) {1} else {0},
+        desc.unwrap_or(true),
         offset.unwrap_or(0),
-        limit.unwrap_or(50),
+        limit.unwrap_or(u32::max_value()),
     ))
 }
 
-#[get("/users/<id>/journal")]
-pub fn get_user_journal(id: u32, _admin: AdminGuard) -> Json<Vec<Transaction>>
+#[get("/users/<id>/journal?<desc>&<offset>&<limit>")]
+pub fn get_user_journal_as_admin(id: u32, desc: Option<bool>, offset: Option<i32>, limit: Option<u32>, _admin: AdminGuard) -> Json<Vec<Transaction>>
 {
-    Json(get_journal_of_user(id))
+    Json(get_journal_of_user(
+        id,
+        desc.unwrap_or(true),
+        offset.unwrap_or(0),
+        limit.unwrap_or(u32::max_value()),
+    ))
+}
+
+use bigdecimal::ToPrimitive;
+
+#[get("/users/<id>/credit")]
+pub fn get_user_credit_as_admin(id: u32) -> Json<f32>
+{
+    Json(get_credit(id).to_f32().unwrap())
 }

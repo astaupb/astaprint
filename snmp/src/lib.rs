@@ -128,7 +128,8 @@ pub mod tests
     #[test]
     pub fn all_printers()
     {
-        let url = format!("{}_test", env::var("ASTAPRINT_DATABASE_URL").unwrap());
+        let url = env::var("ASTAPRINT_DATABASE_URL")
+            .expect("reading ASTAPRINT_DATABASE_URL from env");
         let pool = create_mysql_pool(&url, 2);
         let id_s = select_device_ids(&pool.get().unwrap()).unwrap();
         for id in id_s {

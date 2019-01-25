@@ -20,7 +20,7 @@ CREATE TABLE `admin`(
   `id` INT UNSIGNED UNIQUE PRIMARY KEY AUTO_INCREMENT,
   `first_name` VARCHAR(64) NOT NULL,
   `last_name` VARCHAR(64) NOT NULL,
-  `login` VARCHAR(64) NOT NULL UNIQUE,
+  `login` VARCHAR(64) UNIQUE,
   `hash` BINARY(64),
   `salt` BINARY(16),
   `service` BOOLEAN NOT NULL,
