@@ -18,6 +18,7 @@ pub struct Admin
     pub salt: Option<Vec<u8>>,
     pub service: bool,
     pub locked: bool,
+    pub owner: bool,
     pub expires: NaiveDate,
     pub created: NaiveDateTime,
     pub updated: NaiveDateTime,

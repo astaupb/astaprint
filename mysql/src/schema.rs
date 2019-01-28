@@ -8,6 +8,7 @@ table! {
         salt -> Nullable<Binary>,
         service -> Bool,
         locked -> Bool,
+        owner -> Bool,
         expires -> Date,
         created -> Timestamp,
         updated -> Timestamp,
