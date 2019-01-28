@@ -58,6 +58,7 @@ fn main()
         salt,
         service: false,
         locked: false,
+        owner: false,
         expires,
     };
 

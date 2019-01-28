@@ -48,7 +48,7 @@ pub struct JournalPost
     user_id: u32,
     value: i32,
     description: String,
-    without_money: bool,
+    without_receipt: bool,
 }
 
 #[post("/", data = "<token>")]
@@ -95,7 +95,7 @@ pub fn post_to_journal_as_admin(body: Json<JournalPost>, admin: AdminGuard, redi
         body.user_id,
         body.value,
         &body.description,
-        body.without_money,
+        body.without_receipt,
         Some(admin.id),
     );
 
