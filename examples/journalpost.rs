@@ -20,7 +20,8 @@ use legacy::tds::insert_transaction;
 
 extern crate redis;
 use redis::{
-    create_redis_pool,
+    Redis,
+    get_redis_pool,
     lock::Lock,
 };
 
@@ -32,15 +33,13 @@ fn main()
 {
     let arg: Vec<_> = env::args().collect();
     if arg.len() != 6 {
-        panic!("pass user_id, value, description, without_money admin_id");
+        panic!("pass user_id, value, description, without_money, admin_id");
     }
     let value: i32 = arg[2].parse().unwrap();
     let user_id: u32 = arg[1].parse().unwrap();
     let admin_id: u32 = arg[5].parse().unwrap();
-    let redis_pool =
-        create_redis_pool(&env::var("ASTAPRINT_REDIS_URL").unwrap(), 3);
 
-    let _lock = Lock::new("journal", redis_pool);
+    let _lock = Lock::new("journal", get_redis_pool(3, Redis::Lock));
 
     insert_transaction(user_id, value, &arg[3], &arg[4] != "0", Some(admin_id));
 }

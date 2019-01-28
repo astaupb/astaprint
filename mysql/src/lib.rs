@@ -29,13 +29,14 @@ pub fn create_mysql_pool(
         .expect("creating Mysql Connection Pool")
 }
 
-pub fn get_pool(
+pub fn get_mysql_pool(
+    max_size: u32,
 ) -> Pool<ConnectionManager<MysqlConnection>>
 {
     create_mysql_pool(
         &env::var("ASTAPRINT_DATABASE_URL")
             .expect("reading database url from environment"),
-        1,
+        max_size,
     )
 }
 #[cfg(test)]

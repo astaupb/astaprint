@@ -33,7 +33,6 @@ extern crate redis;
 
 use std::{
     collections::HashMap,
-    env,
 };
 
 use rocket::http::Method;
@@ -43,13 +42,14 @@ use rocket_cors::{
 };
 
 use redis::{
-    create_redis_pool,
+    Redis,
+    get_redis_pool,
     queue::TaskQueueClient,
     store::Store,
 };
 
 use mysql::{
-    create_mysql_pool,
+    get_mysql_pool,
     printers::select::select_device_ids,
 };
 
@@ -138,15 +138,9 @@ fn api_reference() -> &'static str
 
 fn rocket() -> rocket::Rocket
 {
-    let mysql_url = env::var("ASTAPRINT_DATABASE_URL")
-        .expect("reading ASTAPRINT_DATABASE_URL from environment");
+    let mysql_pool = get_mysql_pool(20);
 
-    let mysql_pool = create_mysql_pool(&mysql_url, 10);
-
-    let url = env::var("ASTAPRINT_REDIS_URL")
-        .expect("reading ASTAPRINT_REDIS_URL from environment");
-
-    let redis_pool = create_redis_pool(&url, 10);
+    let redis_pool = get_redis_pool(20, Redis::Dispatcher);
 
     let dispatcher_queue: TaskQueueClient<DispatcherTask, ()> =
         TaskQueueClient::new("dispatcher", redis_pool.clone());
@@ -160,7 +154,7 @@ fn rocket() -> rocket::Rocket
 
     let connection = mysql_pool.get().expect("getting mysql connection from pool");
 
-    let redis_pool = create_redis_pool(&url, 20);
+    let redis_pool = get_redis_pool(20, Redis::Worker);
 
     for device_id in select_device_ids(&connection).expect("selecting device ids") {
         let pool = redis_pool.clone();
@@ -174,7 +168,7 @@ fn rocket() -> rocket::Rocket
     )
     .expect("opening maxminddb reader");
 
-    let redis_pool = create_redis_pool(&url, 10);
+    let redis_pool = get_redis_pool(5, Redis::Lock);
 
     rocket::ignite()
         .manage(mysql_pool)

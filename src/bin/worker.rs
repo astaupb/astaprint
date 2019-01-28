@@ -29,7 +29,6 @@ extern crate mysql;
 extern crate snmp;
 
 use std::{
-    env,
     thread,
 };
 
@@ -48,12 +47,13 @@ use r2d2_redis::{
 
 use logger::Logger;
 use redis::{
-    create_redis_pool,
+    Redis,
+    get_redis_pool,
     queue::TaskQueue,
 };
 
 use mysql::{
-    create_mysql_pool,
+    get_mysql_pool,
     printers::select::select_device_ids,
 };
 
@@ -105,20 +105,14 @@ fn main()
 {
     Logger::init().expect("initializing Logger");
 
-    let redis_url = env::var("ASTAPRINT_REDIS_URL")
-        .expect("reading redis url from environment");
-
     let mut handles: Vec<thread::JoinHandle<()>> = Vec::new();
 
-    let mysql_url = env::var("ASTAPRINT_DATABASE_URL")
-        .expect("reading mysql url from environment");
-
-    let mysql_pool = create_mysql_pool(&mysql_url, 10);
+    let mysql_pool = get_mysql_pool(20);
 
     let connection = mysql_pool.get().expect("getting mysql connection from pool");
 
     for id in select_device_ids(&connection).expect("selecting device ids") {
-        let redis_pool = create_redis_pool(&redis_url, 20);
+        let redis_pool = get_redis_pool(20, Redis::Worker);
 
         handles.push(spawn_worker(id, redis_pool, mysql_pool.clone()));
     }

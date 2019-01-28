@@ -26,15 +26,13 @@ extern crate threadpool;
 extern crate mysql;
 extern crate pdf;
 
-
-use std::env;
-
 use logger::Logger;
 
 use threadpool::ThreadPool;
 
 use redis::{
-    create_redis_pool,
+    Redis,
+    get_redis_pool,
     queue::TaskQueue,
     store::Store,
 };
@@ -46,21 +44,15 @@ use model::task::dispatcher::{
 extern crate astaprint;
 use astaprint::jobs::queue::dispatch;
 
-use mysql::create_mysql_pool;
+use mysql::get_mysql_pool;
 
 fn main()
 {
-    let redis_url = env::var("ASTAPRINT_REDIS_URL")
-        .expect("reading redis url from environment");
+    let redis_store = Store::from(get_redis_pool(20, Redis::Store));
 
-    let redis_pool = create_redis_pool(&redis_url, 10);
+    let redis_pool = get_redis_pool(20, Redis::Dispatcher);
 
-    let redis_store = Store::from(redis_pool.clone());
-
-    let mysql_url = env::var("ASTAPRINT_DATABASE_URL")
-        .expect("reading mysql url from environment");
-
-    let mysql_pool = create_mysql_pool(&mysql_url, 10);
+    let mysql_pool = get_mysql_pool(20);
 
     let thread_pool = ThreadPool::new(20);
 
@@ -69,6 +61,7 @@ fn main()
         redis_store,
         thread_pool,
     };
+
     let taskqueue: TaskQueue<DispatcherTask, DispatcherState, ()> =
         TaskQueue::new("dispatcher", state, redis_pool);
 
