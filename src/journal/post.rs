@@ -15,89 +15,45 @@
 ///
 /// You should have received a copy of the GNU Affero General Public
 /// License along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use diesel::result::QueryResult;
-use r2d2_redis::{
-    r2d2::Pool,
-    RedisConnectionManager,
-};
-
 use rocket::{
     http::Status,
-    response::{
-        NoContent,
-        Responder,
-        Response,
-    },
-    Request,
-    State,
 };
 use rocket_contrib::json::Json;
 
 use user::guard::UserGuard;
 
-use journal::insert;
+use admin::guard::AdminGuard;
 
-use mysql::journal::{
-    select::*,
-    update::*,
-    JournalToken,
-};
+use legacy::tds::insert_transaction;
 
-#[derive(Debug)]
-pub enum ErrorKind
+
+/*
+pub fn insert_transaction(
+    user_id: u32,
+    value: BigDecimal,
+    description: &str,
+    without_money: bool,
+    admin_id: Option<u32>,
+)
+*/
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct JournalPost
 {
-    TokenAlreadyConsumed,
-    Unauthorized,
-}
-use self::ErrorKind::*;
-
-#[derive(Debug)]
-pub struct JournalPostError(ErrorKind);
-impl<'r> Responder<'r> for JournalPostError
-{
-    fn respond_to(self, _: &Request) -> Result<Response<'r>, Status>
-    {
-        Response::build()
-            .status(match self.0 {
-                TokenAlreadyConsumed => {
-                    Status::new(472, "token already consumend")
-                },
-                Unauthorized => Status::Unauthorized,
-            })
-            .ok()
-    }
+    user_id: u32,
+    value: i32,
+    description: String,
+    without_money: bool,
 }
 
-#[post("/", data = "<token>")]
-fn post_to_journal(
-    user: UserGuard,
-    token: Json<String>,
-    redis: State<Pool<RedisConnectionManager>>,
-) -> QueryResult<Result<NoContent, JournalPostError>>
-{
-    let token: Option<JournalToken> =
-        select_journal_token_by_value(token.into_inner(), &user.connection)
-            .expect("selecting journal token");
-
-    match token {
-        None => return Ok(Err(JournalPostError(Unauthorized))),
-        Some(token) => {
-            if token.used {
-                return Ok(Err(JournalPostError(TokenAlreadyConsumed)));
-            }
-
-            update_journal_token(token.id, true, user.id, &user.connection)?;
-
-            insert(
-                user.id,
-                token.value,
-                &format!("created with token {}", token.content),
-                redis.inner().clone(),
-                &user.connection,
-            )?;
-
-
-            Ok(Ok(NoContent))
-        },
-    }
+#[post("/journal", data = "<body>")]
+pub fn post_to_journal_as_admin(body: Json<JournalPost>, admin: AdminGuard) -> Status {
+    insert_transaction(
+        body.user_id,
+        body.value,
+        &body.description,
+        body.without_money,
+        Some(admin.id),
+    );
+    Status::new(204, "Success - No Content")
 }
