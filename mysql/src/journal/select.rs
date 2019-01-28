@@ -83,11 +83,11 @@ pub fn select_credit_by_id(
         .first(connection)
 }
 
-pub fn select_journal_token_by_value(value: String, connection: &MysqlConnection) -> QueryResult<Option<JournalToken>>
+pub fn select_journal_token_by_content(content: String, connection: &MysqlConnection) -> QueryResult<Option<JournalToken>>
 {
     journal_tokens::table
         .select(journal_tokens::all_columns)
-        .filter(journal_tokens::content.eq(value))
+        .filter(journal_tokens::content.eq(content))
         .first(connection)
         .optional()
 }

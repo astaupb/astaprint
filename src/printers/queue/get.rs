@@ -24,6 +24,7 @@ use rocket::State;
 use rocket_contrib::json::Json;
 
 use user::guard::UserGuard;
+use admin::guard::AdminGuard;
 
 use redis::queue::TaskQueueClient;
 
@@ -77,3 +78,31 @@ pub fn get_queue(
             .collect(),
     }))
 }
+
+#[get("/printers/<device_id>/queue")]
+pub fn get_queue_as_admin(
+    _admin: AdminGuard,
+    device_id: u32,
+    queues: State<HashMap<u32, TaskQueueClient<WorkerTask, ()>>>,
+) -> Option<Json<WorkerQueueResponse>>
+{
+    let queue = match queues.get(&device_id) {
+        Some(queue) => queue,
+        None => return None,
+    };
+
+    Some(Json(WorkerQueueResponse {
+        incoming: queue
+            .get_incoming()
+            .iter()
+            .map(|task| WorkerTaskResponse::from(task))
+            .collect(),
+        processing: queue
+            .get_processing()
+            .iter()
+            .map(|task| WorkerTaskResponse::from(task))
+            .collect(),
+    }))
+}
+
+
