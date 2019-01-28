@@ -15,21 +15,17 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-extern crate bigdecimal;
-use bigdecimal::BigDecimal;
-
 extern crate legacy;
 use legacy::tds::insert_transaction;
 
-extern crate mysql;
-use mysql::create_mysql_pool;
-
 extern crate redis;
-use redis::create_redis_pool;
+use redis::{
+    create_redis_pool,
+    lock::Lock,
+};
 
 use std::{
     env,
-    str::FromStr,
 };
 
 fn main()
@@ -38,14 +34,13 @@ fn main()
     if arg.len() != 6 {
         panic!("pass user_id, value, description, without_money admin_id");
     }
-    let value = BigDecimal::from_str(&arg[2]).unwrap();
+    let value: i32 = arg[2].parse().unwrap();
     let user_id: u32 = arg[1].parse().unwrap();
     let admin_id: u32 = arg[5].parse().unwrap();
     let redis_pool =
         create_redis_pool(&env::var("ASTAPRINT_REDIS_URL").unwrap(), 3);
 
-    let url = env::var("ASTAPRINT_DATABASE_URL").unwrap();
-    let mysql_pool = create_mysql_pool(&url, 3);
+    let _lock = Lock::new("journal", redis_pool);
 
     insert_transaction(user_id, value, &arg[3], &arg[4] != "0", Some(admin_id));
 }

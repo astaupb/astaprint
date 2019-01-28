@@ -15,21 +15,14 @@
 ///
 /// You should have received a copy of the GNU Affero General Public License
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
-extern crate bigdecimal;
-use bigdecimal::BigDecimal;
-
 extern crate astaprint;
 use astaprint::user::add::add_user;
 
 extern crate mysql;
 use mysql::create_mysql_pool;
 
-extern crate redis;
-use redis::create_redis_pool;
-
 use std::{
     env,
-    str::FromStr,
 };
 
 fn main()
@@ -38,9 +31,6 @@ fn main()
     if arg.len() != 3 {
         panic!("expecting username password");
     }
-    let redis_url = env::var("ASTAPRINT_REDIS_URL")
-        .expect("reading ASTAPRINT_REDIS_URL from environment");
-
     let mysql_url = env::var("ASTAPRINT_DATABASE_URL")
         .expect("reading ASTAPRINT_DATABASE_URL from environment");
 
