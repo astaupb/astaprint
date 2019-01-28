@@ -16,14 +16,32 @@
 /// You should have received a copy of the GNU Affero General Public
 /// License along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use rocket_contrib::json::Json;
+use rocket::{
+    http::Status,
+    State,
+};
+
 use user::{
     guard::UserGuard,
     login::LoginGuard,
 };
 
-use diesel::QueryResult;
+use diesel::{
+    prelude::*,
+    r2d2::{
+        Pool, ConnectionManager,
+    },
+    result::{
+        Error::DatabaseError,
+        DatabaseErrorKind::UniqueViolation,
+    },
+};
 
-use mysql::user::delete::*;
+use sodium::pwhash::PasswordHash;
+
+use mysql::user::{
+    delete::*, insert::*,
+};
 
 #[post("/tokens")]
 pub fn login(login: LoginGuard) -> Json<String>
@@ -39,4 +57,48 @@ pub fn logout(user: UserGuard) -> QueryResult<String>
     info!("{} logged out", user.id);
 
     Ok("logged out".into())
+}
+
+#[derive(Deserialize, Debug)]
+pub struct RegisterUser
+{
+    username: String,
+    password: String,
+}
+
+#[post("/", data = "<user>")]
+pub fn register_new_user(
+    user: Json<RegisterUser>,
+    mysql_pool: State<Pool<ConnectionManager<MysqlConnection>>>,
+) -> QueryResult<Status>
+{
+    let connection =
+        mysql_pool.get().expect("getting mysql connection from pool");
+
+    if user.username.chars().any(|c| !c.is_alphanumeric())
+        || user.username.bytes().count() > 32
+    {
+        return Ok(Status::new(471, "Invalid Username"));
+    }
+
+    let (hash, salt) = PasswordHash::create(&user.password);
+
+    match insert_into_user(&user.username, hash, salt, None, None, false, &connection) {
+        Err(err) => {
+            if let DatabaseError(UniqueViolation, _) = err {
+                info!(
+                    "sometried to register with already taken username {}",
+                    &user.username
+                );
+                return Ok(Status::new(470, "Username Taken"));
+            } else {
+                return Err(err);
+            }
+        },
+        Ok(_) => {
+            info!("{} registered", &user.username);
+
+            Ok(Status::new(204, "Success - No Content"))
+        },
+    }
 }
