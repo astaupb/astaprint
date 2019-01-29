@@ -20,14 +20,12 @@ use legacy::tds::insert_transaction;
 
 extern crate redis;
 use redis::{
-    Redis,
     get_redis_pool,
     lock::Lock,
+    Redis,
 };
 
-use std::{
-    env,
-};
+use std::env;
 
 fn main()
 {

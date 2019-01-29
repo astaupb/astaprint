@@ -1,3 +1,7 @@
+use bigdecimal::{
+    BigDecimal,
+    ToPrimitive,
+};
 /// AStAPrint
 /// Copyright (C) 2018  AStA der Universität Paderborn
 ///
@@ -20,26 +24,25 @@ use rocket::{
     State,
 };
 use rocket_contrib::json::Json;
-use bigdecimal::{BigDecimal, ToPrimitive};
 
 use diesel::prelude::*;
 
 use r2d2_redis::{
-    RedisConnectionManager,
     r2d2::Pool,
+    RedisConnectionManager,
 };
 
-use user::guard::UserGuard;
 use admin::guard::AdminGuard;
+use user::guard::UserGuard;
 
 use legacy::tds::insert_transaction;
 
 use journal::lock::JournalLock;
 
 use mysql::journal::{
-    JournalToken,
     select::select_journal_token_by_content,
     update::update_journal_token,
+    JournalToken,
 };
 
 #[derive(Deserialize, Debug, Clone)]
@@ -88,7 +91,12 @@ fn post_to_journal_with_token(
 }
 
 #[post("/journal", data = "<body>")]
-pub fn post_to_journal_as_admin(body: Json<JournalPost>, admin: AdminGuard, redis: State<Pool<RedisConnectionManager>>) -> Status {
+pub fn post_to_journal_as_admin(
+    body: Json<JournalPost>,
+    admin: AdminGuard,
+    redis: State<Pool<RedisConnectionManager>>,
+) -> Status
+{
     let _lock = JournalLock::from(redis.clone());
 
     insert_transaction(

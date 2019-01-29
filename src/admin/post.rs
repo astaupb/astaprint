@@ -1,11 +1,13 @@
-use rocket::http::Status;
-use rocket_contrib::json::Json;
-use admin::guard::AdminGuard;
-use mysql::admin::select::select_admin_by_login;
-use sodium::PasswordHash;
+use admin::{
+    guard::AdminGuard,
+    Admin,
+};
 use chrono::NaiveDate;
 use diesel::prelude::*;
-use admin::Admin;
+use mysql::admin::select::select_admin_by_login;
+use rocket::http::Status;
+use rocket_contrib::json::Json;
+use sodium::PasswordHash;
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct NewAdmin
@@ -18,7 +20,8 @@ pub struct NewAdmin
 }
 
 #[post("/", data = "<new>")]
-pub fn post_new_admin(admin: AdminGuard, new: Json<NewAdmin>) -> QueryResult<Status>
+pub fn post_new_admin(admin: AdminGuard, new: Json<NewAdmin>)
+    -> QueryResult<Status>
 {
     if select_admin_by_login(&new.login, &admin.connection).is_ok() {
         return Ok(Status::new(472, "login already taken"));

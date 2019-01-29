@@ -31,10 +31,10 @@ use logger::Logger;
 use threadpool::ThreadPool;
 
 use redis::{
-    Redis,
     get_redis_pool,
     queue::TaskQueue,
     store::Store,
+    Redis,
 };
 
 use model::task::dispatcher::{

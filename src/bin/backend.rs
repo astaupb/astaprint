@@ -31,9 +31,7 @@ extern crate astaprint;
 extern crate mysql;
 extern crate redis;
 
-use std::{
-    collections::HashMap,
-};
+use std::collections::HashMap;
 
 use rocket::http::Method;
 use rocket_cors::{
@@ -42,10 +40,10 @@ use rocket_cors::{
 };
 
 use redis::{
-    Redis,
     get_redis_pool,
     queue::TaskQueueClient,
     store::Store,
+    Redis,
 };
 
 use mysql::{
@@ -66,8 +64,8 @@ use logger::Logger;
 use astaprint::{
     admin::{
         get::*,
-        put::*,
         post::*,
+        put::*,
         tokens::*,
     },
     jobs::{
@@ -89,12 +87,12 @@ use astaprint::{
         post::*,
     },
     printers::{
+        get::*,
         queue::{
             delete::*,
             get::*,
             post::*,
         },
-        get::*,
     },
     user::{
         get::*,
@@ -178,7 +176,17 @@ fn rocket() -> rocket::Rocket
         .manage(mmdb_reader)
         .manage(dispatcher_queue)
         .manage(worker_queues)
-        .mount("/", routes![api_reference]) .mount("/", routes![get_user_as_admin, get_user_credit_as_admin, get_user_journal_as_admin, get_all_users, change_user_locked,])
+        .mount("/", routes![api_reference])
+        .mount(
+            "/",
+            routes![
+                get_user_as_admin,
+                get_user_credit_as_admin,
+                get_user_journal_as_admin,
+                get_all_users,
+                change_user_locked,
+            ],
+        )
         .mount("/", routes![get_printers, get_single_printer, post_admin_token])
         .mount(
             "/jobs/",
@@ -223,7 +231,17 @@ fn rocket() -> rocket::Rocket
         )
         .mount("/printers", routes![print_job, get_queue, delete_queue])
         .mount("/journal", routes![get_journal_as_user, credit])
-        .mount("/admin", routes![post_admin_token, get_journal_as_admin, post_to_journal_as_admin, delete_queue_as_admin, get_queue_as_admin, post_new_admin])
+        .mount(
+            "/admin",
+            routes![
+                post_admin_token,
+                get_journal_as_admin,
+                post_to_journal_as_admin,
+                delete_queue_as_admin,
+                get_queue_as_admin,
+                post_new_admin
+            ],
+        )
         .attach(cors())
 }
 fn main()

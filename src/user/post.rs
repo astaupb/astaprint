@@ -1,3 +1,7 @@
+use rocket::{
+    http::Status,
+    State,
+};
 /// AStAPrint-Backend - User POST Routes
 /// Copyright (C) 2018  AStA der Universität Paderborn
 ///
@@ -16,10 +20,6 @@
 /// You should have received a copy of the GNU Affero General Public
 /// License along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use rocket_contrib::json::Json;
-use rocket::{
-    http::Status,
-    State,
-};
 
 use user::{
     guard::UserGuard,
@@ -29,18 +29,20 @@ use user::{
 use diesel::{
     prelude::*,
     r2d2::{
-        Pool, ConnectionManager,
+        ConnectionManager,
+        Pool,
     },
     result::{
-        Error::DatabaseError,
         DatabaseErrorKind::UniqueViolation,
+        Error::DatabaseError,
     },
 };
 
 use sodium::pwhash::PasswordHash;
 
 use mysql::user::{
-    delete::*, insert::*,
+    delete::*,
+    insert::*,
 };
 
 #[post("/tokens")]
@@ -72,8 +74,7 @@ pub fn register_new_user(
     mysql_pool: State<Pool<ConnectionManager<MysqlConnection>>>,
 ) -> QueryResult<Status>
 {
-    let connection =
-        mysql_pool.get().expect("getting mysql connection from pool");
+    let connection = mysql_pool.get().expect("getting mysql connection from pool");
 
     if user.username.chars().any(|c| !c.is_alphanumeric())
         || user.username.bytes().count() > 32
@@ -83,7 +84,15 @@ pub fn register_new_user(
 
     let (hash, salt) = PasswordHash::create(&user.password);
 
-    match insert_into_user(&user.username, hash, salt, None, None, false, &connection) {
+    match insert_into_user(
+        &user.username,
+        hash,
+        salt,
+        None,
+        None,
+        false,
+        &connection,
+    ) {
         Err(err) => {
             if let DatabaseError(UniqueViolation, _) = err {
                 info!(

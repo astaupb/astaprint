@@ -17,18 +17,24 @@
 /// License along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use rocket_contrib::json::Json;
 
-use user::guard::UserGuard;
 use admin::guard::AdminGuard;
+use user::guard::UserGuard;
 
 use model::journal::Transaction;
 
 use legacy::tds::{
-    get_journal_of_user, get_journal,
+    get_journal,
+    get_journal_of_user,
 };
 
 
 #[get("/?<desc>&<offset>&<limit>")]
-pub fn get_journal_as_user(desc: Option<bool>, offset: Option<i32>, limit: Option<u32>, user: UserGuard) -> Json<Vec<Transaction>>
+pub fn get_journal_as_user(
+    desc: Option<bool>,
+    offset: Option<i32>,
+    limit: Option<u32>,
+    user: UserGuard,
+) -> Json<Vec<Transaction>>
 {
     Json(get_journal_of_user(
         user.id,
@@ -39,7 +45,12 @@ pub fn get_journal_as_user(desc: Option<bool>, offset: Option<i32>, limit: Optio
 }
 
 #[get("/journal?<desc>&<offset>&<limit>")]
-pub fn get_journal_as_admin(desc: Option<bool>, offset: Option<i32>, limit: Option<u32>, _admin: AdminGuard) -> Json<Vec<Transaction>>
+pub fn get_journal_as_admin(
+    desc: Option<bool>,
+    offset: Option<i32>,
+    limit: Option<u32>,
+    _admin: AdminGuard,
+) -> Json<Vec<Transaction>>
 {
     Json(get_journal(
         desc.unwrap_or(true),
@@ -47,4 +58,3 @@ pub fn get_journal_as_admin(desc: Option<bool>, offset: Option<i32>, limit: Opti
         limit.unwrap_or(100),
     ))
 }
-

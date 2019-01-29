@@ -1,9 +1,10 @@
 use diesel::prelude::*;
-use snmp::{
-    PrinterInterface, session::SnmpSession,
-    status::StatusValues,
-};
 use mysql::printers::Printer;
+use snmp::{
+    session::SnmpSession,
+    status::StatusValues,
+    PrinterInterface,
+};
 #[derive(Serialize, Debug, Clone)]
 pub struct PrinterResponse
 {
@@ -28,20 +29,23 @@ pub struct PrinterResponse
 
 impl<'a> From<(&'a Printer, &'a MysqlConnection)> for PrinterResponse
 {
-    fn from((printer, connection): (&Printer, &MysqlConnection)) -> PrinterResponse
+    fn from((printer, connection): (&Printer, &MysqlConnection))
+        -> PrinterResponse
     {
-        let status = SnmpSession::new(
-            PrinterInterface::from_device_id(printer.device_id, connection)
-        ).get_status()
-            .unwrap_or(StatusValues {
-                scan: -1,
-                copy: -1,
-                toner: -1,
-                tray_1: -1,
-                tray_2: -1,
-                tray_3: -1,
-                tray_4: -1,
-            });
+        let status = SnmpSession::new(PrinterInterface::from_device_id(
+            printer.device_id,
+            connection,
+        ))
+        .get_status()
+        .unwrap_or(StatusValues {
+            scan: -1,
+            copy: -1,
+            toner: -1,
+            tray_1: -1,
+            tray_2: -1,
+            tray_3: -1,
+            tray_4: -1,
+        });
 
         PrinterResponse {
             id: printer.id,
@@ -62,7 +66,5 @@ impl<'a> From<(&'a Printer, &'a MysqlConnection)> for PrinterResponse
             tray_3: status.tray_3,
             tray_4: status.tray_4,
         }
-
     }
-
 }

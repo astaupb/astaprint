@@ -1,4 +1,5 @@
 pub mod accounting;
+pub mod get;
 /// AStAPrint - Printers
 /// Copyright (C) 2018  AStA der Universität Paderborn
 ///
@@ -18,4 +19,3 @@ pub mod accounting;
 /// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 pub mod queue;
 pub mod response;
-pub mod get;

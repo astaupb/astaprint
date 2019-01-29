@@ -28,9 +28,7 @@ extern crate model;
 extern crate mysql;
 extern crate snmp;
 
-use std::{
-    thread,
-};
+use std::thread;
 
 use diesel::{
     mysql::MysqlConnection,
@@ -47,9 +45,9 @@ use r2d2_redis::{
 
 use logger::Logger;
 use redis::{
-    Redis,
     get_redis_pool,
     queue::TaskQueue,
+    Redis,
 };
 
 use mysql::{

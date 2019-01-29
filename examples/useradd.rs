@@ -21,9 +21,7 @@ use astaprint::user::add::add_user;
 extern crate mysql;
 use mysql::create_mysql_pool;
 
-use std::{
-    env,
-};
+use std::env;
 
 fn main()
 {

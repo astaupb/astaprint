@@ -1,15 +1,19 @@
 use admin::guard::AdminGuard;
 use diesel::prelude::*;
+use legacy::tds::{
+    get_credit,
+    get_journal_of_user,
+};
 use model::{
     job::options::JobOptions,
     journal::Transaction,
 };
 use mysql::user::{
-    select::{select_user_with_limit_offset, select_user_by_id},
+    select::{
+        select_user_by_id,
+        select_user_with_limit_offset,
+    },
     User,
-};
-use legacy::tds::{
-    get_credit, get_journal_of_user,
 };
 
 use journal::credit::decimal_to_cent;
@@ -49,7 +53,11 @@ impl<'a> From<&'a User> for UserResponse
 }
 
 #[get("/users?<limit>&<offset>")]
-pub fn get_all_users(limit: Option<i64>, offset: Option<i64>, admin: AdminGuard) -> QueryResult<Json<Vec<UserResponse>>>
+pub fn get_all_users(
+    limit: Option<i64>,
+    offset: Option<i64>,
+    admin: AdminGuard,
+) -> QueryResult<Json<Vec<UserResponse>>>
 {
     Ok(Json(
         select_user_with_limit_offset(
@@ -64,15 +72,22 @@ pub fn get_all_users(limit: Option<i64>, offset: Option<i64>, admin: AdminGuard)
 }
 
 #[get("/users/<id>")]
-pub fn get_user_as_admin(id: u32, admin: AdminGuard) -> QueryResult<Json<UserResponse>>
+pub fn get_user_as_admin(
+    id: u32,
+    admin: AdminGuard,
+) -> QueryResult<Json<UserResponse>>
 {
-    Ok(Json(UserResponse::from(
-        &select_user_by_id(id, &admin.connection)?
-    )))
+    Ok(Json(UserResponse::from(&select_user_by_id(id, &admin.connection)?)))
 }
 
 #[get("/users/<id>/journal?<desc>&<offset>&<limit>")]
-pub fn get_user_journal_as_admin(id: u32, desc: Option<bool>, offset: Option<i32>, limit: Option<u32>, _admin: AdminGuard) -> Json<Vec<Transaction>>
+pub fn get_user_journal_as_admin(
+    id: u32,
+    desc: Option<bool>,
+    offset: Option<i32>,
+    limit: Option<u32>,
+    _admin: AdminGuard,
+) -> Json<Vec<Transaction>>
 {
     Json(get_journal_of_user(
         id,

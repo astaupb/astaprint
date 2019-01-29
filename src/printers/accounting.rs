@@ -126,7 +126,7 @@ impl Accounting
                 (self.value * BigDecimal::from(100)).to_i32().unwrap(),
                 "Print Job",
                 false,
-                None
+                None,
             );
 
             info!("inserted new credit for {}: {}", &self.user_id, &credit);
