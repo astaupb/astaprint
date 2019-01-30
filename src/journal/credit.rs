@@ -33,9 +33,9 @@ pub fn decimal_to_cent(dec: BigDecimal) -> i32
 #[get("/credit")]
 pub fn credit(user: UserGuard) -> Json<i32>
 {
-    let credit: BigDecimal = get_credit(user.id);
+    let credit = get_credit(user.id);
 
     info!("{} fetched credit {}", user.id, credit);
 
-    Json(decimal_to_cent(credit))
+    Json(credit)
 }
