@@ -18,6 +18,7 @@
 use rocket::http::Status;
 
 use rocket_contrib::json::Json;
+use rocket::response::status::Custom;
 
 use diesel::QueryResult;
 
@@ -72,11 +73,25 @@ pub fn change_password(
 pub fn change_username(
     user: UserGuard,
     new_username: Json<String>,
-) -> QueryResult<Status>
+) -> QueryResult<Custom<()>>
 {
-    update_user_name(user.id, &new_username, &user.connection)?;
+    let name = new_username.into_inner();
 
-    info!("{} changed username", user.id);
+    if name.chars().any(|c| !c.is_alphanumeric())
+        || name.bytes().count() > 32
+    {
+        return Ok(Custom(Status::new(471, "Invalid Username"), ()));
+    }
 
-    Ok(Status::new(205, "Reset Content"))
+    let user_id = select_user_id_by_name(&name, &user.connection)?;
+
+    if user_id.is_some() {
+        return Ok(Custom(Status::new(472, "Username Already Taken"), ()));
+    }
+
+    update_user_name(user.id, &name, &user.connection)?;
+
+    info!("user#{} changed username", user.id);
+
+    Ok(Custom(Status::new(205, "Reset Content"), ()))
 }
