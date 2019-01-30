@@ -231,7 +231,7 @@ fn rocket() -> rocket::Rocket
             ],
         )
         .mount("/printers", routes![print_job, get_queue, delete_queue])
-        .mount("/journal", routes![get_journal_as_user, credit])
+        .mount("/journal", routes![get_journal_as_user, post_to_journal_with_token, credit])
         .mount(
             "/admin",
             routes![

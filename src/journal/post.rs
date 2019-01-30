@@ -55,7 +55,7 @@ pub struct JournalPost
 }
 
 #[post("/", data = "<token>")]
-fn post_to_journal_with_token(
+pub fn post_to_journal_with_token(
     user: UserGuard,
     token: Json<String>,
     redis: State<Pool<RedisConnectionManager>>,

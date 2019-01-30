@@ -54,7 +54,7 @@ pub fn select_journal_token(
     connection: &MysqlConnection,
 ) -> QueryResult<Vec<JournalToken>>
 {
-    journal_tokens::table.select(journal_tokens::all_columns).load(connection)
+journal_tokens::table.select(journal_tokens::all_columns).load(connection)
 }
 
 pub fn select_latest_journal_id_of_user(
@@ -79,8 +79,8 @@ pub fn select_credit_by_id(
 {
     journal_digest::table
         .select(journal_digest::credit)
-        .filter(journal_digest::id.eq(id))
-        .first(connection)
+    .filter(journal_digest::id.eq(id))
+    .first(connection)
 }
 
 pub fn select_journal_token_by_content(content: String, connection: &MysqlConnection) -> QueryResult<Option<JournalToken>>
