@@ -205,8 +205,11 @@ pub fn work(
     if completed {
         for job in print_jobs {
             if !job.options.keep {
+                debug!("deleting job {}", job.id);
                 delete_job_by_id(job.id, &connection)
                     .expect("deleting job from table");
+            } else {
+                debug!("keeping job {}", job.id);
             }
         }
     }

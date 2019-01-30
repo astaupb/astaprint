@@ -217,7 +217,8 @@ fn rocket() -> rocket::Rocket
                 credit_redirect,
                 change_password,
                 fetch_username,
-                change_username
+                change_username,
+                register_new_user
             ],
         )
         .mount(
@@ -239,7 +240,8 @@ fn rocket() -> rocket::Rocket
                 post_to_journal_as_admin,
                 delete_queue_as_admin,
                 get_queue_as_admin,
-                post_new_admin
+                post_new_admin,
+                post_new_user
             ],
         )
         .attach(cors())

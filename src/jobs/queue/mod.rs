@@ -70,8 +70,13 @@ pub fn dispatch(
         let connection =
             state.mysql_pool.get().expect("getting mysql connection from pool");
 
+        let filename = if task.filename == "" {
+            result.title.clone()
+        } else {
+            task.filename.clone()
+        };
         let info: Vec<u8> = bincode::serialize(&JobInfo {
-            filename: task.filename,
+            filename: filename,
             title: result.title,
             pagecount: result.pagecount,
             colored: result.colored,

@@ -19,7 +19,13 @@ extern crate astaprint;
 use astaprint::user::add::add_user;
 
 extern crate mysql;
-use mysql::create_mysql_pool;
+use mysql::{
+    create_mysql_pool,
+    user::select::select_user_id_by_name,
+};
+
+extern crate legacy;
+use legacy::tds::insert_empty_credit;
 
 use std::env;
 

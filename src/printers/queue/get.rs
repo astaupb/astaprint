@@ -17,7 +17,9 @@
 /// License along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use std::collections::HashMap;
 
-use model::task::worker::WorkerTask;
+use model::task::worker::{
+    WorkerTask, WorkerCommand,
+};
 
 use rocket::State;
 
@@ -57,7 +59,7 @@ impl<'a> From<&'a WorkerTask> for WorkerTaskResponse
 pub fn get_queue(
     _user: UserGuard,
     device_id: u32,
-    queues: State<HashMap<u32, TaskQueueClient<WorkerTask, ()>>>,
+    queues: State<HashMap<u32, TaskQueueClient<WorkerTask, WorkerCommand>>>,
 ) -> Option<Json<WorkerQueueResponse>>
 {
     let queue = match queues.get(&device_id) {

@@ -27,6 +27,8 @@ use mysql::user::{
     select::*,
 };
 
+use legacy::tds::insert_empty_credit;
+
 #[derive(Debug)]
 pub enum UserAddError
 {
@@ -70,6 +72,10 @@ pub fn add_user(
             insert_into_user(name, hash, salt, card, pin, locked, connection)?;
         },
     }
+
+    let user_id = select_user_id_by_name(name, connection)?.unwrap();
+
+    insert_empty_credit(user_id);
 
     Ok(())
 }
