@@ -76,7 +76,7 @@ pub fn dispatch(
             task.filename.clone()
         };
         let info: Vec<u8> = bincode::serialize(&JobInfo {
-            filename: filename,
+            filename,
             title: result.title,
             pagecount: result.pagecount,
             colored: result.colored,

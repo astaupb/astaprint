@@ -18,7 +18,8 @@
 use std::collections::HashMap;
 
 use model::task::worker::{
-    WorkerTask, WorkerCommand,
+    WorkerCommand,
+    WorkerTask,
 };
 
 use rocket::State;

@@ -2,17 +2,16 @@ use admin::{
     guard::AdminGuard,
     Admin,
 };
-use user::add::{
-    add_user, UserAddError,
-};
 use chrono::NaiveDate;
 use diesel::prelude::*;
-use mysql::{
-    admin::select::select_admin_by_login,
-};
+use mysql::admin::select::select_admin_by_login;
 use rocket::http::Status;
 use rocket_contrib::json::Json;
 use sodium::PasswordHash;
+use user::add::{
+    add_user,
+    UserAddError,
+};
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct NewAdmin
@@ -62,14 +61,19 @@ pub struct NewUser
 }
 
 #[post("/user", data = "<new>")]
-pub fn post_new_user(admin: AdminGuard, new: Json<NewUser>)
-    -> QueryResult<Status>
+pub fn post_new_user(admin: AdminGuard, new: Json<NewUser>) -> QueryResult<Status>
 {
     let new = new.into_inner();
-    match add_user(None, &new.name, &new.password, new.card, new.pin, false, &admin.connection) {
-        Ok(()) => {
-            Ok(Status::new(204, "Success - No Content"))
-        },
+    match add_user(
+        None,
+        &new.name,
+        &new.password,
+        new.card,
+        new.pin,
+        false,
+        &admin.connection,
+    ) {
+        Ok(()) => Ok(Status::new(204, "Success - No Content")),
         Err(UserAddError::UsernameExists) => {
             Ok(Status::new(472, "username already taken"))
         },

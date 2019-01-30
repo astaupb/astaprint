@@ -93,9 +93,10 @@ impl Accounting
     /// returns true if there's enough credit for another page
     pub fn set_value(&mut self, counter: CounterValues)
     {
-        self.value= -((counter.print_bw * 5
+        self.value = -((counter.print_bw * 5
             + (counter.print_total - counter.print_bw) * 20)
-            + (counter.copy_bw * 5 + (counter.copy_total - counter.copy_bw) * 20)) as i32;
+            + (counter.copy_bw * 5 + (counter.copy_total - counter.copy_bw) * 20))
+            as i32;
 
         self.counter = counter;
 
@@ -112,13 +113,7 @@ impl Accounting
 
             let _lock = JournalLock::from(self.redis_pool.clone());
 
-            insert_transaction(
-                self.user_id,
-                self.value,
-                "Print Job",
-                false,
-                None,
-            );
+            insert_transaction(self.user_id, self.value, "Print Job", false, None);
 
             info!("new credit for {}: {}", &self.user_id, &credit);
         } else {
