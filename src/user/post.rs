@@ -43,7 +43,10 @@ use sodium::pwhash::PasswordHash;
 use mysql::user::{
     delete::*,
     insert::*,
+    select::*,
 };
+
+use legacy::tds::insert_empty_credit;
 
 #[post("/tokens")]
 pub fn login(login: LoginGuard) -> Json<String>
@@ -105,7 +108,11 @@ pub fn register_new_user(
             }
         },
         Ok(_) => {
-            info!("{} registered", &user.username);
+            let user_id = select_user_id_by_name(&user.username, &connection)?.unwrap();
+
+            insert_empty_credit(user_id);
+
+            info!("{} registered with id {}", &user.username, user_id);
 
             Ok(Status::new(204, "Success - No Content"))
         },
