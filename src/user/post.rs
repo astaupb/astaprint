@@ -79,8 +79,8 @@ pub fn register_new_user(
 {
     let connection = mysql_pool.get().expect("getting mysql connection from pool");
 
-    if user.username.chars().any(|c| !c.is_alphanumeric())
-        || user.username.bytes().count() > 32
+    if user.name.chars().any(|c| !c.is_alphanumeric())
+        || user.name.bytes().count() > 32
     {
         return Ok(Status::new(471, "Invalid Username"));
     }
@@ -88,7 +88,7 @@ pub fn register_new_user(
     let (hash, salt) = PasswordHash::create(&user.password);
 
     match insert_into_user(
-        &user.username,
+        &user.name,
         hash,
         salt,
         None,
@@ -100,7 +100,7 @@ pub fn register_new_user(
             if let DatabaseError(UniqueViolation, _) = err {
                 info!(
                     "sometried to register with already taken username {}",
-                    &user.username
+                    &user.name
                 );
                 return Ok(Status::new(470, "Username Taken"));
             } else {
@@ -108,11 +108,11 @@ pub fn register_new_user(
             }
         },
         Ok(_) => {
-            let user_id = select_user_id_by_name(&user.username, &connection)?.unwrap();
+            let user_id = select_user_id_by_name(&user.name, &connection)?.unwrap();
 
             insert_empty_credit(user_id);
 
-            info!("{} registered with id {}", &user.username, user_id);
+            info!("{} registered with id {}", &user.name, user_id);
 
             Ok(Status::new(204, "Success - No Content"))
         },
