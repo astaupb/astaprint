@@ -67,7 +67,7 @@ pub fn logout(user: UserGuard) -> QueryResult<String>
 #[derive(Deserialize, Debug)]
 pub struct RegisterUser
 {
-    username: String,
+    name: String,
     password: String,
 }
 
