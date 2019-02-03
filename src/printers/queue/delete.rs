@@ -1,20 +1,22 @@
-/// AStAPrint
-/// Copyright (C) 2018  AStA der Universität Paderborn
-///
-/// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
-///
-/// This program is free software: you can redistribute it and/or modify
-/// it under the terms of the GNU Affero General Public License as
-/// published by the Free Software Foundation, either version 3 of the
-/// License, or (at your option) any later version.
-///
-/// This program is distributed in the hope that it will be useful,
-/// but WITHOUT ANY WARRANTY; without even the implied warranty of
-/// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-/// GNU Affero General Public License for more details.
-///
-/// You should have received a copy of the GNU Affero General Public
-/// License along with this program.  If not, see <https://www.gnu.org/licenses/>.
+// AStAPrint
+// Copyright (C) 2018, 2019 AStA der Universität Paderborn
+//
+// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
+//
+// This file is part of AStAPrint
+//
+// AStAPrint is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use std::collections::HashMap;
 
 use model::task::worker::{
@@ -54,9 +56,10 @@ pub fn delete_queue(
     for task in incoming {
         if task.uid == uid && task.user_id == user.id {
             if queue.remove(uid.clone()).expect("removing task") > 0 {
-                return Status::new(205, "Success - No Content");
-            } else {
-                return Status::new(500, "Internal Server Error");
+                return Status::new(205, "Success - No Content")
+            }
+            else {
+                return Status::new(500, "Internal Server Error")
             }
         }
     }
@@ -64,16 +67,16 @@ pub fn delete_queue(
     if processing.len() > 0 && processing[0].uid == uid {
         if processing[0].user_id == user.id {
             let client = CommandClient::from((queue, &hex_uid[..]));
-            client
-                .send_command(&WorkerCommand::Cancel)
-                .expect("sending cancel command");
+            client.send_command(&WorkerCommand::Cancel).expect("sending cancel command");
 
-            return Status::new(205, "Success - No Content");
-        } else {
-            return Status::new(401, "Unauthorized");
+            return Status::new(205, "Success - No Content")
         }
-    } else {
-        return Status::new(404, "Task Not Found");
+        else {
+            return Status::new(401, "Unauthorized")
+        }
+    }
+    else {
+        return Status::new(404, "Task Not Found")
     }
 }
 
@@ -97,21 +100,21 @@ pub fn delete_queue_as_admin(
     for task in incoming {
         if task.uid == uid && task.user_id == user.id {
             if queue.remove(uid.clone()).expect("removing task") > 0 {
-                return Status::new(205, "Success - No Content");
-            } else {
-                return Status::new(500, "Internal Server Error");
+                return Status::new(205, "Success - No Content")
+            }
+            else {
+                return Status::new(500, "Internal Server Error")
             }
         }
     }
     let processing = queue.get_processing();
     if processing.len() > 0 && processing[0].uid == uid {
         let client = CommandClient::from((queue, &hex_uid[..]));
-        client
-            .send_command(&WorkerCommand::Cancel)
-            .expect("sending cancel command");
+        client.send_command(&WorkerCommand::Cancel).expect("sending cancel command");
 
-        return Status::new(205, "Success - No Content");
-    } else {
-        return Status::new(404, "Task Not Found");
+        return Status::new(205, "Success - No Content")
+    }
+    else {
+        return Status::new(404, "Task Not Found")
     }
 }

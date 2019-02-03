@@ -1,24 +1,26 @@
+// AStAPrint
+// Copyright (C) 2018, 2019 AStA der Universität Paderborn
+//
+// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
+//
+// This file is part of AStAPrint
+//
+// AStAPrint is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use rocket::{
     http::Status,
     State,
 };
-/// AStAPrint-Backend - User POST Routes
-/// Copyright (C) 2018  AStA der Universität Paderborn
-///
-/// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
-///
-/// This program is free software: you can redistribute it and/or modify
-/// it under the terms of the GNU Affero General Public License as
-/// published by the Free Software Foundation, either version 3 of the
-/// License, or (at your option) any later version.
-///
-/// This program is distributed in the hope that it will be useful,
-/// but WITHOUT ANY WARRANTY; without even the implied warranty of
-/// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-/// GNU Affero General Public License for more details.
-///
-/// You should have received a copy of the GNU Affero General Public
-/// License along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use rocket_contrib::json::Json;
 
 use user::{
@@ -79,32 +81,20 @@ pub fn register_new_user(
 {
     let connection = mysql_pool.get().expect("getting mysql connection from pool");
 
-    if user.name.chars().any(|c| !c.is_alphanumeric())
-        || user.name.bytes().count() > 32
-    {
-        return Ok(Status::new(471, "Invalid Username"));
+    if user.name.chars().any(|c| !c.is_alphanumeric()) || user.name.bytes().count() > 32 {
+        return Ok(Status::new(471, "Invalid Username"))
     }
 
     let (hash, salt) = PasswordHash::create(&user.password);
 
-    match insert_into_user(
-        &user.name,
-        hash,
-        salt,
-        None,
-        None,
-        false,
-        &connection,
-    ) {
+    match insert_into_user(&user.name, hash, salt, None, None, false, &connection) {
         Err(err) => {
             if let DatabaseError(UniqueViolation, _) = err {
-                info!(
-                    "sometried to register with already taken username {}",
-                    &user.name
-                );
-                return Ok(Status::new(470, "Username Taken"));
-            } else {
-                return Err(err);
+                info!("sometried to register with already taken username {}", &user.name);
+                return Ok(Status::new(470, "Username Taken"))
+            }
+            else {
+                return Err(err)
             }
         },
         Ok(_) => {

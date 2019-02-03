@@ -1,3 +1,22 @@
+// AStAPrint
+// Copyright (C) 2018, 2019 AStA der Universität Paderborn
+//
+// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
+//
+// This file is part of AStAPrint
+//
+// AStAPrint is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use admin::guard::AdminGuard;
 use diesel::prelude::*;
 use legacy::tds::{
@@ -38,9 +57,10 @@ impl<'a> From<&'a User> for UserResponse
         UserResponse {
             id: user.id,
             name: user.name.clone(),
-            options: user.options.clone().map(|x| {
-                bincode::deserialize(&x[..]).expect("deserializing JobOption")
-            }),
+            options: user
+                .options
+                .clone()
+                .map(|x| bincode::deserialize(&x[..]).expect("deserializing JobOption")),
             card: user.card,
             pin: user.pin,
             locked: user.locked,
@@ -58,14 +78,10 @@ pub fn get_all_users(
 ) -> QueryResult<Json<Vec<UserResponse>>>
 {
     Ok(Json(
-        select_user_with_limit_offset(
-            limit.unwrap_or(50),
-            offset.unwrap_or(0),
-            &admin.connection,
-        )?
-        .iter()
-        .map(|row| UserResponse::from(row))
-        .collect(),
+        select_user_with_limit_offset(limit.unwrap_or(50), offset.unwrap_or(0), &admin.connection)?
+            .iter()
+            .map(|row| UserResponse::from(row))
+            .collect(),
     ))
 }
 

@@ -1,3 +1,22 @@
+// AStAPrint
+// Copyright (C) 2018, 2019 AStA der Universität Paderborn
+//
+// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
+//
+// This file is part of AStAPrint
+//
+// AStAPrint is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use admin::{
     guard::AdminGuard,
     Admin,
@@ -24,11 +43,13 @@ pub struct NewAdmin
 }
 
 #[post("/", data = "<new>")]
-pub fn post_new_admin(admin: AdminGuard, new: Json<NewAdmin>)
-    -> QueryResult<Status>
+pub fn post_new_admin(
+    admin: AdminGuard,
+    new: Json<NewAdmin>,
+) -> QueryResult<Status>
 {
     if select_admin_by_login(&new.login, &admin.connection).is_ok() {
-        return Ok(Status::new(472, "login already taken"));
+        return Ok(Status::new(472, "login already taken"))
     }
     let new = new.into_inner();
 
@@ -61,22 +82,15 @@ pub struct NewUser
 }
 
 #[post("/user", data = "<new>")]
-pub fn post_new_user(admin: AdminGuard, new: Json<NewUser>) -> QueryResult<Status>
+pub fn post_new_user(
+    admin: AdminGuard,
+    new: Json<NewUser>,
+) -> QueryResult<Status>
 {
     let new = new.into_inner();
-    match add_user(
-        None,
-        &new.name,
-        &new.password,
-        new.card,
-        new.pin,
-        false,
-        &admin.connection,
-    ) {
+    match add_user(None, &new.name, &new.password, new.card, new.pin, false, &admin.connection) {
         Ok(()) => Ok(Status::new(204, "Success - No Content")),
-        Err(UserAddError::UsernameExists) => {
-            Ok(Status::new(472, "username already taken"))
-        },
+        Err(UserAddError::UsernameExists) => Ok(Status::new(472, "username already taken")),
         Err(UserAddError::InsertError(e)) => Err(e),
     }
 }

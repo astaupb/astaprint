@@ -1,26 +1,27 @@
-/// AStAPrint Jobs - options PUT
-/// Copyright (C) 2018  AStA der Universität Paderborn
-///
-/// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
-///
-/// This program is free software: you can redistribute it and/or modify
-/// it under the terms of the GNU Affero General Public License as
-/// published by the Free Software Foundation, either version 3 of the
-/// License, or (at your option) any later version.
-///
-/// This program is distributed in the hope that it will be useful,
-/// but WITHOUT ANY WARRANTY; without even the implied warranty of
-/// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-/// GNU Affero General Public License for more details.
-///
-/// You should have received a copy of the GNU Affero General Public
-/// License along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use std::str::FromStr;
-
+// AStAPrint
+// Copyright (C) 2018, 2019 AStA der Universität Paderborn
+//
+// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
+//
+// This file is part of AStAPrint
+//
+// AStAPrint is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use diesel::result::QueryResult;
 
 use rocket::http::Status;
 use rocket_contrib::json::Json;
+use std::str::FromStr;
 
 use model::job::options::JobOptions;
 
@@ -49,14 +50,11 @@ pub fn update_single_option(
     value: Json<Value>,
 ) -> QueryResult<Result<Option<Status>, Status>>
 {
-    let result: Option<Vec<u8>> =
-        select_job_options(id, user.id, &user.connection)?;
+    let result: Option<Vec<u8>> = select_job_options(id, user.id, &user.connection)?;
 
     let mut options: JobOptions = match result {
         None => return Ok(Ok(None)),
-        Some(options) => {
-            bincode::deserialize(&options[..]).expect("deserializing JobOptions")
-        },
+        Some(options) => bincode::deserialize(&options[..]).expect("deserializing JobOptions"),
     };
     match (option.as_ref(), value.into_inner()) {
         ("duplex", I(value)) => {
@@ -85,9 +83,7 @@ pub fn update_single_option(
         ("nuppageorder", I(value)) => {
             options.nuppageorder = value as u8;
         },
-        (_option, _) => {
-            return Ok(Err(Status::new(400, "Bad Request")));
-        },
+        (_option, _) => return Ok(Err(Status::new(400, "Bad Request"))),
     };
     let value = bincode::serialize(&options).expect("serializing JobOptions");
 
@@ -103,8 +99,7 @@ pub fn update_options(
     options: Json<JobOptions>,
 ) -> QueryResult<Status>
 {
-    let serialized =
-        bincode::serialize(&options.into_inner()).expect("serializing JobOptions");
+    let serialized = bincode::serialize(&options.into_inner()).expect("serializing JobOptions");
 
     update_job_options(id, user.id, serialized, &user.connection)?;
 

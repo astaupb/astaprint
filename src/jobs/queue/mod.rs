@@ -1,21 +1,23 @@
+// AStAPrint
+// Copyright (C) 2018, 2019 AStA der Universität Paderborn
+//
+// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
+//
+// This file is part of AStAPrint
+//
+// AStAPrint is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 pub mod get;
-/// AStAPrint
-/// Copyright (C) 2018  AStA der Universität Paderborn
-///
-/// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
-///
-/// This program is free software: you can redistribute it and/or modify
-/// it under the terms of the GNU Affero General Public License as published by
-/// the Free Software Foundation, either version 3 of the License, or
-/// (at your option) any later version.
-///
-/// This program is distributed in the hope that it will be useful,
-/// but WITHOUT ANY WARRANTY; without even the implied warranty of
-/// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-/// GNU Affero General Public License for more details.
-///
-/// You should have received a copy of the GNU Affero General Public License
-/// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 pub mod post;
 
 use pdf::sanitize;
@@ -60,19 +62,18 @@ pub fn dispatch(
 {
     thread_pool.execute(move || {
         let hex_uid = hex::encode(&task.uid[..]);
-        info!("{} {} started", task.user_id, &hex_uid[..8]);
+        info!("{} {} started", task.user_id, &hex_uid[.. 8]);
 
-        let data =
-            state.redis_store.get(task.uid).expect("getting file from store");
+        let data = state.redis_store.get(task.uid).expect("getting file from store");
 
         let result = sanitize(data);
 
-        let connection =
-            state.mysql_pool.get().expect("getting mysql connection from pool");
+        let connection = state.mysql_pool.get().expect("getting mysql connection from pool");
 
         let filename = if task.filename == "" {
             result.title.clone()
-        } else {
+        }
+        else {
             task.filename.clone()
         };
         let info: Vec<u8> = bincode::serialize(&JobInfo {
@@ -84,8 +85,8 @@ pub fn dispatch(
         })
         .expect("serializing JobInfo");
 
-        let options: Vec<u8> = bincode::serialize(&JobOptions::default())
-            .expect("serializing JobOptions");
+        let options: Vec<u8> =
+            bincode::serialize(&JobOptions::default()).expect("serializing JobOptions");
 
         insert_into_jobs(
             task.user_id,

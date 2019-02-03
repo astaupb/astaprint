@@ -1,20 +1,22 @@
-/// AStAPrint-Backend - Request Guards - User
-/// Copyright (C) 2018  AStA der Universität Paderborn
-///
-/// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
-///
-/// This program is free software: you can redistribute it and/or modify
-/// it under the terms of the GNU Affero General Public License as
-/// published by the Free Software Foundation, either version 3 of the
-/// License, or (at your option) any later version.
-///
-/// This program is distributed in the hope that it will be useful,
-/// but WITHOUT ANY WARRANTY; without even the implied warranty of
-/// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-/// GNU Affero General Public License for more details.
-///
-/// You should have received a copy of the GNU Affero General Public
-/// License along with this program.  If not, see <https://www.gnu.org/licenses/>.
+// AStAPrint
+// Copyright (C) 2018, 2019 AStA der Universität Paderborn
+//
+// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
+//
+// This file is part of AStAPrint
+//
+// AStAPrint is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use base64;
 
 use rocket::{
@@ -60,7 +62,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for AdminGuard
 
         if key.len() != 1 {
             info!("invalid x-api-key header {:?}", key);
-            return Outcome::Failure((Status::BadRequest, ()));
+            return Outcome::Failure((Status::BadRequest, ()))
         }
         let buf: Vec<u8> = match base64::decode_config(key[0], base64::URL_SAFE) {
             Ok(buf) => buf,
@@ -68,26 +70,22 @@ impl<'a, 'r> FromRequest<'a, 'r> for AdminGuard
         };
 
         if buf.len() != 132 {
-            return Outcome::Failure((Status::BadRequest, ()));
+            return Outcome::Failure((Status::BadRequest, ()))
         }
         let (admin_id, token) = match split_x_api_key(buf) {
             Ok((admin_id, token)) => (admin_id, token),
             Err(_) => return Outcome::Failure((Status::BadRequest, ())),
         };
 
-        let pool =
-            request.guard::<State<Pool<ConnectionManager<MysqlConnection>>>>()?;
+        let pool = request.guard::<State<Pool<ConnectionManager<MysqlConnection>>>>()?;
 
         let connection = match pool.get() {
             Ok(connection) => connection,
-            Err(_) => {
-                return Outcome::Failure((Status::InternalServerError, ()));
-            },
+            Err(_) => return Outcome::Failure((Status::InternalServerError, ())),
         };
 
         // select password hash of user which is used as salt
-        let result: QueryResult<Option<Vec<u8>>> =
-            select_admin_hash_by_id(admin_id, &connection);
+        let result: QueryResult<Option<Vec<u8>>> = select_admin_hash_by_id(admin_id, &connection);
 
         if let Ok(Some(salt)) = result {
             let hash = GenericHash::with_salt(&token[..], &salt[..]);
@@ -105,7 +103,8 @@ impl<'a, 'r> FromRequest<'a, 'r> for AdminGuard
                     Outcome::Failure((Status::Unauthorized, ()))
                 },
             }
-        } else {
+        }
+        else {
             info!("could not find hash for user {}", admin_id);
             Outcome::Failure((Status::Unauthorized, ()))
         }

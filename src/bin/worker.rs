@@ -1,24 +1,26 @@
-/// AStAPrint - Worker
-/// Copyright (C) 2018  AStA der Universität Paderborn
-///
-/// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
-///
-/// This program is free software: you can redistribute it and/or modify
-/// it under the terms of the GNU Affero General Public License as published by
-/// the Free Software Foundation, either version 3 of the License, or
-/// (at your option) any later version.
-///
-/// This program is distributed in the hope that it will be useful,
-/// but WITHOUT ANY WARRANTY; without even the implied warranty of
-/// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-/// GNU Affero General Public License for more details.
-///
-/// You should have received a copy of the GNU Affero General Public License
-/// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+// AStAPrint
+// Copyright (C) 2018, 2019 AStA der Universität Paderborn
+//
+// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
+//
+// This file is part of AStAPrint
+//
+// AStAPrint is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #[macro_use]
 extern crate log;
-
 extern crate diesel;
+extern crate legacy;
 
 extern crate logger;
 extern crate r2d2_redis;
@@ -55,7 +57,6 @@ use mysql::{
     printers::select::select_device_ids,
 };
 
-
 use model::task::worker::{
     WorkerCommand,
     WorkerState,
@@ -64,9 +65,7 @@ use model::task::worker::{
 extern crate astaprint;
 use astaprint::printers::queue::work;
 
-
 use snmp::PrinterInterface;
-
 
 fn spawn_worker(
     device_id: u32,
@@ -76,21 +75,19 @@ fn spawn_worker(
 {
     let connection = mysql_pool.get().expect("getting connection from pool");
 
-    let printer_interface =
-        PrinterInterface::from_device_id(device_id, &connection);
+    let printer_interface = PrinterInterface::from_device_id(device_id, &connection);
 
     let name = format!("worker::{}", device_id);
 
-    let taskqueue: TaskQueue<WorkerTask, WorkerState, WorkerCommand> =
-        TaskQueue::new(
-            &name,
-            WorkerState {
-                printer_interface,
-                mysql_pool,
-                redis_pool: redis_pool.clone(),
-            },
-            redis_pool,
-        );
+    let taskqueue: TaskQueue<WorkerTask, WorkerState, WorkerCommand> = TaskQueue::new(
+        &name,
+        WorkerState {
+            printer_interface,
+            mysql_pool,
+            redis_pool: redis_pool.clone(),
+        },
+        redis_pool,
+    );
 
     thread::spawn(move || {
         info!("{} listening", device_id);

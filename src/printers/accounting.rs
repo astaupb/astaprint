@@ -1,20 +1,22 @@
-/// AStAPrint-Worker - accounting.rs
-/// Copyright (C) 2018  AStA der Universität Paderborn
-///
-/// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
-///
-/// This program is free software: you can redistribute it and/or modify
-/// it under the terms of the GNU Affero General Public License as
-/// published by the Free Software Foundation, either version 3 of the
-/// License, or (at your option) any later version.
-///
-/// This program is distributed in the hope that it will be useful,
-/// but WITHOUT ANY WARRANTY; without even the implied warranty of
-/// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-/// GNU Affero General Public License for more details.
-///
-/// You should have received a copy of the GNU Affero General Public
-/// License along with this program.  If not, see <https://www.gnu.org/licenses/>.
+// AStAPrint
+// Copyright (C) 2018, 2019 AStA der Universität Paderborn
+//
+// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
+//
+// This file is part of AStAPrint
+//
+// AStAPrint is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use diesel::{
     prelude::*,
     r2d2::{
@@ -91,10 +93,12 @@ impl Accounting
 
     /// sets the value which will be accounted given a counter diff as parameter
     /// returns true if there's enough credit for another page
-    pub fn set_value(&mut self, counter: CounterValues)
+    pub fn set_value(
+        &mut self,
+        counter: CounterValues,
+    )
     {
-        self.value = -((counter.print_bw * 5
-            + (counter.print_total - counter.print_bw) * 20)
+        self.value = -((counter.print_bw * 5 + (counter.print_total - counter.print_bw) * 20)
             + (counter.copy_bw * 5 + (counter.copy_total - counter.copy_bw) * 20))
             as i32;
 
@@ -106,8 +110,7 @@ impl Accounting
     pub fn finish(self)
     {
         if self.value < 0 {
-            let _connection =
-                self.mysql_pool.get().expect("getting mysql connection from pool");
+            let _connection = self.mysql_pool.get().expect("getting mysql connection from pool");
 
             let credit = &self.credit + &self.value;
 
@@ -116,7 +119,8 @@ impl Accounting
             insert_transaction(self.user_id, self.value, "Print Job", false, None);
 
             info!("new credit for {}: {}", &self.user_id, &credit);
-        } else {
+        }
+        else {
             info!("accounting for {} finished without value", self.user_id);
         }
     }

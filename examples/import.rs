@@ -1,20 +1,22 @@
-/// AStAPrint - Examples - legacy import
-/// Copyright (C) 2018  AStA der Universität Paderborn
-///
-/// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
-///
-/// This program is free software: you can redistribute it and/or modify
-/// it under the terms of the GNU Affero General Public License as published by
-/// the Free Software Foundation, either version 3 of the License, or
-/// (at your option) any later version.
-///
-/// This program is distributed in the hope that it will be useful,
-/// but WITHOUT ANY WARRANTY; without even the implied warranty of
-/// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-/// GNU Affero General Public License for more details.
-///
-/// You should have received a copy of the GNU Affero General Public License
-/// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+// AStAPrint
+// Copyright (C) 2018, 2019 AStA der Universität Paderborn
+//
+// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
+//
+// This file is part of AStAPrint
+//
+// AStAPrint is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 extern crate astaprint;
 use astaprint::user::add::add_user;
 
@@ -31,8 +33,7 @@ use std::{
 
 fn main()
 {
-    let mysql_url = env::var("ASTAPRINT_DATABASE_URL")
-        .expect("reading mysql url from environment");
+    let mysql_url = env::var("ASTAPRINT_DATABASE_URL").expect("reading mysql url from environment");
 
     let mut file = File::open("dump.tsv").unwrap();
 
@@ -53,25 +54,19 @@ fn main()
             end = user_list.len();
         }
         user_count += end;
-        for user in user_list.drain(..end) {
+        for user in user_list.drain(.. end) {
             let split: Vec<&str> = user.split('\t').collect();
             if split.len() < 4 {
-                break;
+                break
             }
             let id: u32 = split[0].parse().unwrap();
             let card: u64 = split[1].parse().unwrap();
             let pin: u32 = split[2].parse().unwrap_or(99999);
             let locked = split[3] == "1";
-            match add_user(
-                Some(id),
-                split[1],
-                split[2],
-                Some(card),
-                Some(pin),
-                locked,
-                &connection,
-            ) {
-                Ok(_) => (), // println!("{} {} imported..", split[0], split[1]),
+            match add_user(Some(id), split[1], split[2], Some(card), Some(pin), locked, &connection)
+            {
+                Ok(_) => (), // println!("{} {} imported..", split[0],
+                // split[1]),
                 Err(e) => println!("{}: {:?}", split[1], e),
             }
         }

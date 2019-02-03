@@ -1,21 +1,23 @@
+// AStAPrint
+// Copyright (C) 2018, 2019 AStA der Universität Paderborn
+//
+// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
+//
+// This file is part of AStAPrint
+//
+// AStAPrint is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 pub mod delete;
-/// AStAPrint
-/// Copyright (C) 2018  AStA der Universität Paderborn
-///
-/// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
-///
-/// This program is free software: you can redistribute it and/or modify
-/// it under the terms of the GNU Affero General Public License as published by
-/// the Free Software Foundation, either version 3 of the License, or
-/// (at your option) any later version.
-///
-/// This program is distributed in the hope that it will be useful,
-/// but WITHOUT ANY WARRANTY; without even the implied warranty of
-/// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-/// GNU Affero General Public License for more details.
-///
-/// You should have received a copy of the GNU Affero General Public License
-/// along with this program.  If not, see <https://www.gnu.org/licenses/>.
 pub mod get;
 pub mod post;
 
@@ -59,32 +61,25 @@ pub fn work(
     info!("{} worker thread spawned for {}", hex_uid, task.user_id);
     let client = CommandClient::from((&client, &hex_uid[..]));
 
-    let connection =
-        state.mysql_pool.get().expect("getting connection from mysql pool");
+    let connection = state.mysql_pool.get().expect("getting connection from mysql pool");
 
     let mut snmp_session = SnmpSession::new(state.printer_interface.clone());
 
-    let counter_base =
-        snmp_session.get_counter().expect("reading base counter value");
+    let counter_base = snmp_session.get_counter().expect("reading base counter value");
 
-    let mut accounting = Accounting::new(
-        task.user_id,
-        counter_base.clone(),
-        state.mysql_pool,
-        state.redis_pool,
-    );
+    let mut accounting =
+        Accounting::new(task.user_id, counter_base.clone(), state.mysql_pool, state.redis_pool);
 
     if accounting.not_enough_credit() {
         info!("not enough credit for one page, aborting");
-        return;
+        return
     }
 
     debug!("counter_base: {:?}", counter_base);
 
     // check energy status before initial waiting
     // 1 == ready
-    let energy_stat =
-        snmp_session.get_energy_stat().expect("getting energy status of device");
+    let energy_stat = snmp_session.get_energy_stat().expect("getting energy status of device");
     debug!("energy stat: {}", &energy_stat);
     thread::sleep(time::Duration::from_millis(match energy_stat {
         1 => 2000,
@@ -106,9 +101,7 @@ pub fn work(
         match receiver.try_recv() {
             Ok(command) => {
                 match command {
-                    WorkerCommand::Cancel => {
-                        break false;
-                    },
+                    WorkerCommand::Cancel => break false,
                     WorkerCommand::Hungup => {
                         hungup = true;
                     },
@@ -130,7 +123,8 @@ pub fn work(
                                 task.user_id,
                                 if color {
                                     job_row.pdf
-                                } else {
+                                }
+                                else {
                                     job_row.pdf_bw
                                 },
                             );
@@ -140,13 +134,12 @@ pub fn work(
                                 20000, // socket timeout in ms
                             );
 
-                            lpr_connection
-                                .print(&buf)
-                                .expect("printing job with lpr");
+                            lpr_connection.print(&buf).expect("printing job with lpr");
 
                             print_count += job.pages_to_print();
                             print_jobs.push(job);
-                        } else {
+                        }
+                        else {
                             println!("failed to find job with id {}", job_id);
                         }
                     },
@@ -163,7 +156,8 @@ pub fn work(
             last_value = current.total;
             loop_count = 0;
             accounting.set_value(current.clone() - counter_base.clone());
-        } else {
+        }
+        else {
             loop_count += 1;
             if loop_count % 200 == 0 {
                 debug!("loop_count: {:?}", loop_count);
@@ -173,19 +167,19 @@ pub fn work(
         if hungup && !print_jobs.is_empty() {
             if (current.total - counter_base.total) == i64::from(print_count) {
                 debug!("current: {:?}", current);
-                break true;
+                break true
             }
         }
 
         if accounting.not_enough_credit() {
             debug!("current: {:?}", current);
             info!("{} {} no credit left, clearing jobqueue", hex_uid, task.user_id);
-            break false;
+            break false
         }
 
         if hungup && loop_count > 1100 {
             warn!("{} {} jobs timeout", hex_uid, task.user_id);
-            break false;
+            break false
         }
     };
 
@@ -206,9 +200,9 @@ pub fn work(
         for job in print_jobs {
             if !job.options.keep {
                 debug!("deleting job {}", job.id);
-                delete_job_by_id(job.id, &connection)
-                    .expect("deleting job from table");
-            } else {
+                delete_job_by_id(job.id, &connection).expect("deleting job from table");
+            }
+            else {
                 debug!("keeping job {}", job.id);
             }
         }
