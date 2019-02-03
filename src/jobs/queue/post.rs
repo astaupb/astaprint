@@ -31,6 +31,7 @@ use rocket_contrib::json::Json;
 
 use model::task::dispatcher::DispatcherTask;
 
+use jobs::queue::data::PdfBody;
 use user::guard::UserGuard;
 
 use redis::{
@@ -41,26 +42,18 @@ use redis::{
 #[post("/queue?<filename>&<password>", data = "<data>", format = "application/pdf")]
 pub fn upload_job<'a>(
     user: UserGuard,
-    data: Vec<u8>,
+    data: PdfBody,
     filename: Option<String>,
     password: Option<String>,
     taskqueue: State<TaskQueueClient<DispatcherTask, ()>>,
     store: State<Store>,
 ) -> io::Result<Result<Accepted<Json<String>>, BadRequest<&'a str>>>
 {
-    if data.len() < 64 {
-        return Ok(Err(BadRequest(Some("body too small"))))
-    }
-
-    if !&String::from_utf8_lossy(&data[.. 64]).contains("%PDF-1") {
-        return Ok(Err(BadRequest(Some("could not find %PDF-1 in first 64 bytes of body"))))
-    }
-
     if let Some(_password) = password {
         // TODO decrypt with qpdf
     }
 
-    let uid = store.set(data).expect("saving file in store");
+    let uid = store.set(data.bytes).expect("saving file in store");
 
     let hex_uid = hex::encode(&uid[..]);
 

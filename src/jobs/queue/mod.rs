@@ -20,6 +20,8 @@
 pub mod get;
 pub mod post;
 
+pub mod data;
+
 use pdf::sanitize;
 
 use mysql::jobs::insert::insert_into_jobs;
