@@ -1,0 +1,15 @@
+[Unit]
+AssertPathExists=/home/astaprint/bin
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+WorkingDirectory=/home/astaprint/
+EnvironmentFile=/home/astaprint/.env
+ExecStart=/home/astaprint/bin/example
+Restart=always
+PrivateTmp=true
+NoNewPrivileges=true
+
+[Install]
+WantedBy=default.target
