@@ -141,6 +141,8 @@ fn rocket() -> rocket::Rocket
     let dispatcher_queue: TaskQueueClient<DispatcherTask, ()> =
         TaskQueueClient::new("dispatcher", redis_pool.clone());
 
+    let redis_pool = get_redis_pool(20, Redis::Store);
+
     let redis_store = Store::from(redis_pool);
 
     let mut worker_queues: HashMap<u32, TaskQueueClient<WorkerTask, WorkerCommand>> =
@@ -218,7 +220,7 @@ fn rocket() -> rocket::Rocket
             delete_queue_as_admin,
             get_queue_as_admin,
             post_new_admin,
-            post_new_user
+            //post_new_user
         ])
         .attach(cors())
 }
