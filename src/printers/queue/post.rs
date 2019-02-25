@@ -47,7 +47,7 @@ pub fn print_job(
     user: UserGuard,
     device_id: u32,
     queues: State<HashMap<u32, TaskQueueClient<WorkerTask, WorkerCommand>>>,
-    id: u32,
+    id: Option<u32>,
 ) -> QueryResult<Option<Accepted<Json<String>>>>
 {
     let queue = match queues.get(&device_id) {
@@ -67,9 +67,11 @@ pub fn print_job(
 
     let queue = CommandClient::from((queue, &hex_uid[..]));
 
-    queue.send_command(&WorkerCommand::Print(id)).expect("sending print command to worker");
-
-    queue.send_command(&WorkerCommand::Hungup).expect("sending hungup command to worker");
+    if let Some(id) = id {
+        queue.send_command(&WorkerCommand::Print(id)).expect("sending print command to worker");
+        // hungup for fast lane print
+        queue.send_command(&WorkerCommand::Hungup).expect("sending hungup command to worker");
+    }
 
     Ok(Some(Accepted(Some(Json(hex_uid)))))
 }
