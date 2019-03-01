@@ -25,7 +25,6 @@ pub mod data;
 use pdf::sanitize;
 
 use mysql::jobs::insert::insert_into_jobs;
-use threadpool::ThreadPool;
 
 use model::{
     job::{
@@ -59,10 +58,8 @@ impl<'a> From<&'a DispatcherTask> for DispatcherTaskResponse
 pub fn dispatch(
     task: DispatcherTask,
     state: DispatcherState,
-    thread_pool: ThreadPool,
 )
 {
-    thread_pool.execute(move || {
         let hex_uid = hex::encode(&task.uid[..]);
         info!("{} {} started", task.user_id, &hex_uid[.. 8]);
 
@@ -107,5 +104,4 @@ pub fn dispatch(
             "{} finished, pagecount: {}, colored: {}, a3: {}",
             hex_uid, result.pagecount, result.colored, result.a3
         );
-    });
 }

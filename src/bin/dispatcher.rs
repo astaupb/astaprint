@@ -32,6 +32,7 @@ extern crate pdf;
 use logger::Logger;
 
 use threadpool::ThreadPool;
+use std::thread;
 
 use redis::{
     get_redis_pool,
@@ -73,6 +74,11 @@ fn main()
     info!("listening");
 
     taskqueue.listen(|task, state, _client| {
-        dispatch(task, state.clone(), state.thread_pool);
+        match thread::spawn(move || {
+            dispatch(task, state.clone());
+        }).join() {
+            Ok(_) => (),
+            Err(e) => error!("{:?}", e),
+        }
     });
 }
