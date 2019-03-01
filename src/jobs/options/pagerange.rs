@@ -17,7 +17,11 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use std::str::FromStr;
+use std::{
+    str::FromStr,
+    fmt,
+};
+
 
 #[derive(Debug)]
 struct PageDifference
@@ -64,6 +68,50 @@ pub struct PageRange
     pages: Vec<bool>,
 }
 
+impl PageRange
+{
+    pub fn pagecount(&self) -> usize
+    {
+        self.pages.iter().filter(|page| **page).count()
+    }
+    pub fn truncate(&mut self, max: usize)
+    {
+        self.pages.truncate(max);
+    }
+}
+
+impl fmt::Display for PageRange
+{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+    {
+        let mut page = 1;
+        while page < self.pages.len() + 1 {
+            let mut diff = 0;
+            while self.pages[page + diff - 1] {
+                if page + diff < self.pages.len() {
+                    diff += 1;
+                } else {
+                    break;
+                }
+            }
+            if diff > 0 {
+                if diff == 1 {
+                    write!(f, "{}", page)?;
+                } else {
+                    write!(f, "{}-{}", page, page + diff)?;
+                }
+                page += diff;
+                if page < self.pages.len() {
+                    write!(f, ",")?;
+                }
+            } else {
+                page += 1;
+            }
+        }
+        Ok(())
+    }
+}
+
 impl<'a> FromStr for PageRange
 {
     type Err = ();
@@ -99,26 +147,31 @@ impl<'a> FromStr for PageRange
     }
 }
 
-#[test]
-pub fn pagerange_is_valid()
+#[cfg(test)]
+pub mod tests
 {
-    let range = PageRange::from_str("1,2-3,7-20,21-29");
-    println!("{:?}", range);
-    assert!(range.is_ok());
+    use jobs::options::pagerange::PageRange;
+    use std::str::FromStr;
+    pub fn print_range(range_str: &str)
+    {
+        println!("range_str: {}", range_str);
+        let range = PageRange::from_str(range_str)
+            .expect("creating PageRange from str");
+        println!("range: {:?}", range);
+        println!("range: {}", range);
+        println!("pagecount: {}", range.pagecount());
+    }
+    #[test]
+    pub fn no_err_from_str()
+    {
+        print_range("1,2-3,7-20,21-29");
 
-    let range = PageRange::from_str("1,3-4,7-10");
-    println!("{:?}", range);
-    assert!(range.is_ok());
+        print_range("1,3-4,7-10");
 
-    let range = PageRange::from_str("1, 3 -2,7-10");
-    println!("{:?}", range);
-    assert!(range.is_ok());
+        print_range("1, 3 -2,7-10");
 
-    let range = PageRange::from_str("1df3-4,7-10");
-    println!("{:?}", range);
-    assert!(range.is_ok());
+        print_range("1df3-4,7-10");
 
-    let range = PageRange::from_str("1-2-4,7-10, 11-12");
-    println!("{:?}", range);
-    assert!(range.is_ok());
+        print_range("1-2-4,7-10, 11-12");
+    }
 }
