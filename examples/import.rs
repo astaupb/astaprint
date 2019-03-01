@@ -28,7 +28,9 @@ extern crate diesel;
 use std::{
     env,
     fs::File,
-    io::Read,
+    io::{
+        Read, Write,
+    },
 };
 
 fn main()
@@ -36,6 +38,8 @@ fn main()
     let mysql_url = env::var("ASTAPRINT_DATABASE_URL").expect("reading mysql url from environment");
 
     let mut file = File::open("dump.tsv").unwrap();
+
+    let mut trailings = File::create("trailings.dump").unwrap();
 
     let mut contents = String::new();
 
@@ -59,16 +63,22 @@ fn main()
             if split.len() < 4 {
                 break
             }
+            if split[0] != split[5] {
+                trailings.write(split[0].as_bytes()).unwrap();
+                trailings.write("\n".as_bytes()).unwrap();
+            }
             let id: u32 = split[0].parse().unwrap();
             let card: u64 = split[1].parse().unwrap();
             let pin: u32 = split[2].parse().unwrap_or(99999);
             let locked = split[3] == "1";
+            /*
             match add_user(Some(id), split[1], split[2], Some(card), Some(pin), locked, &connection)
             {
                 Ok(_) => (), // println!("{} {} imported..", split[0],
                 // split[1]),
                 Err(e) => println!("{}: {:?}", split[1], e),
             }
+            */
         }
         println!("{} imported", user_count);
     }

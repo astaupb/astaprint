@@ -203,7 +203,7 @@ fn rocket() -> rocket::Rocket
             change_password,
             fetch_username,
             change_username,
-            register_new_user
+            //register_new_user
         ])
         .mount("/user/tokens", routes![
             get_all_tokens,
@@ -220,7 +220,7 @@ fn rocket() -> rocket::Rocket
             delete_queue_as_admin,
             get_queue_as_admin,
             post_new_admin,
-            //post_new_user
+            post_new_user
         ])
         .attach(cors())
 }

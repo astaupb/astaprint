@@ -88,8 +88,8 @@ pub fn post_new_user(
 ) -> QueryResult<Status>
 {
     let new = new.into_inner();
-    match add_user(None, &new.name, &new.password, new.card, new.pin, false, &admin.connection) {
-        Ok(()) => Ok(Status::new(204, "Success - No Content")),
+    match add_user(&new.name, &new.password, new.card, new.pin, false, &admin.connection) {
+        Ok(_id) => Ok(Status::new(204, "Success - No Content")),
         Err(UserAddError::UsernameExists) => Ok(Status::new(472, "username already taken")),
         Err(UserAddError::InsertError(e)) => Err(e),
     }

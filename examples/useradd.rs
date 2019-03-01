@@ -20,11 +20,10 @@
 extern crate mysql;
 use mysql::{
     create_mysql_pool,
-    user::select::select_user_id_by_name,
 };
 
-extern crate legacy;
-use legacy::tds::insert_empty_credit;
+extern crate astaprint;
+use astaprint::user::add::add_user;
 
 use std::env;
 
@@ -38,6 +37,9 @@ fn main()
         .expect("reading ASTAPRINT_DATABASE_URL from environment");
 
     let connection = create_mysql_pool(&mysql_url, 1).get().unwrap();
+    let sn: Option<u64> = arg[1].parse().ok();
+    let pin: Option<u32> = arg[2].parse().ok();
+    println!("sn: {:?}, pin: {:?}", sn, pin);
 
-    add_user(None, &arg[1], &arg[2], None, None, false, &connection).expect("adding user");
+    add_user(&arg[1], &arg[2], sn, pin, false, &connection).expect("adding user");
 }

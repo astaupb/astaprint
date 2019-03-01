@@ -29,7 +29,7 @@ use mysql::user::{
     select::*,
 };
 
-use legacy::tds::insert_empty_credit;
+use legacy::tds::insert_user;
 
 #[derive(Debug)]
 pub enum UserAddError
@@ -47,14 +47,13 @@ impl From<Error> for UserAddError
 }
 
 pub fn add_user(
-    id: Option<u32>,
     name: &str,
     password: &str,
     card: Option<u64>,
     pin: Option<u32>,
     locked: bool,
     connection: &MysqlConnection,
-) -> Result<(), UserAddError>
+) -> Result<u32, UserAddError>
 {
     let user_id: Option<u32> = select_user_id_by_name(name, connection)?;
 
@@ -64,18 +63,20 @@ pub fn add_user(
 
     let (hash, salt) = PasswordHash::create(password);
 
-    match id {
-        Some(id) => {
-            insert_into_user_with_id(id, name, hash, salt, card, pin, locked, connection)?;
-        },
-        None => {
-            insert_into_user(name, hash, salt, card, pin, locked, connection)?;
-        },
-    }
+    let card = match card {
+        Some(sn) => format!("{}", sn),
+        None => "".to_string(),
+    };
 
-    let user_id = select_user_id_by_name(name, connection)?.unwrap();
+    let pin = match pin {
+        Some(pin) => format!("{}", pin),
+        None => "".to_string(),
+    };
 
-    insert_empty_credit(user_id);
+    let user_id = insert_user(&card, &pin);
+    println!("user_id: {}", user_id);
 
-    Ok(())
+    insert_into_user_with_id(user_id, name, hash, salt, card.parse::<u64>().ok(), pin.parse::<u32>().ok(), locked, connection)?;
+
+    Ok(user_id)
 }

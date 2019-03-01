@@ -28,6 +28,9 @@ use sodium::pwhash::PasswordHash;
 
 use std::env;
 
+extern crate astaprint;
+use astaprint::admin::Admin;
+
 fn main()
 {
     let arg: Vec<_> = env::args().collect();
