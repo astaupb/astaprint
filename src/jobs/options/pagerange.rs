@@ -93,9 +93,10 @@ impl PageRange
                 page_singles.push(page);
             }
         }
+        debug!("page_singles: {:?}", page_singles);
         let mut pages: Vec<bool> = vec![false; pagecount];
         for page in page_singles.iter() {
-            if *page < pagecount as u32 {
+            if *page <= pagecount as u32 {
                 pages[*page as usize - 1] = true;
             }
         }
