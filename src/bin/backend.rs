@@ -181,7 +181,8 @@ fn rocket() -> rocket::Rocket
         .mount("/jobs/", routes![
             jobs,
             update_options,
-            update_single_option,
+            //TODO: pagerange sanitizing
+            //update_single_option,
             fetch_options,
             fetch_single_option,
             fetch_info,

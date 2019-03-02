@@ -84,6 +84,10 @@ impl fmt::Display for PageRange
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
     {
+        if self.pages.iter().all(|&x| x) {
+            return write!(f, "");
+        }
+
         let mut page = 1;
         while page < self.pages.len() + 1 {
             let mut diff = 0;
@@ -112,12 +116,21 @@ impl fmt::Display for PageRange
     }
 }
 
+pub enum PageRangeErr
+{
+    Invalid,
+    Empty,
+}
+
 impl<'a> FromStr for PageRange
 {
-    type Err = ();
+    type Err = PageRangeErr;
 
-    fn from_str(range: &str) -> Result<PageRange, ()>
+    fn from_str(range: &str) -> Result<PageRange, PageRangeErr>
     {
+        if range == "" {
+            return Err(PageRangeErr::Empty);
+        }
         let range = range.trim();
 
         let steps: Vec<&str> = range.split(',').collect();
@@ -134,16 +147,20 @@ impl<'a> FromStr for PageRange
         }
         let pagecount = match page_singles.iter().max() {
             Some(int) => *int as usize,
-            None => return Err(()),
+            None => return Err(PageRangeErr::Invalid),
         };
 
         let mut pages: Vec<bool> = vec![false; pagecount];
         for page in page_singles.iter() {
             pages[*page as usize - 1] = true;
         }
-        Ok(PageRange {
-            pages,
-        })
+        if pages.iter().all(|page| !page) {
+            Err(PageRangeErr::Invalid)
+        } else {
+            Ok(PageRange {
+                pages,
+            })
+        }
     }
 }
 

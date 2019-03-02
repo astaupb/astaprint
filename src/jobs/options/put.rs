@@ -27,7 +27,7 @@ use model::job::options::JobOptions;
 
 use jobs::{
     options::{
-        pagerange::PageRange,
+        pagerange::*,
         Value::{
             self,
             B,
@@ -73,8 +73,10 @@ pub fn update_single_option(
             options.a3 = value;
         },
         ("range", S(value)) => {
-            if PageRange::from_str(&value).is_ok() {
-                options.range = value;
+            if let Ok(range) = PageRange::from_str(&value) {
+                options.range = format!("{}", range);
+            } else {
+                return Ok(Err(Status::new(400, "Bad Request")));
             }
         },
         ("nup", I(value)) => {
@@ -99,9 +101,25 @@ pub fn update_options(
     options: Json<JobOptions>,
 ) -> QueryResult<Status>
 {
-    let serialized = bincode::serialize(&options.into_inner()).expect("serializing JobOptions");
+    let mut options: JobOptions = options.into_inner();
+    match PageRange::from_str(&options.range) {
+        Ok(range) => {
+            debug!("range: {:?}", range);
+            options.range = format!("{}", range);
+            debug!("options.range: {:?}", options.range);
+            let serialized = bincode::serialize(&options).expect("serializing JobOptions");
 
-    update_job_options(id, user.id, serialized, &user.connection)?;
+            update_job_options(id, user.id, serialized, &user.connection)?;
+            Ok(Status::new(205, "Reset Content"))
+        },
+        Err(PageRangeErr::Empty) => {
+        options.range = String::from(""); 
+        let serialized = bincode::serialize(&options).expect("serializing JobOptions");
 
-    Ok(Status::new(205, "Reset Content"))
+        update_job_options(id, user.id, serialized, &user.connection)?;
+        Ok(Status::new(205, "Reset  Content"))
+        },
+        Err(PageRangeErr::Invalid) =>
+        Ok(Status::new(400, "Bad Request"))
+    }
 }
