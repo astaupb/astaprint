@@ -74,9 +74,41 @@ impl PageRange
     {
         self.pages.iter().filter(|page| **page).count()
     }
-    pub fn truncate(&mut self, max: usize)
+    pub fn new(range: &str, pagecount: usize) -> Option<PageRange>
     {
-        self.pages.truncate(max);
+        if range == "" || range == "-" {
+            return Some(PageRange{pages: vec![true; pagecount]);
+        }
+        let range = range.trim();
+
+        let steps: Vec<&str> = range.split(',').collect();
+
+        let mut page_singles: Vec<u32> = steps.iter().filter_map(|s| s.parse().ok()).collect();
+
+        let page_differences: Vec<PageDifference> =
+            steps.iter().filter_map(|s| PageDifference::from_str(s).ok()).collect();
+
+        for diff in page_differences.iter() {
+            for page in diff.minuend ..= diff.subtrahend {
+                page_singles.push(page);
+            }
+        }
+        let pagecount = match page_singles.iter().max() {
+            Some(int) => *int as usize,
+            None => return None,
+        };
+
+        let mut pages: Vec<bool> = vec![false; pagecount];
+        for page in page_singles.iter() {
+            pages[*page as usize - 1] = true;
+        }
+        if pages.iter().all(|page| !page) {
+            None
+        } else {
+            Some(PageRange {
+                pages,
+            })
+        }
     }
 }
 
@@ -113,54 +145,6 @@ impl fmt::Display for PageRange
             }
         }
         Ok(())
-    }
-}
-
-pub enum PageRangeErr
-{
-    Invalid,
-    Empty,
-}
-
-impl<'a> FromStr for PageRange
-{
-    type Err = PageRangeErr;
-
-    fn from_str(range: &str) -> Result<PageRange, PageRangeErr>
-    {
-        if range == "" {
-            return Err(PageRangeErr::Empty);
-        }
-        let range = range.trim();
-
-        let steps: Vec<&str> = range.split(',').collect();
-
-        let mut page_singles: Vec<u32> = steps.iter().filter_map(|s| s.parse().ok()).collect();
-
-        let page_differences: Vec<PageDifference> =
-            steps.iter().filter_map(|s| PageDifference::from_str(s).ok()).collect();
-
-        for diff in page_differences.iter() {
-            for page in diff.minuend ..= diff.subtrahend {
-                page_singles.push(page);
-            }
-        }
-        let pagecount = match page_singles.iter().max() {
-            Some(int) => *int as usize,
-            None => return Err(PageRangeErr::Invalid),
-        };
-
-        let mut pages: Vec<bool> = vec![false; pagecount];
-        for page in page_singles.iter() {
-            pages[*page as usize - 1] = true;
-        }
-        if pages.iter().all(|page| !page) {
-            Err(PageRangeErr::Invalid)
-        } else {
-            Ok(PageRange {
-                pages,
-            })
-        }
     }
 }
 
