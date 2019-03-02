@@ -53,6 +53,7 @@ pub fn update_options(
             debug!("range: {:?}", range);
 
             options.range = format!("{}", range);
+            let _char = options.range.pop();
             debug!("options.range: {:?}", options.range);
 
             let serialized = bincode::serialize(&options).expect("serializing JobOptions");

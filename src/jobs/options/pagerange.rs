@@ -93,14 +93,11 @@ impl PageRange
                 page_singles.push(page);
             }
         }
-        let pagecount = match page_singles.iter().max() {
-            Some(int) => *int as usize,
-            None => return None,
-        };
-
         let mut pages: Vec<bool> = vec![false; pagecount];
         for page in page_singles.iter() {
-            pages[*page as usize - 1] = true;
+            if *page < pagecount as u32 {
+                pages[*page as usize - 1] = true;
+            }
         }
         if pages.iter().all(|page| !page) {
             None
@@ -123,25 +120,22 @@ impl fmt::Display for PageRange
         let mut page = 1;
         while page < self.pages.len() + 1 {
             let mut diff = 0;
-            while self.pages[page + diff - 1] {
-                if page + diff < self.pages.len() {
-                    diff += 1;
+            while page + diff <= self.pages.len() {
+                if self.pages[page - 1 + diff] {
+                    if self.pages[page + diff] {
+                        while page + diff < self.pages.len() && self.pages[page + diff] {
+                            diff += 1;
+                        }
+                        write!(f, "{}-{},", page, page + diff)?;
+                        page = page + diff + 2;
+                        diff = 0;
+                    } else {
+                        write!(f, "{},", page)?;
+                        page += 2;
+                    }
                 } else {
-                    break;
+                    page += 1;
                 }
-            }
-            if diff > 0 {
-                if diff == 1 {
-                    write!(f, "{}", page)?;
-                } else {
-                    write!(f, "{}-{}", page, page + diff)?;
-                }
-                page += diff;
-                if page < self.pages.len() {
-                    write!(f, ",")?;
-                }
-            } else {
-                page += 1;
             }
         }
         Ok(())
@@ -154,12 +148,14 @@ pub mod tests
     use jobs::options::pagerange::PageRange;
     pub fn print_range(range_str: &str, pagecount: usize)
     {
-        println!("range_str: {}", range_str);
+        println!("################################");
+        println!("range_str: {}, pagecount: {}", range_str, pagecount);
         match PageRange::new(range_str, pagecount) {
             Some(range) => {
-                println!("range: {:?}", range);
-                println!("range: {}", range);
-                println!("pagecount: {}", range.pagecount());
+                println!("range: {:?}, fmt: {}, count: {}", range, range, range.pagecount());
+                let mut range_str = format!("{}", range);
+                let _char = range_str.pop();
+                println!("popped: {}", range_str);
             },
             None => println!("None"),
         }
@@ -170,7 +166,8 @@ pub mod tests
         print_range("1,2-3,7-20,21-29", 32);
 
         print_range("2,3", 5);
-        print_range("2,3", 2);
+        print_range("2-3", 4);
+        print_range("2-4", 4);
 
         print_range("1,3-4,7-10", 11);
 
@@ -179,5 +176,9 @@ pub mod tests
         print_range("1df3-4,7-10", 17);
 
         print_range("1-2-4,7-10, 11-12", 13);
+
+        print_range("1-7,10,11,12-16", 13);
+        print_range("", 1);
+        print_range("-", 7);
     }
 }
