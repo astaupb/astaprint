@@ -152,27 +152,32 @@ impl fmt::Display for PageRange
 pub mod tests
 {
     use jobs::options::pagerange::PageRange;
-    use std::str::FromStr;
-    pub fn print_range(range_str: &str)
+    pub fn print_range(range_str: &str, pagecount: usize)
     {
         println!("range_str: {}", range_str);
-        let range = PageRange::from_str(range_str)
-            .expect("creating PageRange from str");
-        println!("range: {:?}", range);
-        println!("range: {}", range);
-        println!("pagecount: {}", range.pagecount());
+        match PageRange::new(range_str, pagecount) {
+            Some(range) => {
+                println!("range: {:?}", range);
+                println!("range: {}", range);
+                println!("pagecount: {}", range.pagecount());
+            },
+            None => println!("None"),
+        }
     }
     #[test]
     pub fn no_err_from_str()
     {
-        print_range("1,2-3,7-20,21-29");
+        print_range("1,2-3,7-20,21-29", 32);
 
-        print_range("1,3-4,7-10");
+        print_range("2,3", 5);
+        print_range("2,3", 2);
 
-        print_range("1, 3 -2,7-10");
+        print_range("1,3-4,7-10", 11);
 
-        print_range("1df3-4,7-10");
+        print_range("1, 3 -2,7-10", 4);
 
-        print_range("1-2-4,7-10, 11-12");
+        print_range("1df3-4,7-10", 17);
+
+        print_range("1-2-4,7-10, 11-12", 13);
     }
 }
