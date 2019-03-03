@@ -18,9 +18,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 extern crate mysql;
-use mysql::{
-    create_mysql_pool,
-};
+use mysql::create_mysql_pool;
 
 extern crate astaprint;
 use astaprint::user::add::add_user;

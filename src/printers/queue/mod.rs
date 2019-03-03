@@ -84,7 +84,7 @@ pub fn work(
     if energy_stat != 1 {
         snmp_session.wake().expect("waking device");
     }
-    let mut timeout = 0;
+    let mut loop_count = 0;
     let mut print_count = 0;
     let mut hungup = false;
     let mut last_value = counter_base.total;

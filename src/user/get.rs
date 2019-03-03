@@ -70,7 +70,4 @@ pub fn fetch_username(user: UserGuard) -> QueryResult<Json<String>>
 }
 
 #[get("/credit")]
-pub fn credit_redirect() -> Redirect
-{
-    Redirect::to("/astaprint/journal/credit")
-}
+pub fn credit_redirect() -> Redirect { Redirect::to("/astaprint/journal/credit") }

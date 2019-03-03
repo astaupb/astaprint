@@ -20,7 +20,4 @@
 use admin::login::AdminLoginGuard;
 use rocket_contrib::json::Json;
 #[post("/tokens")]
-pub fn post_admin_token(guard: AdminLoginGuard) -> Json<String>
-{
-    Json(guard.token)
-}
+pub fn post_admin_token(guard: AdminLoginGuard) -> Json<String> { Json(guard.token) }

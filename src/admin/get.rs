@@ -112,7 +112,4 @@ pub fn get_user_journal_as_admin(
 }
 
 #[get("/users/<id>/credit")]
-pub fn get_user_credit_as_admin(id: u32) -> Json<i32>
-{
-    Json(get_credit(id))
-}
+pub fn get_user_credit_as_admin(id: u32) -> Json<i32> { Json(get_credit(id)) }

@@ -40,10 +40,7 @@ pub enum UserAddError
 
 impl From<Error> for UserAddError
 {
-    fn from(err: Error) -> UserAddError
-    {
-        UserAddError::InsertError(err)
-    }
+    fn from(err: Error) -> UserAddError { UserAddError::InsertError(err) }
 }
 
 pub fn add_user(
@@ -76,7 +73,16 @@ pub fn add_user(
     let user_id = insert_user(&card, &pin);
     println!("user_id: {}", user_id);
 
-    insert_into_user_with_id(user_id, name, hash, salt, card.parse::<u64>().ok(), pin.parse::<u32>().ok(), locked, connection)?;
+    insert_into_user_with_id(
+        user_id,
+        name,
+        hash,
+        salt,
+        card.parse::<u64>().ok(),
+        pin.parse::<u32>().ok(),
+        locked,
+        connection,
+    )?;
 
     Ok(user_id)
 }

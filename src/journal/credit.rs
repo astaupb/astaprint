@@ -28,10 +28,7 @@ use legacy::tds::get_credit;
 
 use user::guard::UserGuard;
 
-pub fn decimal_to_cent(dec: BigDecimal) -> i32
-{
-    ((dec * BigDecimal::from(100)).to_i32()).unwrap()
-}
+pub fn decimal_to_cent(dec: BigDecimal) -> i32 { ((dec * BigDecimal::from(100)).to_i32()).unwrap() }
 #[get("/credit")]
 pub fn credit(user: UserGuard) -> Json<i32>
 {

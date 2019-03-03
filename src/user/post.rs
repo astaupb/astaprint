@@ -24,19 +24,12 @@ use user::{
     login::LoginGuard,
 };
 
-use diesel::{
-    prelude::*,
-};
+use diesel::prelude::*;
 
-use mysql::user::{
-    delete::*,
-};
+use mysql::user::delete::*;
 
 #[post("/tokens")]
-pub fn login(login: LoginGuard) -> Json<String>
-{
-    Json(login.token)
-}
+pub fn login(login: LoginGuard) -> Json<String> { Json(login.token) }
 
 #[post("/logout")]
 pub fn logout(user: UserGuard) -> QueryResult<String>

@@ -127,10 +127,7 @@ fn cors() -> rocket_cors::Cors
 }
 
 #[get("/")]
-fn api_reference() -> &'static str
-{
-    include_str!("../../openapi.yaml")
-}
+fn api_reference() -> &'static str { include_str!("../../openapi.yaml") }
 
 fn rocket() -> rocket::Rocket
 {
@@ -181,8 +178,6 @@ fn rocket() -> rocket::Rocket
         .mount("/jobs/", routes![
             jobs,
             update_options,
-            //TODO: pagerange sanitizing
-            //update_single_option,
             fetch_options,
             fetch_single_option,
             fetch_info,
@@ -204,7 +199,7 @@ fn rocket() -> rocket::Rocket
             change_password,
             fetch_username,
             change_username,
-            //register_new_user
+            // register_new_user
         ])
         .mount("/user/tokens", routes![
             get_all_tokens,

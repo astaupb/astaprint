@@ -18,10 +18,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use std::{
-    str::FromStr,
     fmt,
+    str::FromStr,
 };
-
 
 #[derive(Debug)]
 struct PageDifference
@@ -70,11 +69,12 @@ pub struct PageRange
 
 impl PageRange
 {
-    pub fn pagecount(&self) -> usize
-    {
-        self.pages.iter().filter(|page| **page).count()
-    }
-    pub fn new(range: &str, pagecount: usize) -> Option<PageRange>
+    pub fn pagecount(&self) -> usize { self.pages.iter().filter(|page| **page).count() }
+
+    pub fn new(
+        range: &str,
+        pagecount: usize,
+    ) -> Option<PageRange>
     {
         if range == "" || range == "-" {
             return Some(PageRange{pages: vec![true; pagecount]);
@@ -102,7 +102,8 @@ impl PageRange
         }
         if pages.iter().all(|page| !page) {
             None
-        } else {
+        }
+        else {
             Some(PageRange {
                 pages,
             })
@@ -112,7 +113,10 @@ impl PageRange
 
 impl fmt::Display for PageRange
 {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter,
+    ) -> fmt::Result
     {
         if self.pages.iter().all(|&x| x) {
             return write!(f, "");
@@ -130,11 +134,13 @@ impl fmt::Display for PageRange
                         write!(f, "{}-{},", page, page + diff)?;
                         page = page + diff + 2;
                         diff = 0;
-                    } else {
+                    }
+                    else {
                         write!(f, "{},", page)?;
                         page += 2;
                     }
-                } else {
+                }
+                else {
                     page += 1;
                 }
             }
@@ -147,7 +153,10 @@ impl fmt::Display for PageRange
 pub mod tests
 {
     use jobs::options::pagerange::PageRange;
-    pub fn print_range(range_str: &str, pagecount: usize)
+    pub fn print_range(
+        range_str: &str,
+        pagecount: usize,
+    )
     {
         println!("################################");
         println!("range_str: {}, pagecount: {}", range_str, pagecount);

@@ -23,14 +23,12 @@ use rocket::http::Status;
 use rocket_contrib::json::Json;
 
 use model::job::{
-    options::JobOptions,
     info::JobInfo,
+    options::JobOptions,
 };
 
 use jobs::{
-    options::{
-        pagerange::*,
-    },
+    options::pagerange::*,
     *,
 };
 
@@ -60,11 +58,12 @@ pub fn update_options(
             update_job_options(id, user.id, serialized, &user.connection)?;
 
             Ok(Status::new(205, "Reset Content"))
-        } else {
+        }
+        else {
             Ok(Status::new(400, "Bad Request"))
         }
-    } else {
-        Ok(Status::new(404, "Not Found")) 
+    }
+    else {
+        Ok(Status::new(404, "Not Found"))
     }
 }
-
