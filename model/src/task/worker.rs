@@ -43,5 +43,6 @@ pub enum WorkerCommand
     Print(u32),
     Cancel,
     Hungup,
+    HeartBeat,
 }
 

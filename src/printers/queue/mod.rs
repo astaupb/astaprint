@@ -58,7 +58,7 @@ pub fn work(
 )
 {
     let hex_uid = hex::encode(&task.uid[..]);
-    info!("{} worker thread spawned for {}", hex_uid, task.user_id);
+    info!("{}#{}", &hex_uid[..8], task.user_id);
     let client = CommandClient::from((&client, &hex_uid[..]));
 
     let connection = state.mysql_pool.get().expect("getting connection from mysql pool");
@@ -81,16 +81,10 @@ pub fn work(
     // 1 == ready
     let energy_stat = snmp_session.get_energy_stat().expect("getting energy status of device");
     debug!("energy stat: {}", &energy_stat);
-    thread::sleep(time::Duration::from_millis(match energy_stat {
-        1 => 2000,
-        _ => {
-            match snmp_session.wake() {
-                Ok(_) => 10000,
-                Err(_) => 12000,
-            }
-        },
-    }));
-    let mut loop_count = 0;
+    if energy_stat != 1 {
+        snmp_session.wake().expect("waking device");
+    }
+    let mut timeout = 0;
     let mut print_count = 0;
     let mut hungup = false;
     let mut last_value = counter_base.total;
@@ -102,6 +96,8 @@ pub fn work(
             Ok(command) => {
                 match command {
                     WorkerCommand::Cancel => break false,
+                    WorkerCommand::HeartBeat => {
+                    },
                     WorkerCommand::Hungup => {
                         hungup = true;
                     },
@@ -173,12 +169,12 @@ pub fn work(
 
         if accounting.not_enough_credit() {
             debug!("current: {:?}", current);
-            info!("{} {} no credit left, clearing jobqueue", hex_uid, task.user_id);
+            info!("{}#{} not enough credit, aborting", &hex_uid[..8], task.user_id);
             break false
         }
 
         if hungup && loop_count > 1100 {
-            warn!("{} {} jobs timeout", hex_uid, task.user_id);
+            info!("{}#{} timeout", &hex_uid[..8], task.user_id);
             break false
         }
     };
@@ -194,16 +190,13 @@ pub fn work(
     accounting.set_value(current.clone() - counter_base.clone());
     accounting.finish();
 
-    debug!("{} completed: {}, print_jobs: {:?}", hex_uid, completed, print_jobs);
+    debug!("completed: {:?}, print_jobs: {:?}", completed, print_jobs);
 
     if completed {
         for job in print_jobs {
+            debug!("job: {:?}", job);
             if !job.options.keep {
-                debug!("deleting job {}", job.id);
                 delete_job_by_id(job.id, &connection).expect("deleting job from table");
-            }
-            else {
-                debug!("keeping job {}", job.id);
             }
         }
     }
