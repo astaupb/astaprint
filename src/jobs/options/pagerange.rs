@@ -77,7 +77,9 @@ impl PageRange
     ) -> Option<PageRange>
     {
         if range == "" || range == "-" {
-            return Some(PageRange{pages: vec![true; pagecount]})
+            return Some(PageRange {
+                pages: vec![true; pagecount],
+            })
         }
         let range = range.trim();
 
