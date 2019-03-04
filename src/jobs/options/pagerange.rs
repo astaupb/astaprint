@@ -129,7 +129,7 @@ impl fmt::Display for PageRange
             let mut diff = 0;
             while page + diff <= self.pages.len() {
                 if self.pages[page - 1 + diff] {
-                    if self.pages[page + diff] {
+                    if page + diff < self.pages.len() && self.pages[page + diff] {
                         while page + diff < self.pages.len() && self.pages[page + diff] {
                             diff += 1;
                         }
