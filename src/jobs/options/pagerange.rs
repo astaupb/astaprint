@@ -77,7 +77,7 @@ impl PageRange
     ) -> Option<PageRange>
     {
         if range == "" || range == "-" {
-            return Some(PageRange{pages: vec![true; pagecount]);
+            return Some(PageRange{pages: vec![true; pagecount]})
         }
         let range = range.trim();
 
@@ -119,7 +119,7 @@ impl fmt::Display for PageRange
     ) -> fmt::Result
     {
         if self.pages.iter().all(|&x| x) {
-            return write!(f, "");
+            return write!(f, "")
         }
 
         let mut page = 1;

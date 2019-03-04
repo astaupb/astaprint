@@ -58,7 +58,7 @@ pub fn work(
 )
 {
     let hex_uid = hex::encode(&task.uid[..]);
-    info!("{}#{}", &hex_uid[..8], task.user_id);
+    info!("{}#{}", &hex_uid[.. 8], task.user_id);
     let client = CommandClient::from((&client, &hex_uid[..]));
 
     let connection = state.mysql_pool.get().expect("getting connection from mysql pool");
@@ -96,8 +96,7 @@ pub fn work(
             Ok(command) => {
                 match command {
                     WorkerCommand::Cancel => break false,
-                    WorkerCommand::HeartBeat => {
-                    },
+                    WorkerCommand::HeartBeat => {},
                     WorkerCommand::Hungup => {
                         hungup = true;
                     },
@@ -169,12 +168,12 @@ pub fn work(
 
         if accounting.not_enough_credit() {
             debug!("current: {:?}", current);
-            info!("{}#{} not enough credit, aborting", &hex_uid[..8], task.user_id);
+            info!("{}#{} not enough credit, aborting", &hex_uid[.. 8], task.user_id);
             break false
         }
 
         if hungup && loop_count > 1100 {
-            info!("{}#{} timeout", &hex_uid[..8], task.user_id);
+            info!("{}#{} timeout", &hex_uid[.. 8], task.user_id);
             break false
         }
     };
