@@ -1,3 +1,5 @@
+pub mod pagerange;
+
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct JobOptions
 {

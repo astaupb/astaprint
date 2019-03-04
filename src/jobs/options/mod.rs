@@ -20,8 +20,6 @@
 pub mod get;
 pub mod put;
 
-pub mod pagerange;
-
 use model::job::options::JobOptions;
 
 #[derive(Serialize, Deserialize, Debug)]

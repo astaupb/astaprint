@@ -21,6 +21,8 @@ pub mod delete;
 pub mod get;
 pub mod post;
 
+pub mod timeout;
+
 use model::{
     job::Job,
     task::worker::{
@@ -37,7 +39,10 @@ use std::{
 
 use lpr::LprConnection;
 
-use printers::accounting::Accounting;
+use printers::{
+    accounting::Accounting,
+    queue::timeout::TimeOut,
+};
 
 use mysql::jobs::{
     delete::*,
@@ -84,7 +89,8 @@ pub fn work(
     if energy_stat != 1 {
         snmp_session.wake().expect("waking device");
     }
-    let mut loop_count = 0;
+    let mut timeout = TimeOut::new(30);
+    debug!("timeout: {:?}", timeout);
     let mut print_count = 0;
     let mut hungup = false;
     let mut last_value = counter_base.total;
@@ -96,7 +102,9 @@ pub fn work(
             Ok(command) => {
                 match command {
                     WorkerCommand::Cancel => break false,
-                    WorkerCommand::HeartBeat => {},
+                    WorkerCommand::HeartBeat => {
+                        timeout.refresh();
+                    },
                     WorkerCommand::Hungup => {
                         hungup = true;
                     },
@@ -149,14 +157,7 @@ pub fn work(
         if current.total > last_value {
             debug!("current: {:?}", current);
             last_value = current.total;
-            loop_count = 0;
             accounting.set_value(current.clone() - counter_base.clone());
-        }
-        else {
-            loop_count += 1;
-            if loop_count % 200 == 0 {
-                debug!("loop_count: {:?}", loop_count);
-            }
         }
 
         if hungup && !print_jobs.is_empty() {
@@ -172,7 +173,7 @@ pub fn work(
             break false
         }
 
-        if hungup && loop_count > 1100 {
+        if timeout.check() {
             info!("{}#{} timeout", &hex_uid[.. 8], task.user_id);
             break false
         }
@@ -193,7 +194,6 @@ pub fn work(
 
     if completed {
         for job in print_jobs {
-            debug!("job: {:?}", job);
             if !job.options.keep {
                 delete_job_by_id(job.id, &connection).expect("deleting job from table");
             }

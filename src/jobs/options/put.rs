@@ -24,13 +24,10 @@ use rocket_contrib::json::Json;
 
 use model::job::{
     info::JobInfo,
-    options::JobOptions,
+    options::pagerange::PageRange,
 };
 
-use jobs::{
-    options::pagerange::*,
-    *,
-};
+use jobs::*;
 
 use mysql::jobs::update::*;
 

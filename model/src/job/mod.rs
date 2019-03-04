@@ -8,7 +8,10 @@ use chrono::{
 
 use self::{
     info::JobInfo,
-    options::JobOptions,
+    options::{
+        JobOptions,
+        pagerange::PageRange,
+    },
 };
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -50,9 +53,12 @@ impl Job
 {
     pub fn pages_to_print(&self) -> u32
     {
-        let mut count = self.info.pagecount;
+        let range = PageRange::new(&self.options.range, self.info.pagecount as usize)
+            .expect("valid PageRange at this point");
 
-        count = (count / u32::from(self.options.nup))
+        let mut count = range.pagecount();
+
+        count = (count / usize::from(self.options.nup))
             + match self.info.pagecount % u32::from(self.options.nup) {
                 0 => 0,
                 _ => 1,
@@ -62,7 +68,7 @@ impl Job
             count *= 2;
         }
 
-        count * u32::from(self.options.copies)
+        count as u32 * u32::from(self.options.copies)
     }
 
     pub fn translate_for_printer(&mut self, uid: &[u8], user_id: u32, mut data: Vec<u8>) -> Vec<u8>
