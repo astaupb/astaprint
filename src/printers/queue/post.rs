@@ -89,7 +89,7 @@ pub fn post_to_queue_element(
 }
 
 #[post("/<device_id>/queue?<id>")]
-pub fn print_job(
+pub fn post_to_queue(
     user: UserGuard,
     device_id: u32,
     queues: State<HashMap<u32, TaskQueueClient<WorkerTask, WorkerCommand>>>,
