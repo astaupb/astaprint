@@ -58,15 +58,13 @@ impl Accounting
     {
         let baseprice = 20;
 
-        /*
-        let mut lock = Lock::new(&format!("{}", user_id), redis_pool.clone());
-
-        if lock.is_grabbed() {
-            info!("accounting for {} locked", &user_id);
-        }
-
-        lock.grab();
-        */
+        // let mut lock = Lock::new(&format!("{}", user_id), redis_pool.clone());
+        //
+        // if lock.is_grabbed() {
+        // info!("accounting for {} locked", &user_id);
+        // }
+        //
+        // lock.grab();
 
         let _connection = mysql_pool.get().expect("gettting connection from pool");
 

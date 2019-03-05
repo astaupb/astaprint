@@ -145,7 +145,12 @@ pub fn work(
                             print_jobs.push(job);
                         }
                         else {
-                            info!("{}#{} unable to find job#{}", &hex_uid[..8], task.user_id, job_id);
+                            info!(
+                                "{}#{} unable to find job#{}",
+                                &hex_uid[.. 8],
+                                task.user_id,
+                                job_id
+                            );
                         }
                     },
                 }
