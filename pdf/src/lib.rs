@@ -90,20 +90,3 @@ pub fn sanitize(mut pdf: Vec<u8>) -> DispatchResult
         pdf, pdf_bw, preview_0, preview_1, preview_2, preview_3, title, a3, pagecount, colored: pagecount - non_colored,
     }
 }
-
-#[cfg(test)]
-mod tests
-{
-    use std::fs::{File, read};
-    use std::io::Read;
-    use crate::dispatch;
-    #[test]
-    fn dispatch_test_pdf()
-    {
-        let mut data = read("test.pdf").unwrap();
-
-        let result = dispatch(data, "filename", "", true);
-        println!("pagecount: {}, colored: {}", result.pagecount, result.colored);
-
-    }
-}
