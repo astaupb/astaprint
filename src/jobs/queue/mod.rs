@@ -104,6 +104,9 @@ pub fn dispatch(
     .expect("inserting job into table");
     info!(
         "{} finished, pagecount: {}, colored: {}, a3: {}",
-        &hex_uid[..8], result.pagecount, result.colored, result.a3
+        &hex_uid[.. 8],
+        result.pagecount,
+        result.colored,
+        result.a3
     );
 }

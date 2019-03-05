@@ -107,14 +107,17 @@ pub fn post_to_queue(
     debug!("processing: {:?}", processing);
     let hex_uid = if processing.len() > 1 && processing[0].user_id == user.id {
         hex::encode(&processing[0].uid)
-    } else {
+    }
+    else {
         let uid = random_bytes(20);
         let hex_uid = hex::encode(&uid[..]);
 
-        queue.send(&WorkerTask {
-            uid,
-            user_id: user.id,
-        }).expect("sending job to worker queue");
+        queue
+            .send(&WorkerTask {
+                uid,
+                user_id: user.id,
+            })
+            .expect("sending job to worker queue");
 
         hungup = true;
 
