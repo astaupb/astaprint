@@ -145,7 +145,7 @@ pub fn work(
                             print_jobs.push(job);
                         }
                         else {
-                            println!("failed to find job with id {}", job_id);
+                            info!("{}#{} unable to find job#{}", &hex_uid[..8], task.user_id, job_id);
                         }
                     },
                 }
@@ -202,5 +202,5 @@ pub fn work(
         }
     }
 
-    info!("{} finished", hex_uid);
+    info!("{}#{} finished", &hex_uid[..], user_id);
 }
