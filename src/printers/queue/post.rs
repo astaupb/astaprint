@@ -61,6 +61,7 @@ pub fn post_to_queue_element(
         Ok(uid) => uid,
         Err(_) => return Ok(Status::new(400, "Bad Request")),
     };
+    debug!("decoded uid: {:x?}", uid);
 
     let processing = queue.get_processing();
     let incoming = queue.get_incoming();
@@ -101,22 +102,34 @@ pub fn post_to_queue(
         None => return Ok(None),
     };
 
-    let uid = random_bytes(20);
-    let hex_uid = hex::encode(&uid[..]);
+    let mut hungup = false;
+    let processing = queue.get_processing();
+    debug!("processing: {:?}", processing);
+    let hex_uid = if processing.len() > 1 && processing[0].user_id == user.id {
+        hex::encode(&processing[0].uid)
+    } else {
+        let uid = random_bytes(20);
+        let hex_uid = hex::encode(&uid[..]);
 
-    let task = WorkerTask {
-        uid,
-        user_id: user.id,
+        queue.send(&WorkerTask {
+            uid,
+            user_id: user.id,
+        }).expect("sending job to worker queue");
+
+        hungup = true;
+
+        hex_uid
     };
-
-    queue.send(&task).expect("sending job to worker queue");
 
     if let Some(id) = id {
         let queue = CommandClient::from((queue, &hex_uid[..]));
 
         queue.send_command(&WorkerCommand::Print(id)).expect("sending print command to worker");
-        // hungup for fast lane print
-        queue.send_command(&WorkerCommand::Hungup).expect("sending hungup command to worker");
+
+        // send hungup for not locking printer after print job
+        if hungup {
+            queue.send_command(&WorkerCommand::Hungup).expect("sending hungup command to worker");
+        }
     }
 
     Ok(Some(Accepted(Some(Json(hex_uid)))))
