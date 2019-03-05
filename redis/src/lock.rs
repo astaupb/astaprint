@@ -102,6 +102,7 @@ impl Drop for Lock
 {
     fn drop(&mut self)
     {
-        assert!(self.release());
+        let release = self.release();
+        debug!("{:?}", release);
     }
 }

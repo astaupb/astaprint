@@ -31,7 +31,6 @@ use legacy::tds::{
 };
 
 use r2d2_redis::RedisConnectionManager;
-use redis::lock::Lock;
 
 use snmp::counter::CounterValues;
 
@@ -40,7 +39,6 @@ use journal::lock::JournalLock;
 pub struct Accounting
 {
     user_id: u32,
-    pub lock: Lock,
     baseprice: u32,
     counter: CounterValues,
     credit: i32,
@@ -60,6 +58,7 @@ impl Accounting
     {
         let baseprice = 20;
 
+        /*
         let mut lock = Lock::new(&format!("{}", user_id), redis_pool.clone());
 
         if lock.is_grabbed() {
@@ -67,6 +66,7 @@ impl Accounting
         }
 
         lock.grab();
+        */
 
         let _connection = mysql_pool.get().expect("gettting connection from pool");
 
@@ -76,7 +76,6 @@ impl Accounting
 
         Accounting {
             user_id,
-            lock,
             baseprice,
             counter,
             credit,
