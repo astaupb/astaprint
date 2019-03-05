@@ -33,6 +33,8 @@ pub struct UserInfo
 {
     id: u32,
     name: String,
+    card: Option<u64>,
+    pin: Option<u32>,
     credit: i32,
     tokens: usize,
     token_id: u32,
@@ -48,11 +50,14 @@ pub fn get_user_info(user: UserGuard) -> QueryResult<Json<UserInfo>>
 
     let credit = get_credit(user.id);
 
-    let name: String = select_user_name_by_id(user.id, &user.connection)?.unwrap();
+    let info: (String, Option<u64>, Option<u32>) =
+        select_user_info_by_id(user.id, &user.connection)?;
 
     Ok(Json(UserInfo {
         id,
-        name,
+        name: info.0,
+        card: info.1,
+        pin: info.2,
         credit,
         tokens,
         token_id: user.token_id,
