@@ -31,8 +31,8 @@ use std::{
     fs::rename,
     io,
     process::{
-        Command,
         Child,
+        Command,
         Stdio,
     },
 };
@@ -46,12 +46,12 @@ pub enum DecryptionError
 
 impl From<io::Error> for DecryptionError
 {
-    fn from(error: io::Error) -> DecryptionError
-    {
-        DecryptionError::IoError(error) 
-    }
+    fn from(error: io::Error) -> DecryptionError { DecryptionError::IoError(error) }
 }
-pub fn decrypt_pdf(data: Vec<u8>, password: &str) -> Result<Vec<u8>, DecryptionError>
+pub fn decrypt_pdf(
+    data: Vec<u8>,
+    password: &str,
+) -> Result<Vec<u8>, DecryptionError>
 {
     let path = TmpFile::create(&data[..])?;
     // input and output file can not be the same
@@ -59,36 +59,29 @@ pub fn decrypt_pdf(data: Vec<u8>, password: &str) -> Result<Vec<u8>, DecryptionE
     let outfile = format!("{}.decr", path);
 
     if Command::new("qpdf")
-        .args(&[
-            "--decrypt",
-            &format!("--password={}", password),
-            &path,
-            &outfile,
-        ])
+        .args(&["--decrypt", &format!("--password={}", password), &path, &outfile])
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
-        .status()?.success() {
-        
+        .status()?
+        .success()
+    {
         rename(&outfile, &path)?;
 
         Ok(TmpFile::remove(&path)?)
-    } else {
-        Err(DecryptionError::PasswordError) 
+    }
+    else {
+        Err(DecryptionError::PasswordError)
     }
 }
 
-pub fn pdfjam(data: Vec<u8>, info: &PageInfo) -> io::Result<Vec<u8>>
+pub fn pdfjam(
+    data: Vec<u8>,
+    info: &PageInfo,
+) -> io::Result<Vec<u8>>
 {
     let path = TmpFile::create(&data[..])?;
 
-    let mut arguments = [
-        "--a4paper",
-        "--no-landscape",
-        "--checkfiles",
-        "--outfile",
-        &path,
-        &path,
-    ];
+    let mut arguments = ["--a4paper", "--no-landscape", "--checkfiles", "--outfile", &path, &path];
 
     if info.size == Almost(PageSize::A3) {
         arguments[0] = "--a3paper";
@@ -107,7 +100,10 @@ pub fn pdfjam(data: Vec<u8>, info: &PageInfo) -> io::Result<Vec<u8>>
     Ok(TmpFile::remove(&path)?)
 }
 
-pub fn ghostscript_pdfwrite_bw(output: &str, input: &str) -> Child
+pub fn ghostscript_pdfwrite_bw(
+    output: &str,
+    input: &str,
+) -> Child
 {
     Command::new("gs")
         .args(&[
@@ -123,24 +119,18 @@ pub fn ghostscript_pdfwrite_bw(output: &str, input: &str) -> Child
         ])
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
-        .spawn().expect("executing gs")
+        .spawn()
+        .expect("executing gs")
 }
 
 pub fn ghostscript_inkcov(input: &str) -> Child
 {
     Command::new("gs")
-        .args(&[
-            "-dSAFER",
-            "-dBATCH",
-            "-dNOPAUSE",
-            "-sDEVICE=inkcov",
-            "-o", "-",
-            &input,
-        ])
+        .args(&["-dSAFER", "-dBATCH", "-dNOPAUSE", "-sDEVICE=inkcov", "-o", "-", &input])
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
-        .spawn().expect("executing gs")
-
+        .spawn()
+        .expect("executing gs")
 }
 
 pub fn ghostscript(data: &[u8]) -> io::Result<(Vec<u8>, u32)>
@@ -153,21 +143,16 @@ pub fn ghostscript(data: &[u8]) -> io::Result<(Vec<u8>, u32)>
     // speculating that inkvoc is faster than pdfwrite
     let gs_pdfbw = ghostscript_pdfwrite_bw(&outfile, &path);
 
-    let gs_inkcov = ghostscript_inkcov(&path)
-        .wait_with_output()
-        .expect("waiting for gs_inkcov");
+    let gs_inkcov = ghostscript_inkcov(&path).wait_with_output().expect("waiting for gs_inkcov");
 
     let mut non_colored = 0;
     for line in String::from_utf8_lossy(&gs_inkcov.stdout[..]).lines() {
-        if line.ends_with("CMYK OK")
-        && line.starts_with(" 0.00000  0.00000  0.00000  ") {
+        if line.ends_with("CMYK OK") && line.starts_with(" 0.00000  0.00000  0.00000  ") {
             non_colored += 1;
             debug!("non_colored: {}", non_colored);
         }
     }
-    let _gs_pdfbw = gs_pdfbw
-        .wait_with_output()
-        .expect("waiting for gs_pdfwrite_bw"); 
+    let _gs_pdfbw = gs_pdfbw.wait_with_output().expect("waiting for gs_pdfwrite_bw");
 
     rename(&outfile, &path)?;
 

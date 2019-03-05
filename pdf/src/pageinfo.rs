@@ -46,10 +46,15 @@ pub struct PageInfo
 
 impl PageInfo
 {
-    pub fn from_points(w: f64, h: f64) -> PageInfo
+    pub fn from_points(
+        w: f64,
+        h: f64,
+    ) -> PageInfo
     {
         let orientation = if w > h {
-            PageOrientation::Landscape } else {
+            PageOrientation::Landscape
+        }
+        else {
             PageOrientation::Portrait
         };
 
@@ -64,9 +69,11 @@ impl PageInfo
 
         if x >= 841.0 && x <= 843.0 && y >= 594.0 && y <= 596.0 {
             size = Is::Valid(PageSize::A4);
-        } else if x >= 1189.0 && x <= 1191.0 && y >= 841.0 && y <= 843.0 {
+        }
+        else if x >= 1189.0 && x <= 1191.0 && y >= 841.0 && y <= 843.0 {
             size = Is::Valid(PageSize::A3);
-        } else if x > 1016.0 {
+        }
+        else if x > 1016.0 {
             size = Is::Almost(PageSize::A3);
         }
 
@@ -82,14 +89,14 @@ impl PageInfo
             return PageInfo {
                 size: Is::Valid(PageSize::A4),
                 orientation: pageinfo[0].orientation.clone(),
-            };
+            }
         }
 
         if pageinfo.iter().all(|info| info.size == Is::Valid(PageSize::A3)) {
             return PageInfo {
                 size: Is::Valid(PageSize::A3),
                 orientation: pageinfo[0].orientation.clone(),
-            };
+            }
         }
 
         let mut a4_count = 0;
@@ -97,8 +104,7 @@ impl PageInfo
         pageinfo
             .iter()
             .filter(|info| {
-                info.size == Is::Valid(PageSize::A4)
-                    || info.size == Is::Almost(PageSize::A4)
+                info.size == Is::Valid(PageSize::A4) || info.size == Is::Almost(PageSize::A4)
             })
             .for_each(|_info| a4_count += 1);
 
@@ -110,15 +116,19 @@ impl PageInfo
             .for_each(|_info| portrait_count += 1);
 
         PageInfo {
-            size: Is::Almost(if pageinfo.len() - a4_count > a4_count {
-                PageSize::A3 } else {
-                PageSize::A4
-            }),
-            orientation: if pageinfo.len() - portrait_count > portrait_count
-                {
-                    PageOrientation::Landscape
-                } else {
-                    PageOrientation::Portrait
+            size: Is::Almost(
+                if pageinfo.len() - a4_count > a4_count {
+                    PageSize::A3
+                }
+                else {
+                    PageSize::A4
+                },
+            ),
+            orientation: if pageinfo.len() - portrait_count > portrait_count {
+                PageOrientation::Landscape
+            }
+            else {
+                PageOrientation::Portrait
             },
         }
     }

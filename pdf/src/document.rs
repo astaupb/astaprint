@@ -40,10 +40,13 @@ pub struct PDFDocument
 
 impl PDFDocument
 {
-    pub fn new(data: &[u8], password: &str) -> PDFDocument
+    pub fn new(
+        data: &[u8],
+        password: &str,
+    ) -> PDFDocument
     {
-        let data =
-            PopplerDocument::new_from_data(data, password).expect("getting poppler document from path");
+        let data = PopplerDocument::new_from_data(data, password)
+            .expect("getting poppler document from path");
 
         let title = data.get_title();
 
@@ -51,7 +54,7 @@ impl PDFDocument
 
         let mut pages: Vec<PopplerPage> = Vec::with_capacity(pagecount);
 
-        for i in 0..pagecount {
+        for i in 0 .. pagecount {
             pages.push(data.get_page(i).expect("getting page from poppler document"));
         }
 
@@ -65,25 +68,22 @@ impl PDFDocument
         }
     }
 
-    pub fn get_pagecount(&self) -> u32
-    {
-        self.pagecount as u32
-    }
+    pub fn get_pagecount(&self) -> u32 { self.pagecount as u32 }
 
     fn get_full_pageinfo(&self) -> Vec<PageInfo>
     {
         self.pagesizes.iter().map(|sizes| PageInfo::from_points(sizes.0, sizes.1)).collect()
     }
 
-    pub fn get_pageinfo(&self) -> PageInfo
-    {
-        PageInfo::from_multiple(self.get_full_pageinfo())
-    }
+    pub fn get_pageinfo(&self) -> PageInfo { PageInfo::from_multiple(self.get_full_pageinfo()) }
 
-    pub fn render_preview(&self, number: usize) -> Option<Vec<u8>>
+    pub fn render_preview(
+        &self,
+        number: usize,
+    ) -> Option<Vec<u8>>
     {
         if number >= self.pagecount {
-            return None;
+            return None
         }
         let (w, h) = self.pagesizes[number];
 

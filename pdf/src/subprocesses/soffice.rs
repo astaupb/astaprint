@@ -1,11 +1,11 @@
 use crate::tmp::TmpFile;
 use std::{
+    env,
     fs::rename,
     io,
-    env,
     process::{
-        Command,
         Child,
+        Command,
         Stdio,
     },
 };
@@ -31,30 +31,22 @@ pub enum SOfficeError
 
 impl From<io::Error> for SOfficeError
 {
-    fn from(error: io::Error) -> Self
-    {
-        SOfficeError::IoError(error) 
-    }
+    fn from(error: io::Error) -> Self { SOfficeError::IoError(error) }
 }
 pub fn document_to_pdf(data: Vec<u8>) -> Result<Vec<u8>, SOfficeError>
 {
     let path = TmpFile::create(&data[..])?;
-    let file = Command::new("file")
-        .arg(&path)
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .output()?;
+    let file =
+        Command::new("file").arg(&path).stdout(Stdio::piped()).stderr(Stdio::piped()).output()?;
 
-    if SOFFICE_FORMATS.iter().all(|format| !(String::from_utf8_lossy(&file.stdout[..]).contains(format))) {
+    if SOFFICE_FORMATS
+        .iter()
+        .all(|format| !(String::from_utf8_lossy(&file.stdout[..]).contains(format)))
+    {
         return Err(SOfficeError::FormatError)
     }
     let soffice = Command::new("soffice")
-        .args(&[
-            "--headless",
-            "--convert-to", "pdf",
-            "--outdir", "/tmp",
-            &path,
-        ])
+        .args(&["--headless", "--convert-to", "pdf", "--outdir", "/tmp", &path])
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .output()?;
@@ -65,11 +57,18 @@ pub fn document_to_pdf(data: Vec<u8>) -> Result<Vec<u8>, SOfficeError>
 #[cfg(test)]
 mod tests
 {
-    use std::fs::{File, read,};
-    use std::path::Path;
-    use std::io::Read;
-    use crate::sanitize;
-    use crate::subprocesses::soffice::document_to_pdf;
+    use crate::{
+        sanitize,
+        subprocesses::soffice::document_to_pdf,
+    };
+    use std::{
+        fs::{
+            read,
+            File,
+        },
+        io::Read,
+        path::Path,
+    };
     fn read_and_test(name: &str)
     {
         println!("testing {}", name);
@@ -80,7 +79,6 @@ mod tests
             println!("{}", &String::from_utf8_lossy(&data[..])),
             Err(e) => panic!("{:?}", e),
         ]
-    
     }
     #[test]
     fn soffice()
@@ -90,6 +88,5 @@ mod tests
                 read_and_test(doc.path().to_str().unwrap());
             }
         }
-
     }
 }

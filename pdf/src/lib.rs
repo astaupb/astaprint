@@ -35,7 +35,6 @@ use crate::{
     },
 };
 
-
 #[derive(Debug, Clone)]
 pub struct DispatchResult
 {
@@ -55,8 +54,7 @@ pub fn sanitize(mut pdf: Vec<u8>) -> DispatchResult
 {
     let mut pdf_document = PDFDocument::new(&pdf[..], "");
 
-    let title = pdf_document.title.clone()
-        .unwrap_or_else(|| String::from(""));
+    let title = pdf_document.title.clone().unwrap_or_else(|| String::from(""));
 
     let pagecount = pdf_document.get_pagecount();
 
@@ -78,8 +76,7 @@ pub fn sanitize(mut pdf: Vec<u8>) -> DispatchResult
         _ => panic!("pdfjam does not work"),
     };
 
-    let (pdf_bw, non_colored) = ghostscript(&pdf[..])
-        .expect("running ghostscript");
+    let (pdf_bw, non_colored) = ghostscript(&pdf[..]).expect("running ghostscript");
 
     let preview_0 = pdf_document.render_preview(0).unwrap();
     let preview_1 = pdf_document.render_preview(1);
@@ -87,6 +84,15 @@ pub fn sanitize(mut pdf: Vec<u8>) -> DispatchResult
     let preview_3 = pdf_document.render_preview(3);
 
     DispatchResult {
-        pdf, pdf_bw, preview_0, preview_1, preview_2, preview_3, title, a3, pagecount, colored: pagecount - non_colored,
+        pdf,
+        pdf_bw,
+        preview_0,
+        preview_1,
+        preview_2,
+        preview_3,
+        title,
+        a3,
+        pagecount,
+        colored: pagecount - non_colored,
     }
 }
