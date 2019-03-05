@@ -52,6 +52,7 @@ pub fn upload_job<'a>(
     if let Some(_password) = password {
         // TODO decrypt with qpdf
     }
+    debug!("filename: {:?}", filename);
 
     let uid = store.set(data.bytes).expect("saving file in store");
 

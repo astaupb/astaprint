@@ -57,6 +57,7 @@ impl FromDataSimple for PdfBody
             let peek = data.peek();
 
             if !&String::from_utf8_lossy(&peek).contains("%PDF-1") {
+                debug!("could not find %PDF-1 in first peek");
                 return Outcome::Failure((
                     Status::BadRequest,
                     "could not find %PDF-1 while peeking".to_string(),
