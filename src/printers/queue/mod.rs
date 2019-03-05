@@ -100,12 +100,12 @@ pub fn work(
     let completed = loop {
         match receiver.try_recv() {
             Ok(command) => {
+                debug!("timeout: {:?}", timeout);
                 debug!("command: {:?}", command);
                 match command {
                     WorkerCommand::Cancel => break false,
                     WorkerCommand::HeartBeat => {
                         timeout.refresh();
-                        debug!("timeout: {:?}", timeout);
                     },
                     WorkerCommand::Hungup => {
                         hungup = true;

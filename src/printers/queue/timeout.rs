@@ -41,7 +41,14 @@ impl fmt::Debug for TimeOut
     ) -> fmt::Result
     {
         match self.begin.elapsed() {
-            Ok(elapsed) => write!(f, "timeout in {} ms", (elapsed - self.value).as_millis()),
+            Ok(elapsed) => {
+                if self.value > elapsed {
+                    write!(f, "TimeOut in {} ms", (self.value - elapsed).as_millis(),)
+                }
+                else {
+                    write!(f, "TimeOut: 0")
+                }
+            },
             Err(e) => write!(f, "{}", e),
         }
     }
