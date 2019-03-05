@@ -207,5 +207,5 @@ pub fn work(
         }
     }
 
-    info!("{}#{} finished", &hex_uid[..], user_id);
+    info!("{}#{} finished", &hex_uid[..], task.user_id);
 }

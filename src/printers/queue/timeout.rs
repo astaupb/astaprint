@@ -18,16 +18,33 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use std::time::{
-    Duration,
-    SystemTime,
+use std::{
+    fmt,
+    time::{
+        Duration,
+        SystemTime,
+    },
 };
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct TimeOut
 {
     pub value: Duration,
     pub begin: SystemTime,
+}
+
+impl fmt::Debug for TimeOut
+{
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter,
+    ) -> fmt::Result
+    {
+        match self.begin.elapsed() {
+            Ok(elapsed) => write!(f, "timeout in {} ms", (elapsed - self.value).as_millis()),
+            Err(e) => write!(f, "{}", e),
+        }
+    }
 }
 
 impl TimeOut
