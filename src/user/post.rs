@@ -47,13 +47,13 @@ use mysql::user::delete::*;
 pub fn login(login: LoginGuard) -> Json<String> { Json(login.token) }
 
 #[post("/logout")]
-pub fn logout(user: UserGuard) -> QueryResult<String>
+pub fn logout(user: UserGuard) -> QueryResult<Status>
 {
     delete_user_token_by_id(user.id, user.token_id, &user.connection)?;
 
     info!("{} logged out", user.id);
 
-    Ok("logged out".into())
+    Ok(Status::new(205, "Reset View"))
 }
 
 #[derive(Deserialize, Debug, Clone)]
