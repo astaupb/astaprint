@@ -19,12 +19,27 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use rocket_contrib::json::Json;
 
+use rocket::{
+    http::Status,
+    State,
+};
 use user::{
     guard::UserGuard,
     login::LoginGuard,
 };
 
-use diesel::prelude::*;
+use user::add::{
+    add_user,
+    UserAddError,
+};
+
+use diesel::{
+    prelude::*,
+    r2d2::{
+        ConnectionManager,
+        Pool,
+    },
+};
 
 use mysql::user::delete::*;
 
@@ -39,4 +54,29 @@ pub fn logout(user: UserGuard) -> QueryResult<String>
     info!("{} logged out", user.id);
 
     Ok("logged out".into())
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct NewUser
+{
+    name: String,
+    password: String,
+}
+
+#[post("/", data = "<user>")]
+pub fn register_as_new_user(
+    user: Json<NewUser>,
+    pool: State<Pool<ConnectionManager<MysqlConnection>>>,
+) -> QueryResult<Status>
+{
+    let connection = pool.get().expect("getting mysql connection from pool");
+
+    if user.name.chars().any(|c| !c.is_alphanumeric()) || user.name.bytes().count() > 32 {
+        return Ok(Status::new(471, "Invalid Username"))
+    }
+    match add_user(&user.name, &user.password, None, None, false, &connection) {
+        Ok(_id) => Ok(Status::new(204, "Success - No Content")),
+        Err(UserAddError::UsernameExists) => Ok(Status::new(472, "username already taken")),
+        Err(UserAddError::InsertError(e)) => Err(e),
+    }
 }

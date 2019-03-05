@@ -62,15 +62,16 @@ pub fn add_user(
 
     let card = match card {
         Some(sn) => format!("{}", sn),
-        None => "".to_string(),
+        None => name.to_string(),
     };
 
     let pin = match pin {
         Some(pin) => format!("{}", pin),
-        None => "".to_string(),
+        None => name.to_string(),
     };
 
     let user_id = insert_user(&card, &pin);
+
     println!("user_id: {}", user_id);
 
     insert_into_user_with_id(

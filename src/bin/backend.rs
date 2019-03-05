@@ -199,13 +199,13 @@ fn rocket() -> rocket::Rocket
             change_password,
             fetch_username,
             change_username,
-            // register_new_user
+            register_as_new_user,
         ])
         .mount("/user/tokens", routes![
             get_all_tokens,
             delete_all_tokens,
             get_single_token,
-            delete_single_token
+            delete_single_token,
         ])
         .mount("/printers", routes![post_to_queue, post_to_queue_element, get_queue, delete_queue])
         .mount("/journal", routes![get_journal_as_user, post_to_journal_with_token, credit])
@@ -216,7 +216,7 @@ fn rocket() -> rocket::Rocket
             delete_queue_as_admin,
             get_queue_as_admin,
             post_new_admin,
-            post_new_user
+            post_new_user,
         ])
         .attach(cors())
 }
