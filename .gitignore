@@ -5,3 +5,4 @@ Makefile
 *.tsv
 *legacy*
 */Cargo.lock
+flushall.sh
