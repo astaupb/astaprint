@@ -163,6 +163,7 @@ pub fn work(
         // reset loop count if another page is printed
         if current.total > last_value {
             debug!("current: {:?}", current);
+            timeout.refresh();
             last_value = current.total;
             accounting.set_value(current.clone() - counter_base.clone());
         }
