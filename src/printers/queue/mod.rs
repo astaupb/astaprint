@@ -158,7 +158,10 @@ pub fn work(
             Err(_) => (),
         }
         thread::sleep(time::Duration::from_millis(20));
-        let current = snmp_session.get_counter().expect("getting counter values");
+        let current = match snmp_session.get_counter() {
+            Ok(value) => value,
+            Err(_e) => continue,
+        };
 
         // reset loop count if another page is printed
         if current.total > last_value {
