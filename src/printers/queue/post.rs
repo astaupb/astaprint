@@ -85,7 +85,7 @@ pub fn post_to_queue_element(
         queue.send_command(&WorkerCommand::HeartBeat).expect("sending heartbeat command");
     }
 
-    Ok(Status::new(200, "Ok"))
+    Ok(Status::new(202, "Started Processing"))
 }
 
 #[post("/<device_id>/queue?<id>")]
