@@ -27,7 +27,7 @@ impl Default for JobOptions
     fn default() -> JobOptions
     {
         JobOptions {
-            color: true,
+            color: false,
             duplex: 0,
             copies: 1,
             collate: false,
