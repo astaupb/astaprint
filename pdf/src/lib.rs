@@ -50,9 +50,9 @@ pub struct DispatchResult
     pub colored: u32,
 }
 
+
 pub fn sanitize(mut pdf: Vec<u8>) -> DispatchResult
 {
-    debug!("debug {:x?}", &pdf[..128]);
     let mut pdf_document = PDFDocument::new(&pdf[..], "");
 
     let title = pdf_document.title.clone().unwrap_or_else(|| String::from(""));

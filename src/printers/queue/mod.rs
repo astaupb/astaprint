@@ -82,15 +82,10 @@ pub fn work(
 
     debug!("counter_base: {:?}", counter_base);
 
-    // check energy status before initial waiting
-    // 1 == ready
-    let energy_stat = snmp_session.get_energy_stat().expect("getting energy status of device");
-    debug!("energy stat: {}", &energy_stat);
     if energy_stat != 1 {
         snmp_session.wake().expect("waking device");
     }
     let mut timeout = TimeOut::new(30);
-    debug!("timeout: {:?}", timeout);
     let mut print_count = 0;
     let mut hungup = false;
     let mut last_value = counter_base.total;
@@ -211,5 +206,5 @@ pub fn work(
         }
     }
 
-    info!("{}#{} finished", &hex_uid[..], task.user_id);
+    info!("{}#{} finished", &hex_uid[..8], task.user_id);
 }

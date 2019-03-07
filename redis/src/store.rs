@@ -56,18 +56,17 @@ impl Store
         let connection = self.pool.get().expect("getting connection from pool");
 
         let key = random_bytes(20);
+
         connection.set(key.clone(), data)?;
 
-        debug!("store.set: {:?}", key);
         Ok(key)
     }
 
     pub fn get(&self, key: Vec<u8>) -> RedisResult<Vec<u8>>
     {
-        debug!("store.get: {:?}", key);
         let connection = self.pool.get().expect("getting connection from pool");
 
-        let value = connection.get(key.clone())?;
+        let value: Vec<u8> = connection.get(key.clone())?;
 
         connection.del(key)?;
         

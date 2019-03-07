@@ -55,6 +55,8 @@ impl<'a> From<&'a DispatcherTask> for DispatcherTaskResponse
     }
 }
 
+
+
 pub fn dispatch(
     task: DispatcherTask,
     state: DispatcherState,
@@ -63,8 +65,6 @@ pub fn dispatch(
     let hex_uid = hex::encode(&task.uid[..]);
     info!("{} {} started", task.user_id, &hex_uid[.. 8]);
 
-    debug!("uid: {:x?}", task.uid);
-    debug!("hex_uid: {:?}", hex_uid);
     let data = state.redis_store.get(task.uid).expect("getting file from store");
 
     let result = sanitize(data);

@@ -61,7 +61,6 @@ pub fn post_to_queue_element(
         Ok(uid) => uid,
         Err(_) => return Ok(Status::new(400, "Bad Request")),
     };
-    debug!("decoded uid: {:x?}", uid);
 
     let processing = queue.get_processing();
     let incoming = queue.get_incoming();
@@ -79,6 +78,7 @@ pub fn post_to_queue_element(
     }
 
     let queue = CommandClient::from((queue, &hex_uid[..]));
+
     if let Some(id) = id {
         queue.send_command(&WorkerCommand::Print(id)).expect("sending print command");
     }

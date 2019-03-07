@@ -46,7 +46,7 @@ impl PDFDocument
     ) -> PDFDocument
     {
         let data = PopplerDocument::new_from_data(data, password)
-            .expect("getting poppler document from path");
+            .expect("PopplerDoucment from data");
 
         let title = data.get_title();
 
