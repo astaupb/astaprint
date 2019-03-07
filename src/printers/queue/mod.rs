@@ -81,8 +81,8 @@ pub fn work(
     }
 
     debug!("counter_base: {:?}", counter_base);
-
-    if energy_stat != 1 {
+    
+    if snmp_session.get_energy_stat().expect("getting energy status") != 1 {
         snmp_session.wake().expect("waking device");
     }
     let mut timeout = TimeOut::new(30);
