@@ -85,7 +85,7 @@ pub fn work(
     if snmp_session.get_energy_stat().expect("getting energy status") != 1 {
         snmp_session.wake().expect("waking device");
     }
-    let mut timeout = TimeOut::new(30);
+    let mut timeout = TimeOut::new(60);
     let mut print_count = 0;
     let mut hungup = false;
     let mut last_value = counter_base.total;
