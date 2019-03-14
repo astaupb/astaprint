@@ -22,6 +22,7 @@ use mysql::printers::Printer;
 use snmp::{
     session::SnmpSession,
     status::StatusValues,
+    counter::CounterValues,
     PrinterInterface,
 };
 #[derive(Serialize, Debug, Clone)]
@@ -44,24 +45,24 @@ pub struct PrinterResponse
     pub tray_2: i64,
     pub tray_3: i64,
     pub tray_4: i64,
+    pub total: i64,
+    pub copy_total: i64,
+    pub copy_bw: i64,
+    pub print_total: i64,
+    pub print_bw: i64,
 }
 
 impl<'a> From<(&'a Printer, &'a MysqlConnection)> for PrinterResponse
 {
     fn from((printer, connection): (&Printer, &MysqlConnection)) -> PrinterResponse
     {
-        let status =
-            SnmpSession::new(PrinterInterface::from_device_id(printer.device_id, connection))
-                .get_status()
-                .unwrap_or(StatusValues {
-                    scan: -1,
-                    copy: -1,
-                    toner: -1,
-                    tray_1: -1,
-                    tray_2: -1,
-                    tray_3: -1,
-                    tray_4: -1,
-                });
+        let mut session =
+            SnmpSession::new(PrinterInterface::from_device_id(printer.device_id, connection));
+        let status = session.get_status()
+            .unwrap_or(StatusValues::default());
+
+        let counter = session.get_counter()
+            .unwrap_or(CounterValues::default());
 
         PrinterResponse {
             id: printer.id,
@@ -81,6 +82,11 @@ impl<'a> From<(&'a Printer, &'a MysqlConnection)> for PrinterResponse
             tray_2: status.tray_2,
             tray_3: status.tray_3,
             tray_4: status.tray_4,
+            total: counter.total,
+            copy_total: counter.copy_total,
+            copy_bw: counter.copy_bw,
+            print_total: counter.print_total,
+            print_bw: counter.print_bw,
         }
     }
 }

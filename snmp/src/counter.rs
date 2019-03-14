@@ -81,3 +81,17 @@ impl Sub for CounterValues
         }
     }
 }
+
+impl Default for CounterValues
+{
+    fn default() -> CounterValues
+    {
+        CounterValues {
+            total: -1,
+            copy_total: -1,
+            copy_bw: -1,
+            print_total: -1,
+            print_bw: -1,
+        }
+    }
+}
