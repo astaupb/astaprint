@@ -1,5 +1,4 @@
 target
-Makefile
 .\#*
 *.swp
 *.tsv
