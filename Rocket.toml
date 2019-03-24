@@ -1,6 +1,6 @@
 [global]
 address = "localhost"
 port = 8001
-workers = 3
+workers = 20
 limits = {forms = 209715200}
 log = "critical"

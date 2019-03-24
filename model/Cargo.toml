@@ -9,7 +9,6 @@ log = {version = "0.4", features = ["std", "max_level_debug", "release_max_level
 diesel = {version = "1.3", features = ["mysql", "r2d2", "chrono", "numeric"]}
 mysql = {path = "../mysql"}
 redis = {path = "../redis"}
-snmp = {path = "../snmp"}
 sodium = {path = "../sodium"}
 r2d2_redis = "0.8"
 hex = "0.3"

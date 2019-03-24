@@ -1,10 +1,7 @@
 use crate::tmp::TmpFile;
 use std::{
-    env,
-    fs::rename,
     io,
     process::{
-        Child,
         Command,
         Stdio,
     },
@@ -45,7 +42,7 @@ pub fn document_to_pdf(data: Vec<u8>) -> Result<Vec<u8>, SOfficeError>
     {
         return Err(SOfficeError::FormatError)
     }
-    let soffice = Command::new("soffice")
+    let _soffice = Command::new("soffice")
         .args(&["--headless", "--convert-to", "pdf", "--outdir", "/tmp", &path])
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())

@@ -57,6 +57,14 @@ pub fn select_ip_and_community_by_device_id(device_id: u32, connection: &MysqlCo
         .optional()
 }
 
+pub fn select_ip_by_device_id(device_id: u32, connection: &MysqlConnection) -> QueryResult<String>
+{
+    printers::table
+        .select(printers::ip)
+        .filter(printers::device_id.eq(device_id))
+        .first(connection)
+}
+
 pub fn select_device_ids(connection: &MysqlConnection) -> QueryResult<Vec<u32>>
 {
     printers::table.select(printers::device_id).load(connection)

@@ -41,11 +41,19 @@ deploy_release: release
 	ssh astaprint@widow "systemctl --user daemon-reload && systemctl --user start worker"
 	./flushall.sh
 
-test:
-	#sunrise
-	ssh astaprint@sunrise "systemctl --user stop backend && rm /home/astaprint/bin/backend"
-	scp ./target/debug/backend astaprint@sunrise:/home/astaprint/bin
-	ssh astaprint@sunrise "systemctl --user daemon-reload && systemctl --user start backend"
+test: debug
+	# backend
+	ssh astaprint@sureshot "systemctl --user stop backend && rm /home/astaprint/bin/backend"
+	scp ./target/debug/backend astaprint@sureshot:/home/astaprint/bin
+	ssh astaprint@sureshot "systemctl --user daemon-reload && systemctl --user start backend"
+	# worker
+	ssh astaprint@sureshot "systemctl --user stop worker && rm /home/astaprint/bin/worker"
+	scp ./target/debug/worker astaprint@sureshot:/home/astaprint/bin
+	ssh astaprint@sureshot "systemctl --user daemon-reload && systemctl --user start worker"
+	# dispatcher
+	ssh astaprint@sureshot "systemctl --user stop dispatcher && rm /home/astaprint/bin/dispatcher"
+	scp ./target/debug/dispatcher astaprint@sureshot:/home/astaprint/bin
+	ssh astaprint@sureshot "systemctl --user daemon-reload && systemctl --user start dispatcher"
 
 
 singles:

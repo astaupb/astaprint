@@ -54,7 +54,7 @@ use redis::queue::{
     TaskQueueClient,
 };
 
-use snmp::session::SnmpSession;
+use snmp::tool::*;
 
 pub fn work(
     task: WorkerTask,
@@ -68,9 +68,10 @@ pub fn work(
 
     let connection = state.mysql_pool.get().expect("getting connection from mysql pool");
 
-    let mut snmp_session = SnmpSession::new(state.printer_interface.clone());
+    let counter_receiver = listen(state.device_id);
 
-    let counter_base = snmp_session.get_counter().expect("reading base counter value");
+    let counter_base = counter_receiver.recv().expect("receiving base counter value");
+    let mut current = counter_base.clone();
 
     let mut accounting =
         Accounting::new(task.user_id, counter_base.clone(), state.mysql_pool, state.redis_pool);
@@ -81,19 +82,17 @@ pub fn work(
     }
 
     debug!("counter_base: {:?}", counter_base);
-    
-    if snmp_session.get_energy_stat().expect("getting energy status") != 1 {
-        snmp_session.wake().expect("waking device");
-    }
+
+    let _wake = wake(state.device_id);
     let mut timeout = TimeOut::new(60);
     let mut print_count = 0;
     let mut hungup = false;
     let mut last_value = counter_base.total;
     let mut print_jobs: Vec<Job> = Vec::new();
 
-    let receiver = client.get_command_receiver();
+    let command_receiver = client.get_command_receiver();
     let completed = loop {
-        match receiver.try_recv() {
+        match command_receiver.try_recv() {
             Ok(command) => {
                 debug!("timeout: {:?}", timeout);
                 debug!("command: {:?}", command);
@@ -130,7 +129,7 @@ pub fn work(
                             );
 
                             let mut lpr_connection = LprConnection::new(
-                                &state.printer_interface.ip,
+                                &state.ip,
                                 20000, // socket timeout in ms
                             );
 
@@ -153,14 +152,12 @@ pub fn work(
             Err(_) => (),
         }
         thread::sleep(time::Duration::from_millis(20));
-        let current = match snmp_session.get_counter() {
-            Ok(value) => value,
-            Err(_e) => continue,
-        };
-
-        // reset loop count if another page is printed
-        if current.total > last_value {
+        if let Ok(counter) = counter_receiver.try_recv() {
+            current = counter;
             debug!("current: {:?}", current);
+        }
+
+        if current.total > last_value {
             timeout.refresh();
             last_value = current.total;
             accounting.set_value(current.clone() - counter_base.clone());
@@ -174,7 +171,6 @@ pub fn work(
         }
 
         if accounting.not_enough_credit() {
-            debug!("current: {:?}", current);
             info!("{}#{} not enough credit, aborting", &hex_uid[.. 8], task.user_id);
             break false
         }
@@ -187,13 +183,13 @@ pub fn work(
 
     // clear jobqueue on every outcome in case printer wants to print more than
     // expected
-    snmp_session.clear_queue().expect("clearing jobqueue");
+    let _clear = clear(state.device_id);
 
     thread::sleep(time::Duration::from_millis(80));
 
-    let current = snmp_session.get_counter().expect("getting counter values");
-
-    accounting.set_value(current.clone() - counter_base.clone());
+    if let Ok(current) = counter_receiver.try_recv() {
+        accounting.set_value(current.clone() - counter_base.clone());
+    }
     accounting.finish();
 
     debug!("completed: {:?}, print_jobs: {:?}", completed, print_jobs);
@@ -206,5 +202,5 @@ pub fn work(
         }
     }
 
-    info!("{}#{} finished", &hex_uid[..8], task.user_id);
+    info!("{}#{} finished", &hex_uid[.. 8], task.user_id);
 }

@@ -656,7 +656,6 @@ dependencies = [
  "redis 0.1.0",
  "serde 1.0.85 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.85 (registry+https://github.com/rust-lang/crates.io-index)",
- "snmp 0.1.0",
  "sodium 0.1.0",
  "threadpool 1.7.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -1250,9 +1249,9 @@ dependencies = [
 name = "snmp"
 version = "0.1.0"
 dependencies = [
- "diesel 1.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "mysql 0.1.0",
- "netsnmp-sys 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde 1.0.85 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde_derive 1.0.85 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde_json 1.0.37 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]

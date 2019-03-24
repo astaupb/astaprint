@@ -32,10 +32,7 @@ pub fn get_printers(admin: AdminGuard) -> QueryResult<Json<Vec<PrinterResponse>>
     Ok(Json(
         select_printers(&admin.connection)?
             .iter()
-            .map(|x| {
-                let connection: &MysqlConnection = &admin.connection;
-                PrinterResponse::from((x, connection))
-            })
+            .map(PrinterResponse::from)
             .collect(),
     ))
 }
@@ -47,5 +44,5 @@ pub fn get_single_printer(
 ) -> QueryResult<Json<PrinterResponse>>
 {
     let connection: &MysqlConnection = &admin.connection;
-    Ok(Json(PrinterResponse::from((&select_printer_by_device_id(id, connection)?, connection))))
+    Ok(Json(PrinterResponse::from(select_printer_by_device_id(id, connection)?)))
 }

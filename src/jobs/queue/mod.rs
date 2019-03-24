@@ -55,8 +55,6 @@ impl<'a> From<&'a DispatcherTask> for DispatcherTaskResponse
     }
 }
 
-
-
 pub fn dispatch(
     task: DispatcherTask,
     state: DispatcherState,

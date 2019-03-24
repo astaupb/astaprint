@@ -54,7 +54,10 @@ use redis::{
 
 use mysql::{
     get_mysql_pool,
-    printers::select::select_device_ids,
+    printers::select::{
+        select_device_ids,
+        select_ip_by_device_id,
+    },
 };
 
 use model::task::worker::{
@@ -65,24 +68,19 @@ use model::task::worker::{
 extern crate astaprint;
 use astaprint::printers::queue::work;
 
-use snmp::PrinterInterface;
-
 fn spawn_worker(
     device_id: u32,
+    ip: String,
     redis_pool: RedisPool<RedisConnectionManager>,
     mysql_pool: MysqlPool<ConnectionManager<MysqlConnection>>,
 ) -> thread::JoinHandle<()>
 {
-    let connection = mysql_pool.get().expect("getting connection from pool");
-
-    let printer_interface = PrinterInterface::from_device_id(device_id, &connection);
-
     let name = format!("worker::{}", device_id);
 
     let taskqueue: TaskQueue<WorkerTask, WorkerState, WorkerCommand> = TaskQueue::new(
         &name,
         WorkerState {
-            printer_interface,
+            device_id, ip,
             mysql_pool,
             redis_pool: redis_pool.clone(),
         },
@@ -107,9 +105,12 @@ fn main()
     let connection = mysql_pool.get().expect("getting mysql connection from pool");
 
     for id in select_device_ids(&connection).expect("selecting device ids") {
-        let redis_pool = get_redis_pool(20, Redis::Worker);
+        let redis_pool = get_redis_pool(32, Redis::Worker);
 
-        handles.push(spawn_worker(id, redis_pool, mysql_pool.clone()));
+        let ip = select_ip_by_device_id(id, &connection)
+            .expect("selecting ip by device_id");
+
+        handles.push(spawn_worker(id, ip, redis_pool, mysql_pool.clone()));
     }
 
     for handle in handles {
