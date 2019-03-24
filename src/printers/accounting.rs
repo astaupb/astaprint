@@ -30,11 +30,7 @@ use legacy::tds::{
     insert_transaction,
 };
 
-use r2d2_redis::RedisConnectionManager;
-
 use snmp::CounterValues;
-
-use journal::lock::JournalLock;
 
 pub struct Accounting
 {
@@ -44,7 +40,6 @@ pub struct Accounting
     credit: i32,
     value: i32,
     mysql_pool: Pool<ConnectionManager<MysqlConnection>>,
-    redis_pool: Pool<RedisConnectionManager>,
 }
 
 impl Accounting
@@ -53,7 +48,6 @@ impl Accounting
         user_id: u32,
         counter: CounterValues,
         mysql_pool: Pool<ConnectionManager<MysqlConnection>>,
-        redis_pool: Pool<RedisConnectionManager>,
     ) -> Accounting
     {
         let baseprice = 20;
@@ -71,9 +65,10 @@ impl Accounting
             credit,
             value,
             mysql_pool,
-            redis_pool,
         }
     }
+
+    pub fn value(&self) -> i32 { self.value }
 
     pub fn not_enough_credit(&self) -> bool { &self.credit + &self.value < self.baseprice as i32 }
 
@@ -99,8 +94,6 @@ impl Accounting
             let _connection = self.mysql_pool.get().expect("getting mysql connection from pool");
 
             let credit = &self.credit + &self.value;
-
-            let _lock = JournalLock::from(self.redis_pool.clone());
 
             insert_transaction(self.user_id, self.value, "Print Job", false, None);
 

@@ -95,11 +95,8 @@ pub fn post_to_journal_with_token(
 pub fn post_to_journal_as_admin(
     body: Json<JournalPost>,
     admin: AdminGuard,
-    redis: State<Pool<RedisConnectionManager>>,
 ) -> Status
 {
-    let _lock = JournalLock::from(redis.clone());
-
     insert_transaction(
         body.user_id,
         body.value,

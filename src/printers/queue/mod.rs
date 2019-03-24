@@ -71,8 +71,7 @@ pub fn work(
     let counter_base = counter(state.device_id).expect("getting counter base");
     let mut current = counter_base.clone();
 
-    let mut accounting =
-        Accounting::new(task.user_id, counter_base.clone(), state.mysql_pool, state.redis_pool);
+    let mut accounting = Accounting::new(task.user_id, counter_base.clone(), state.mysql_pool);
 
     if accounting.not_enough_credit() {
         info!("not enough credit for one page, aborting");
@@ -97,6 +96,7 @@ pub fn work(
                 match command {
                     WorkerCommand::Cancel => break false,
                     WorkerCommand::HeartBeat => {
+                        info!("{}#{} heartbeat", &hex_uid[.. 8], task.user_id);
                         timeout.refresh();
                     },
                     WorkerCommand::Hungup => {
@@ -106,6 +106,12 @@ pub fn work(
                         if let Some(job_row) = select_full_job(job_id, &connection)
                             .expect("selecting job from database")
                         {
+                            info!(
+                                "{}#{} printing job {}",
+                                &hex_uid[.. 8],
+                                task.user_id,
+                                job_row.id
+                            );
                             let mut job = Job::from((
                                 job_row.id,
                                 job_row.info.clone(),
@@ -157,6 +163,7 @@ pub fn work(
             timeout.refresh();
             last_value = current.total;
             accounting.set_value(current.clone() - counter_base.clone());
+            info!("{}#{} accounting: {}", &hex_uid[.. 8], task.user_id, accounting.value());
         }
 
         if hungup && !print_jobs.is_empty() {
@@ -195,6 +202,10 @@ pub fn work(
         for job in print_jobs {
             if !job.options.keep {
                 delete_job_by_id(job.id, &connection).expect("deleting job from table");
+                info!("{}#{} deleting job {}", &hex_uid[.. 8], task.user_id, job.id);
+            }
+            else {
+                info!("{}#{} keeping job {}", &hex_uid[.. 8], task.user_id, job.id);
             }
         }
     }
