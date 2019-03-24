@@ -14,7 +14,7 @@ use crate::{
 
 fn snmptool(args: &[&str]) -> Result<Child>
 {
-    Command::new("snmptool").args(args).stdout(Stdio::piped()).stderr(Stdio::piped()).spawn()
+    Command::new("./snmptool").args(args).stdout(Stdio::piped()).stderr(Stdio::piped()).spawn()
 }
 
 pub fn wake(device_id: u32) { let _wake = snmptool(&[&format!("{}", device_id), "wake"]); }

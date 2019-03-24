@@ -68,9 +68,7 @@ pub fn work(
 
     let connection = state.mysql_pool.get().expect("getting connection from mysql pool");
 
-    let counter_receiver = listen(state.device_id);
-
-    let counter_base = counter_receiver.recv().expect("receiving base counter value");
+    let counter_base = counter(state.device_id).expect("getting counter base");
     let mut current = counter_base.clone();
 
     let mut accounting =
@@ -150,13 +148,12 @@ pub fn work(
             },
             Err(_) => (),
         }
-        thread::sleep(time::Duration::from_millis(20));
-        if let Ok(counter) = counter_receiver.try_recv() {
+        if let Ok(counter) = counter(state.device_id) {
             current = counter;
-            debug!("current: {:?}", current);
         }
 
         if current.total > last_value {
+            debug!("{:?}", current);
             timeout.refresh();
             last_value = current.total;
             accounting.set_value(current.clone() - counter_base.clone());
@@ -186,9 +183,10 @@ pub fn work(
 
     thread::sleep(time::Duration::from_millis(80));
 
-    if let Ok(current) = counter_receiver.try_recv() {
-        accounting.set_value(current.clone() - counter_base.clone());
-    }
+    if let Ok(counter) = counter(state.device_id) {
+        current = counter;
+    };
+    accounting.set_value(current.clone() - counter_base.clone());
     accounting.finish();
 
     debug!("completed: {:?}, print_jobs: {:?}", completed, print_jobs);
