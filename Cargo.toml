@@ -1,6 +1,6 @@
 [package]
 name = "astaprint"
-version = "0.1.0"
+version = "1.0.0"
 authors = ["Gerrit Pape <gerrit.pape@asta.upb.de>"]
 
 [lib]
