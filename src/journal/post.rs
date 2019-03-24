@@ -41,7 +41,10 @@ use legacy::tds::insert_transaction;
 
 use journal::lock::JournalLock;
 
+use sodium::random_bytes;
+
 use mysql::journal::{
+    insert::insert_into_journal_token,
     select::select_journal_token_by_content,
     update::update_journal_token,
     JournalToken,
@@ -106,4 +109,21 @@ pub fn post_to_journal_as_admin(
     );
 
     Status::new(204, "Success - No Content")
+}
+
+#[post("/journal/tokens?<value>")]
+pub fn post_journal_token_as_admin(
+    value: u32,
+    admin: AdminGuard,
+) -> QueryResult<Json<String>>
+{
+    let content = base64::encode_config(&random_bytes(12)[..], base64::URL_SAFE);
+    insert_into_journal_token(
+        BigDecimal::from(value) / BigDecimal::from(100),
+        content.clone(),
+        false,
+        &admin.connection,
+    )?;
+
+    Ok(Json(content))
 }

@@ -25,3 +25,14 @@ pub fn insert_into_journal_digest(digest: Vec<u8>, credit: BigDecimal, connectio
         ))
         .execute(connection)
 }
+
+pub fn insert_into_journal_token(value: BigDecimal, content: String, used: bool, connection: &MysqlConnection) -> QueryResult<usize>
+{
+    insert_into(journal_tokens::table)
+        .values((
+            journal_tokens::value.eq(value),
+            journal_tokens::content.eq(content),
+            journal_tokens::used.eq(used)
+        ))
+        .execute(connection)
+}
