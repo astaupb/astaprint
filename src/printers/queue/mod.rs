@@ -129,8 +129,7 @@ pub fn work(
                             );
 
                             let mut lpr_connection = LprConnection::new(
-                                &state.ip,
-                                20000, // socket timeout in ms
+                                &state.ip, 20000, // socket timeout in ms
                             );
 
                             lpr_connection.print(&buf).expect("printing job with lpr");

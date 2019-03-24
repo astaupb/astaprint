@@ -29,12 +29,7 @@ use rocket_contrib::json::Json;
 #[get("/printers")]
 pub fn get_printers(admin: AdminGuard) -> QueryResult<Json<Vec<PrinterResponse>>>
 {
-    Ok(Json(
-        select_printers(&admin.connection)?
-            .iter()
-            .map(PrinterResponse::from)
-            .collect(),
-    ))
+    Ok(Json(select_printers(&admin.connection)?.iter().map(PrinterResponse::from).collect()))
 }
 
 #[get("/printers/<id>")]

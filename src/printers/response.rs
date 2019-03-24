@@ -19,9 +19,9 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use mysql::printers::Printer;
 use snmp::{
+    tool::*,
     CounterValues,
     StatusValues,
-    tool::*,
 };
 #[derive(Serialize, Debug, Clone)]
 pub struct PrinterResponse
@@ -57,7 +57,7 @@ impl<'a> From<&'a Printer> for PrinterResponse
             description: printer.description.clone(),
             status: None,
             counter: None,
-        } 
+        }
     }
 }
 
@@ -80,7 +80,8 @@ impl From<Printer> for PrinterResponse
             has_a3: printer.has_a3,
             coin_operated: printer.coin_operated,
             description: printer.description,
-            status, counter,
+            status,
+            counter,
         }
     }
 }

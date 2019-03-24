@@ -80,7 +80,8 @@ fn spawn_worker(
     let taskqueue: TaskQueue<WorkerTask, WorkerState, WorkerCommand> = TaskQueue::new(
         &name,
         WorkerState {
-            device_id, ip,
+            device_id,
+            ip,
             mysql_pool,
             redis_pool: redis_pool.clone(),
         },
@@ -107,8 +108,7 @@ fn main()
     for id in select_device_ids(&connection).expect("selecting device ids") {
         let redis_pool = get_redis_pool(32, Redis::Worker);
 
-        let ip = select_ip_by_device_id(id, &connection)
-            .expect("selecting ip by device_id");
+        let ip = select_ip_by_device_id(id, &connection).expect("selecting ip by device_id");
 
         handles.push(spawn_worker(id, ip, redis_pool, mysql_pool.clone()));
     }
