@@ -68,7 +68,9 @@ impl PDFDocument
         }
     }
 
-    pub fn get_pagecount(&self) -> u32 { self.pagecount as u32 }
+    pub fn pagecount(&self) -> u32 { self.pagecount as u32 }
+
+    pub fn pagesizes(&self) -> Vec<(f64, f64)> { self.pagesizes.clone() }
 
     fn get_full_pageinfo(&self) -> Vec<PageInfo>
     {

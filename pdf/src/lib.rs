@@ -57,21 +57,22 @@ pub fn sanitize(mut pdf: Vec<u8>) -> DispatchResult
 
     let title = pdf_document.title.clone().unwrap_or_else(|| String::from(""));
 
-    let pagecount = pdf_document.get_pagecount();
+    let pagecount = pdf_document.pagecount();
 
-    let mut page_info = pdf_document.get_pageinfo();
+    let mut pageinfo = pdf_document.get_pageinfo();
 
-    if page_info.size != Valid(PageSize::A3) && page_info.size != Valid(PageSize::A4) {
-        debug!("{:?} needs pdfjam", page_info);
+    if pageinfo.size != Valid(PageSize::A3) && pageinfo.size != Valid(PageSize::A4) {
+        info!("{:?}: {:?} needs pdfjam", pageinfo, pdf_document.pagesizes());
 
-        pdf = pdfjam(pdf, &page_info).expect("jamming pdf to valid format");
+        pdf = pdfjam(pdf, &pageinfo).expect("jamming pdf to valid format");
 
         pdf_document = PDFDocument::new(&pdf[..], "");
 
-        page_info = pdf_document.get_pageinfo();
+        pageinfo = pdf_document.get_pageinfo();
+        info!("{:?}: {:?} after pdfjam", pageinfo, pdf_document.pagesizes());
     }
 
-    let a3 = match page_info.size {
+    let a3 = match pageinfo.size {
         Valid(PageSize::A3) => true,
         Valid(PageSize::A4) => false,
         _ => panic!("pdfjam does not work"),
