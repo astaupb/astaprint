@@ -220,7 +220,6 @@ where
         let encoded: Vec<u8> = bincode::serialize(command)
             .expect("serializing command to bincode");
         
-        println!("{:?}", encoded);
         let redis = self.redis_pool.get()
             .expect("gettig connection from pool");
 

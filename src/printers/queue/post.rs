@@ -79,8 +79,6 @@ pub fn post_to_queue_element(
 
     let queue = CommandClient::from((queue, &hex_uid[..]));
 
-    info!("hex_uid: {}, id: {:?}", &hex_uid[.. 8], id);
-
     if let Some(id) = id {
         queue.send_command(&WorkerCommand::Print(id)).expect("sending print command");
     }
@@ -106,7 +104,6 @@ pub fn post_to_queue(
 
     let mut hungup = false;
     let processing = queue.get_processing();
-    info!("processing: {:?}", processing);
     let hex_uid = if processing.len() > 0 && processing[0].user_id == user.id {
         info!("found processing queue element with uid {:x?}", &processing[0].uid[.. 8]);
         hex::encode(&processing[0].uid)
@@ -122,7 +119,7 @@ pub fn post_to_queue(
             })
             .expect("sending job to worker queue");
 
-        info!("created task with uid {:x?}", &hex_uid[.. 8]);
+        info!("created task {} for user {}", &hex_uid[..8], user.id);
         hungup = true;
         hex_uid
     };
