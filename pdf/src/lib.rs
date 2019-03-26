@@ -61,15 +61,15 @@ pub fn sanitize(mut pdf: Vec<u8>) -> DispatchResult
 
     let mut pageinfo = pdf_document.get_pageinfo();
 
+    info!("{:?}: {:?}", pageinfo, pdf_document.pagesizes());
     if pageinfo.size != Valid(PageSize::A3) && pageinfo.size != Valid(PageSize::A4) {
-        info!("{:?}: {:?} needs pdfjam", pageinfo, pdf_document.pagesizes());
 
         pdf = pdfjam(pdf, &pageinfo).expect("jamming pdf to valid format");
 
         pdf_document = PDFDocument::new(&pdf[..], "");
 
         pageinfo = pdf_document.get_pageinfo();
-        info!("{:?}: {:?} after pdfjam", pageinfo, pdf_document.pagesizes());
+        info!("pdfjam {:?}: {:?}", pageinfo, pdf_document.pagesizes());
     }
 
     let a3 = match pageinfo.size {

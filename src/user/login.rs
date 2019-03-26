@@ -57,6 +57,7 @@ use mysql::user::{
 pub struct LoginGuard
 {
     pub token: String,
+    pub passed_with_pin: bool,
 }
 
 impl<'a, 'r> FromRequest<'a, 'r> for LoginGuard
@@ -120,6 +121,11 @@ impl<'a, 'r> FromRequest<'a, 'r> for LoginGuard
         if PasswordHash::with_salt(credentials[1], &user.salt[..]) != user.hash {
             return Outcome::Failure((Status::Unauthorized, ()))
         }
+        // check password for being pin
+        let passed_with_pin = match select_user_pin_by_id(user.id, &connection) {
+            Ok(Some(pin)) => &format!("{}", pin) == credentials[1],
+            _ => false,
+        };
 
         // generate token
         let token = random_bytes(128);
@@ -171,6 +177,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for LoginGuard
                 info!("{} logged in ", user.id);
                 Outcome::Success(LoginGuard {
                     token: x_api_key,
+                    passed_with_pin,
                 })
             },
             Err(_) => {

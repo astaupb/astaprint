@@ -24,6 +24,11 @@ pub fn select_user_by_id(user_id: u32, connection: &MysqlConnection) -> QueryRes
     user::table.select(user::all_columns).filter(user::id.eq(user_id)).first(connection)
 }
 
+pub fn select_user_pin_by_id(user_id: u32, connection: &MysqlConnection) -> QueryResult<Option<u32>>
+{
+    user::table.select(user::pin).filter(user::id.eq(user_id)).first(connection)
+}
+
 pub fn select_user_tokens(
     connection: &MysqlConnection,
 ) -> QueryResult<Vec<UserToken>>
