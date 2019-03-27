@@ -29,7 +29,10 @@ use model::task::worker::{
 use rocket::{
     http::Status,
     response::{
-        status::Accepted,
+        status::{
+            Accepted,
+            Custom,
+        },
         Redirect,
     },
     State,
@@ -68,11 +71,11 @@ pub fn post_to_queue(
     device_id: u32,
     id: Option<u32>,
     queues: State<HashMap<u32, TaskQueueClient<WorkerTask, WorkerCommand>>>,
-) -> QueryResult<Result<Accepted<Json<String>>, Status>>
+) -> QueryResult<Result<Accepted<Json<String>>, Custom<()>>>
 {
     let queue = match queues.get(&device_id) {
         Some(queue) => queue,
-        None => return Ok(Err(Status::new(404, "Task Not Found"))),
+        None => return Ok(Err(Custom(Status::new(404, "Task Not Found"), ()))),
     };
     debug!("post_to_queue(): id: {:?}", id);
     // convert id=0 back to None
@@ -86,7 +89,7 @@ pub fn post_to_queue(
     }
     else {
         if processing.len() > 0 {
-            return Ok(Err(Status::new(423, "Queue Locked")));
+            return Ok(Err(Custom(Status::new(423, "Queue Locked"), ())));
         }
         let uid = random_bytes(20);
         let hex_uid = hex::encode(&uid[..]);

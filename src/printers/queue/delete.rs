@@ -26,7 +26,9 @@ use model::task::worker::{
 
 use rocket::{
     http::Status,
-    response::Redirect,
+    response::{
+        Redirect,
+    },
     State,
 };
 
