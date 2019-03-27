@@ -7,10 +7,6 @@ deploy: deploy_release
 
 deploy_debug: debug
 	./flushall.sh
-	#sunrise
-	ssh astaprint@sunrise "systemctl --user stop backend && rm /home/astaprint/bin/backend"
-	scp ./target/debug/backend astaprint@sunrise:/home/astaprint/bin
-	ssh astaprint@sunrise "systemctl --user daemon-reload && systemctl --user start backend"
 	#shiva
 	ssh astaprint@shiva "systemctl --user stop backend && rm /home/astaprint/bin/backend"
 	scp ./target/debug/backend astaprint@shiva:/home/astaprint/bin

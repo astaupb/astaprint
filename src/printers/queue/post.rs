@@ -28,7 +28,10 @@ use model::task::worker::{
 
 use rocket::{
     http::Status,
-    response::status::Accepted,
+    response::{
+        status::Accepted,
+        Redirect,
+    },
     State,
 };
 
@@ -43,64 +46,37 @@ use redis::queue::{
 
 use sodium::random_bytes;
 
-#[post("/<device_id>/queue/<hex_uid>?<id>")]
+#[post("/<device_id>/queue/<_hex_uid>?<id>")]
 pub fn post_to_queue_element(
-    user: UserGuard,
+    _user: UserGuard,
     device_id: u32,
-    hex_uid: String,
+    _hex_uid: Option<String>,
     id: Option<u32>,
-    queues: State<HashMap<u32, TaskQueueClient<WorkerTask, WorkerCommand>>>,
-) -> QueryResult<Status>
+) -> Redirect
 {
-    let queue = match queues.get(&device_id) {
-        Some(queue) => queue,
-        None => return Ok(Status::new(404, "Queue Not Found")),
-    };
-
-    let uid = match hex::decode(&hex_uid) {
-        Ok(uid) => uid,
-        Err(_) => return Ok(Status::new(400, "Bad Request")),
-    };
-
-    let processing = queue.get_processing();
-    let incoming = queue.get_incoming();
-
-    if incoming.iter().all(|element| (element.uid != uid.clone()))
-        && processing.iter().all(|element| element.uid != uid.clone())
-    {
-        return Ok(Status::new(404, "Queue Element Not Found"))
-    }
-
-    if incoming.iter().all(|element| (element.user_id != user.id))
-        && processing.iter().all(|element| (element.user_id != user.id))
-    {
-        return Ok(Status::new(401, "Unauthorized"))
-    }
-
-    let queue = CommandClient::from((queue, &hex_uid[..]));
-
-    if let Some(id) = id {
-        queue.send_command(&WorkerCommand::Print(id)).expect("sending print command");
-    }
-    else {
-        queue.send_command(&WorkerCommand::HeartBeat).expect("sending heartbeat command");
-    }
-
-    Ok(Status::new(202, "Started Processing"))
+    debug!("post_to_queue_element(): id: {:?}", id);
+    // FIXME: workaround to create a OriginUri which is valid for Rocket
+    //          i dont really understand why i can't pass the Option<u32> to id
+    //          assuming there is no print job with id 0 for now..
+    let uri = uri!("/astaprint/printers", post_to_queue: device_id = device_id, id = id.unwrap_or(0));
+    Redirect::to(uri)
 }
 
 #[post("/<device_id>/queue?<id>")]
 pub fn post_to_queue(
     user: UserGuard,
     device_id: u32,
-    queues: State<HashMap<u32, TaskQueueClient<WorkerTask, WorkerCommand>>>,
     id: Option<u32>,
-) -> QueryResult<Option<Accepted<Json<String>>>>
+    queues: State<HashMap<u32, TaskQueueClient<WorkerTask, WorkerCommand>>>,
+) -> QueryResult<Result<Accepted<Json<String>>, Status>>
 {
     let queue = match queues.get(&device_id) {
         Some(queue) => queue,
-        None => return Ok(None),
+        None => return Ok(Err(Status::new(404, "Task Not Found"))),
     };
+    debug!("post_to_queue(): id: {:?}", id);
+    // convert id=0 back to None
+    let id = if let Some(id) = id {if id == 0 {None} else {Some(id)}} else {None};
 
     let mut hungup = false;
     let processing = queue.get_processing();
@@ -109,6 +85,9 @@ pub fn post_to_queue(
         hex::encode(&processing[0].uid)
     }
     else {
+        if processing.len() > 0 {
+            return Ok(Err(Status::new(423, "Queue Locked")));
+        }
         let uid = random_bytes(20);
         let hex_uid = hex::encode(&uid[..]);
 
@@ -136,5 +115,5 @@ pub fn post_to_queue(
         }
     }
 
-    Ok(Some(Accepted(Some(Json(hex_uid)))))
+    Ok(Ok(Accepted(Some(Json(hex_uid)))))
 }

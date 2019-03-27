@@ -26,6 +26,7 @@ use model::task::worker::{
 
 use rocket::{
     http::Status,
+    response::Redirect,
     State,
 };
 
@@ -36,47 +37,42 @@ use redis::queue::{
     TaskQueueClient,
 };
 
-#[delete("/<device_id>/queue/<hex_uid>")]
+#[delete("/<device_id>/queue/<_hex_uid>")]
+pub fn delete_queue_element(
+    _user: UserGuard,
+    device_id: u32,
+    _hex_uid: String,
+) -> Redirect
+{
+    Redirect::to(uri!("/astaprint/printers/", delete_queue: device_id = device_id))
+}
+
+#[delete("/<device_id>/queue")]
 pub fn delete_queue(
     user: UserGuard,
     device_id: u32,
-    hex_uid: String,
     queues: State<HashMap<u32, TaskQueueClient<WorkerTask, WorkerCommand>>>,
 ) -> Status
 {
-    let uid = match hex::decode(&hex_uid) {
-        Ok(uid) => uid,
-        Err(_) => return Status::new(400, "Bad Request"),
-    };
     let queue = match queues.get(&device_id) {
         Some(queue) => queue,
         None => return Status::new(404, "Device Not Found"),
     };
-    let incoming = queue.get_incoming();
-    for task in incoming {
-        if task.uid == uid && task.user_id == user.id {
-            if queue.remove(uid.clone()).expect("removing task") > 0 {
-                return Status::new(205, "Success - No Content")
-            }
-            else {
-                return Status::new(500, "Internal Server Error")
-            }
-        }
-    }
     let processing = queue.get_processing();
-    if processing.len() > 0 && processing[0].uid == uid {
-        if processing[0].user_id == user.id {
-            let client = CommandClient::from((queue, &hex_uid[..]));
-            client.send_command(&WorkerCommand::Cancel).expect("sending cancel command");
+    if processing.len() == 0 {
+        return Status::new(404, "Task Not Found"); 
+    }
+    let task = processing[0].clone();
+    if task.user_id == user.id {
+        let hex_uid = hex::encode(&task.uid[..]);
+        debug!("sending cancel to {}", &hex_uid[..8]);
+        let client = CommandClient::from((queue, &hex_uid[..]));
+        client.send_command(&WorkerCommand::Cancel).expect("sending cancel command");
 
-            return Status::new(205, "Success - No Content")
-        }
-        else {
-            return Status::new(401, "Unauthorized")
-        }
+        return Status::new(205, "Success - No Content")
     }
     else {
-        return Status::new(404, "Task Not Found")
+        return Status::new(401, "Unauthorized")
     }
 }
 

@@ -75,7 +75,7 @@ mod tests
             Ok(data) => 
             println!("{}", &String::from_utf8_lossy(&data[..])),
             Err(e) => panic!("{:?}", e),
-        ]
+        }
     }
     #[test]
     fn soffice()

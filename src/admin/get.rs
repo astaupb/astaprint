@@ -148,7 +148,7 @@ pub fn get_user_journal_as_admin(
 }
 
 #[get("/users/<id>/credit")]
-pub fn get_user_credit_as_admin(id: u32, admin: AdminGuard) -> Json<i32> { Json(get_credit(id)) }
+pub fn get_user_credit_as_admin(id: u32, _admin: AdminGuard) -> Json<i32> { Json(get_credit(id)) }
 
 #[get("/journal/tokens")]
 pub fn get_journal_tokens_as_admin(admin: AdminGuard) -> QueryResult<Json<Vec<JournalTokenResponse>>>
