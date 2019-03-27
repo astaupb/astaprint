@@ -38,9 +38,9 @@ pub struct JournalToken
     pub value: BigDecimal,
     pub content: String,
     pub used: bool,
-    used_by: Option<u32>,
-    created: NaiveDateTime,
-    updated: NaiveDateTime,
+    pub used_by: Option<u32>,
+    pub created: NaiveDateTime,
+    pub updated: NaiveDateTime,
 }
 
 impl fmt::Display for Journal

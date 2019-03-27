@@ -27,13 +27,21 @@ use model::{
     job::options::JobOptions,
     journal::Transaction,
 };
-use mysql::user::{
-    select::{
-        select_user_by_id,
-        select_user_with_limit_offset,
+use mysql::{
+    user::{
+        select::{
+            select_user_by_id,
+            select_user_with_limit_offset,
+        },
+        User,
     },
-    User,
+    journal::{
+        select::select_journal_tokens,
+        JournalToken,
+    },
 };
+
+use bigdecimal::{BigDecimal, ToPrimitive};
 
 use rocket_contrib::json::Json;
 
@@ -70,6 +78,34 @@ impl<'a> From<&'a User> for UserResponse
     }
 }
 
+#[derive(Serialize, Debug, Clone)]
+pub struct JournalTokenResponse
+{
+    id: u32,
+    value: u32,
+    content: String,
+    used: bool,
+    used_by: Option<u32>,
+    created: String,
+    updated: String,
+}
+
+impl<'a> From<&'a JournalToken> for JournalTokenResponse
+{
+    fn from(token: &JournalToken) -> JournalTokenResponse
+    {
+        JournalTokenResponse {
+            id: token.id,
+            value: (token.value.clone() * BigDecimal::from(100)).to_u32().unwrap(),
+            content: token.content.clone(),
+            used: token.used,
+            used_by: token.used_by,
+            created: format!("{}", token.created),
+            updated: format!("{}", token.updated),
+        }
+    }
+}
+
 #[get("/users?<limit>&<offset>")]
 pub fn get_all_users(
     limit: Option<i64>,
@@ -80,7 +116,7 @@ pub fn get_all_users(
     Ok(Json(
         select_user_with_limit_offset(limit.unwrap_or(50), offset.unwrap_or(0), &admin.connection)?
             .iter()
-            .map(|row| UserResponse::from(row))
+            .map(UserResponse::from)
             .collect(),
     ))
 }
@@ -112,4 +148,10 @@ pub fn get_user_journal_as_admin(
 }
 
 #[get("/users/<id>/credit")]
-pub fn get_user_credit_as_admin(id: u32) -> Json<i32> { Json(get_credit(id)) }
+pub fn get_user_credit_as_admin(id: u32, admin: AdminGuard) -> Json<i32> { Json(get_credit(id)) }
+
+#[get("/journal/tokens")]
+pub fn get_journal_tokens_as_admin(admin: AdminGuard) -> QueryResult<Json<Vec<JournalTokenResponse>>>
+{
+    Ok(Json(select_journal_tokens(&admin.connection)?.iter().map(JournalTokenResponse::from).collect()))
+}

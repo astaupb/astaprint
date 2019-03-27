@@ -28,6 +28,8 @@ use sodium::PasswordHash;
 
 use crate::user::guard::UserGuard;
 
+use crate::admin::guard::AdminGuard;
+
 use mysql::user::{
     select::*,
     update::*,
@@ -93,4 +95,20 @@ pub fn change_username(
     info!("user#{} changed username", user.id);
 
     Ok(Custom(Status::new(205, "Reset Content"), ()))
+}
+#[derive(Deserialize, Debug, Clone)]
+pub struct Card
+{
+    sn: Option<u64>,
+    pin: Option<u32>,
+}
+
+#[put("/<user_id>/card", data = "<card>")]
+pub fn change_card(admin: AdminGuard, user_id: u32, card: Json<Card>) -> QueryResult<Status>
+{
+    let card = card.into_inner();
+
+    update_user_card_and_pin(user_id, card.sn, card.pin, &admin.connection)?;
+
+    Ok(Status::new(205, "Reset Content"))
 }
