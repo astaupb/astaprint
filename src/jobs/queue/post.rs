@@ -58,10 +58,21 @@ pub fn upload_job<'a>(
 
     let hex_uid = hex::encode(&uid[..]);
 
+    let user_id = user.id;
+
+    let filename = if let Some(filename) = filename {
+        if filename.len() < 80 {
+            filename
+        } else {
+            format!("{}...", &filename[..79])
+        }
+    }
+    else {
+        String::from("")
+    };
+
     let task = DispatcherTask {
-        user_id: user.id,
-        uid,
-        filename: filename.unwrap_or_else(|| "".into()),
+        user_id, uid, filename,
     };
 
     taskqueue.send(&task).expect("sending task to queue");
