@@ -61,7 +61,7 @@ pub fn post_to_queue_element(
     // FIXME: workaround to create a OriginUri which is valid for Rocket
     //          i dont really understand why i can't pass the Option<u32> to id
     //          assuming there is no print job with id 0 for now..
-    let uri = uri!("/astaprint/printers", post_to_queue: device_id = device_id, id = id.unwrap_or(0));
+    let uri = uri!("/api/v1/printers", post_to_queue: device_id = device_id, id = id.unwrap_or(0));
     Redirect::to(uri)
 }
 
@@ -106,15 +106,19 @@ pub fn post_to_queue(
         hex_uid
     };
 
+    let queue = CommandClient::from((queue, &hex_uid[..]));
     if let Some(id) = id {
         info!("print job {} command", id);
-        let queue = CommandClient::from((queue, &hex_uid[..]));
 
         queue.send_command(&WorkerCommand::Print(id)).expect("sending print command to worker");
 
         // send hungup for not locking printer after print job
         if hungup {
             queue.send_command(&WorkerCommand::Hungup).expect("sending hungup command to worker");
+        }
+    } else {
+        if !hungup {
+            queue.send_command(&WorkerCommand::HeartBeat).expect("sending heartbeat command to worker");
         }
     }
 

@@ -46,7 +46,7 @@ pub fn delete_queue_element(
     _hex_uid: String,
 ) -> Redirect
 {
-    Redirect::to(uri!("/astaprint/printers/", delete_queue: device_id = device_id))
+    Redirect::to(uri!("/api/v1/printers/", delete_queue: device_id = device_id))
 }
 
 #[delete("/<device_id>/queue")]
