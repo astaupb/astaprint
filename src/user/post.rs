@@ -77,7 +77,9 @@ pub fn register_as_new_user(
     }
     match add_user(&user.name, &user.password, None, None, false, &connection) {
         Ok(_id) => Ok(Custom(Status::new(204, "Success - No Content"), ())),
-        Err(UserAddError::UsernameExists) => Ok(Custom(Status::new(470, "username already taken"), ())),
+        Err(UserAddError::UsernameExists) => {
+            Ok(Custom(Status::new(470, "username already taken"), ()))
+        },
         Err(UserAddError::InsertError(e)) => Err(e),
     }
 }

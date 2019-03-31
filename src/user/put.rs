@@ -104,7 +104,11 @@ pub struct Card
 }
 
 #[put("/<user_id>/card", data = "<card>")]
-pub fn change_card(admin: AdminGuard, user_id: u32, card: Json<Card>) -> QueryResult<Status>
+pub fn change_card(
+    admin: AdminGuard,
+    user_id: u32,
+    card: Json<Card>,
+) -> QueryResult<Status>
 {
     let card = card.into_inner();
 
