@@ -45,7 +45,7 @@ pub fn wake(device_id: u32) { let _wake = snmptool(&[&format!("{}", device_id), 
 
 pub fn sleep(device_id: u32) { let _sleep = snmptool(&[&format!("{}", device_id), "sleep"]); }
 
-pub fn clear(device_id: u32) { let _sleep = snmptool(&[&format!("{}", device_id), "clear"]); }
+pub fn clear(device_id: u32) -> io::Result<()> { let _clear = snmptool(&[&format!("{}", device_id), "clear"])?; Ok(()) }
 
 pub fn status(device_id: u32) -> Result<StatusValues, SnmpToolError>
 {
