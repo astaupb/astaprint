@@ -212,6 +212,7 @@ fn rocket() -> rocket::Rocket
         .mount("/admin", routes![
             post_admin_token,
             get_journal_as_admin,
+            get_journal_tokens_as_admin,
             post_to_journal_as_admin,
             post_journal_token_as_admin,
             delete_queue_as_admin,

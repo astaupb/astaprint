@@ -28,6 +28,10 @@ use model::{
     journal::Transaction,
 };
 use mysql::{
+    journal::{
+        select::select_journal_tokens,
+        JournalToken,
+    },
     user::{
         select::{
             select_user_by_id,
@@ -35,13 +39,12 @@ use mysql::{
         },
         User,
     },
-    journal::{
-        select::select_journal_tokens,
-        JournalToken,
-    },
 };
 
-use bigdecimal::{BigDecimal, ToPrimitive};
+use bigdecimal::{
+    BigDecimal,
+    ToPrimitive,
+};
 
 use rocket_contrib::json::Json;
 
@@ -151,7 +154,11 @@ pub fn get_user_journal_as_admin(
 pub fn get_user_credit_as_admin(id: u32, _admin: AdminGuard) -> Json<i32> { Json(get_credit(id)) }
 
 #[get("/journal/tokens")]
-pub fn get_journal_tokens_as_admin(admin: AdminGuard) -> QueryResult<Json<Vec<JournalTokenResponse>>>
+pub fn get_journal_tokens_as_admin(
+    admin: AdminGuard
+) -> QueryResult<Json<Vec<JournalTokenResponse>>>
 {
-    Ok(Json(select_journal_tokens(&admin.connection)?.iter().map(JournalTokenResponse::from).collect()))
+    Ok(Json(
+        select_journal_tokens(&admin.connection)?.iter().map(JournalTokenResponse::from).collect(),
+    ))
 }
