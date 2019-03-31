@@ -110,7 +110,13 @@ impl Drop for Accounting
             let total = self.counter.print_total;
             let colored = total - self.counter.print_bw;
 
-            insert_transaction(self.user_id, self.value, &format!("{} Seiten gedruckt, davon {} in Farbe", total, colored), false, None);
+            insert_transaction(
+                self.user_id,
+                self.value,
+                &format!("{} Seiten gedruckt, davon {} in Farbe", total, colored),
+                false,
+                None,
+            );
 
             info!("new credit for {}: {}", &self.user_id, &credit);
         }

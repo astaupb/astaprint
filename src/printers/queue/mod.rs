@@ -102,14 +102,10 @@ pub fn work(
                         if let Some(job_row) = select_full_job(job_id, &connection)
                             .expect("selecting job from database")
                         {
-                            info!(
-                                "{} printing {}",
-                                &hex_uid[.. 8],
-                                job_row.id,
-                            );
+                            info!("{} printing {}", &hex_uid[.. 8], job_row.id,);
 
                             if accounting.not_enough_credit() {
-                                info!("not enough credit, aborting {}", &hex_uid[..8]);
+                                info!("not enough credit, aborting {}", &hex_uid[.. 8]);
                                 break false
                             }
 
@@ -143,11 +139,7 @@ pub fn work(
                             print_jobs.push(job);
                         }
                         else {
-                            info!(
-                                "{} unable to find job {}",
-                                &hex_uid[.. 8],
-                                job_id
-                            );
+                            info!("{} unable to find job {}", &hex_uid[.. 8], job_id);
                         }
                     },
                 }
