@@ -18,6 +18,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use mysql::printers::Printer;
+use printers::queue::get::WorkerTaskResponse;
 use snmp::{
     tool::*,
     CounterValues,
@@ -38,6 +39,7 @@ pub struct PrinterResponse
     pub description: String,
     pub status: Option<StatusValues>,
     pub counter: Option<CounterValues>,
+    pub queue: Option<WorkerTaskResponse>,
 }
 
 impl<'a> From<&'a Printer> for PrinterResponse
@@ -57,6 +59,7 @@ impl<'a> From<&'a Printer> for PrinterResponse
             description: printer.description.clone(),
             status: None,
             counter: None,
+            queue: None,
         }
     }
 }
@@ -82,6 +85,7 @@ impl From<Printer> for PrinterResponse
             description: printer.description,
             status,
             counter,
+            queue: None,
         }
     }
 }

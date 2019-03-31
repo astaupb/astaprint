@@ -85,19 +85,20 @@ pub fn get_queue_as_admin(
     _admin: AdminGuard,
     device_id: u32,
     queues: State<HashMap<u32, TaskQueueClient<WorkerTask, ()>>>,
-) -> Option<Json<WorkerQueueResponse>>
+) -> Option<Json<Option<WorkerTaskResponse>>>
 {
     let queue = match queues.get(&device_id) {
         Some(queue) => queue,
         None => return None,
     };
 
-    Some(Json(WorkerQueueResponse {
-        incoming: queue.get_incoming().iter().map(|task| WorkerTaskResponse::from(task)).collect(),
-        processing: queue
-            .get_processing()
-            .iter()
-            .map(|task| WorkerTaskResponse::from(task))
-            .collect(),
-    }))
+    let incoming = queue.get_incoming();
+    Some(Json(
+        if incoming.len() > 0 {
+            Some(WorkerTaskResponse::from(&incoming[1]))
+        }
+        else {
+            None
+        },
+    ))
 }

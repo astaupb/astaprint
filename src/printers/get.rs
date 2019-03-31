@@ -19,13 +19,19 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use admin::guard::AdminGuard;
 use diesel::prelude::*;
+use model::task::worker::WorkerTask;
 use mysql::printers::select::{
     select_printer_by_device_id,
     select_printers,
 };
-use printers::response::PrinterResponse;
+use printers::{
+    queue::get::WorkerTaskResponse,
+    response::PrinterResponse,
+};
+use redis::queue::TaskQueueClient;
+use rocket::State;
 use rocket_contrib::json::Json;
-
+use std::collections::HashMap;
 #[get("/printers")]
 pub fn get_printers(admin: AdminGuard) -> QueryResult<Json<Vec<PrinterResponse>>>
 {
@@ -36,8 +42,20 @@ pub fn get_printers(admin: AdminGuard) -> QueryResult<Json<Vec<PrinterResponse>>
 pub fn get_single_printer(
     id: u32,
     admin: AdminGuard,
-) -> QueryResult<Json<PrinterResponse>>
+    queues: State<HashMap<u32, TaskQueueClient<WorkerTask, ()>>>,
+) -> QueryResult<Option<Json<PrinterResponse>>>
 {
+    let queue = match queues.get(&id) {
+        Some(queue) => queue,
+        None => return Ok(None),
+    };
     let connection: &MysqlConnection = &admin.connection;
-    Ok(Json(PrinterResponse::from(select_printer_by_device_id(id, connection)?)))
+
+    let mut response = PrinterResponse::from(select_printer_by_device_id(id, connection)?);
+
+    let processing = queue.get_processing();
+    if processing.len() > 0 {
+        response.queue = Some(WorkerTaskResponse::from(&processing[0]));
+    }
+    Ok(Some(Json(response)))
 }
