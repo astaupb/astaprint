@@ -85,6 +85,9 @@ where
                     .brpoplpush(&self.incoming, &self.processing, 0)
                     .expect("pushing task into incoming queue");
 
+                let _: i32 = redis.expire(&self.processing, 72)
+                    .expect("setting expiration of processing key");;
+
                 self.process(
                     handle,
                     bincode,
@@ -137,6 +140,14 @@ where
             incoming: format!("{}::incoming", name),
             processing: format!("{}::processing", name),
         }
+    }
+
+    pub fn refresh_timeout(&self) -> RedisResult<u32>
+    {
+        let redis = self.redis_pool.get()
+            .expect("getting connection from pool");
+
+        redis.expire(&self.processing, 72)
     }
 
     pub fn get_processing(&self) -> Vec<T>

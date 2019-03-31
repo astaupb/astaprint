@@ -7,7 +7,7 @@ edition = "2018"
 [dependencies]
 log = "0.4"
 hex = "0.3"
-r2d2_redis = "0.8"
+r2d2_redis = "0.9"
 bincode = "1.0"
 serde = "1.0"
 threadpool = "1.7"
