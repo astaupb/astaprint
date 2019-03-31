@@ -195,7 +195,8 @@ pub fn work(
         let _clear = clear(state.device_id);
         if _clear.is_err() {
             error!("clearing jobqueue failed second time");
-        } else {
+        }
+        else {
             let _clear = clear(state.device_id);
             info!("third _clear: {:?}", _clear);
         }

@@ -79,7 +79,17 @@ pub fn post_to_queue(
     };
     debug!("post_to_queue(): id: {:?}", id);
     // convert id=0 back to None
-    let id = if let Some(id) = id {if id == 0 {None} else {Some(id)}} else {None};
+    let id = if let Some(id) = id {
+        if id == 0 {
+            None
+        }
+        else {
+            Some(id)
+        }
+    }
+    else {
+        None
+    };
 
     let mut hungup = false;
     let processing = queue.get_processing();
@@ -89,7 +99,7 @@ pub fn post_to_queue(
     }
     else {
         if processing.len() > 0 {
-            return Ok(Err(Custom(Status::new(423, "Queue Locked"), ())));
+            return Ok(Err(Custom(Status::new(423, "Queue Locked"), ())))
         }
         let uid = random_bytes(20);
         let hex_uid = hex::encode(&uid[..]);
@@ -101,7 +111,7 @@ pub fn post_to_queue(
             })
             .expect("sending job to worker queue");
 
-        info!("created task {} for user {}", &hex_uid[..8], user.id);
+        info!("created task {} for user {}", &hex_uid[.. 8], user.id);
         hungup = true;
         hex_uid
     };
@@ -116,9 +126,12 @@ pub fn post_to_queue(
         if hungup {
             queue.send_command(&WorkerCommand::Hungup).expect("sending hungup command to worker");
         }
-    } else {
+    }
+    else {
         if !hungup {
-            queue.send_command(&WorkerCommand::HeartBeat).expect("sending heartbeat command to worker");
+            queue
+                .send_command(&WorkerCommand::HeartBeat)
+                .expect("sending heartbeat command to worker");
         }
     }
 

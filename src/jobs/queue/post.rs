@@ -63,8 +63,9 @@ pub fn upload_job<'a>(
     let filename = if let Some(filename) = filename {
         if filename.len() < 80 {
             filename
-        } else {
-            format!("{}...", &filename[..79])
+        }
+        else {
+            format!("{}...", &filename[.. 79])
         }
     }
     else {
@@ -72,7 +73,9 @@ pub fn upload_job<'a>(
     };
 
     let task = DispatcherTask {
-        user_id, uid, filename,
+        user_id,
+        uid,
+        filename,
     };
 
     taskqueue.send(&task).expect("sending task to queue");

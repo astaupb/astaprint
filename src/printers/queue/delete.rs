@@ -26,9 +26,7 @@ use model::task::worker::{
 
 use rocket::{
     http::Status,
-    response::{
-        Redirect,
-    },
+    response::Redirect,
     State,
 };
 
@@ -62,12 +60,12 @@ pub fn delete_queue(
     };
     let processing = queue.get_processing();
     if processing.len() == 0 {
-        return Status::new(404, "Task Not Found"); 
+        return Status::new(404, "Task Not Found")
     }
     let task = processing[0].clone();
     if task.user_id == user.id {
         let hex_uid = hex::encode(&task.uid[..]);
-        debug!("sending cancel to {}", &hex_uid[..8]);
+        debug!("sending cancel to {}", &hex_uid[.. 8]);
         let client = CommandClient::from((queue, &hex_uid[..]));
         client.send_command(&WorkerCommand::Cancel).expect("sending cancel command");
 
