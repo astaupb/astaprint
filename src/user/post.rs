@@ -21,6 +21,7 @@ use rocket_contrib::json::Json;
 
 use rocket::{
     http::Status,
+    response::status::Custom,
     State,
 };
 use user::{
@@ -67,16 +68,16 @@ pub struct NewUser
 pub fn register_as_new_user(
     user: Json<NewUser>,
     pool: State<Pool<ConnectionManager<MysqlConnection>>>,
-) -> QueryResult<Status>
+) -> QueryResult<Custom<()>>
 {
     let connection = pool.get().expect("getting mysql connection from pool");
 
     if user.name.chars().any(|c| !c.is_alphanumeric()) || user.name.bytes().count() > 32 {
-        return Ok(Status::new(471, "Invalid Username"))
+        return Ok(Custom(Status::new(471, "Invalid Username"), ()))
     }
     match add_user(&user.name, &user.password, None, None, false, &connection) {
-        Ok(_id) => Ok(Status::new(204, "Success - No Content")),
-        Err(UserAddError::UsernameExists) => Ok(Status::new(472, "username already taken")),
+        Ok(_id) => Ok(Custom(Status::new(204, "Success - No Content"), ())),
+        Err(UserAddError::UsernameExists) => Ok(Custom(Status::new(470, "username already taken"), ())),
         Err(UserAddError::InsertError(e)) => Err(e),
     }
 }
