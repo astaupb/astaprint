@@ -70,7 +70,7 @@ pub fn add_user(
         None => name.to_string(),
     };
 
-    let user_id = insert_user(&card, &pin);
+    let user_id = insert_user(&card);
 
     println!("user_id: {}", user_id);
 
