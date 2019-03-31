@@ -32,6 +32,8 @@ use legacy::tds::{
 
 use snmp::CounterValues;
 
+use std::ops::Drop;
+
 pub struct Accounting
 {
     user_id: u32,
@@ -70,6 +72,14 @@ impl Accounting
 
     pub fn value(&self) -> i32 { self.value }
 
+    pub fn set_baseprice(
+        &mut self,
+        baseprice: u32,
+    )
+    {
+        self.baseprice = baseprice
+    }
+
     pub fn not_enough_credit(&self) -> bool { &self.credit + &self.value < self.baseprice as i32 }
 
     /// sets the value which will be accounted given a counter diff as parameter
@@ -87,8 +97,10 @@ impl Accounting
 
         debug!("calculated value for {}: {}", self.user_id, self.value);
     }
-
-    pub fn finish(self)
+}
+impl Drop for Accounting
+{
+    fn drop(&mut self)
     {
         if self.value < 0 {
             let _connection = self.mysql_pool.get().expect("getting mysql connection from pool");

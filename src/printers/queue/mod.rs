@@ -64,21 +64,16 @@ pub fn work(
 {
     let hex_uid = hex::encode(&task.uid[..]);
     info!("{}#{}", &hex_uid[.. 8], task.user_id);
-    let client = CommandClient::from((&client, &hex_uid[..]));
+    let command_client = CommandClient::from((&client, &hex_uid[..]));
 
     let connection = state.mysql_pool.get().expect("getting connection from mysql pool");
 
     let counter_base = counter(state.device_id).expect("getting counter base");
     let mut current = counter_base.clone();
 
-    let mut accounting = Accounting::new(task.user_id, counter_base.clone(), state.mysql_pool);
-
-    if accounting.not_enough_credit() {
-        info!("not enough credit for one page, aborting");
-        return
-    }
-
     debug!("counter_base: {:?}", counter_base);
+
+    let mut accounting = Accounting::new(task.user_id, counter_base.clone(), state.mysql_pool);
 
     let _wake = wake(state.device_id);
     let mut timeout = TimeOut::new(60);
@@ -87,7 +82,7 @@ pub fn work(
     let mut last_value = counter_base.total;
     let mut print_jobs: Vec<Job> = Vec::new();
 
-    let command_receiver = client.get_command_receiver();
+    let command_receiver = command_client.get_command_receiver();
     let completed = loop {
         match command_receiver.try_recv() {
             Ok(command) => {
@@ -98,6 +93,7 @@ pub fn work(
                     WorkerCommand::HeartBeat => {
                         info!("{}#{} heartbeat", &hex_uid[.. 8], task.user_id);
                         timeout.refresh();
+                        client.refresh_timeout().expect("setting redis key expiration");
                     },
                     WorkerCommand::Hungup => {
                         hungup = true;
@@ -112,6 +108,12 @@ pub fn work(
                                 task.user_id,
                                 job_row.id
                             );
+
+                            if accounting.not_enough_credit() {
+                                info!("not enough credit for one page, aborting");
+                                break false
+                            }
+
                             let mut job = Job::from((
                                 job_row.id,
                                 job_row.info.clone(),
@@ -156,8 +158,7 @@ pub fn work(
         }
         if let Ok(counter) = counter(state.device_id) {
             current = counter;
-        }
-
+        };
         if current.total > last_value {
             debug!("{:?}", current);
             timeout.refresh();
@@ -166,16 +167,16 @@ pub fn work(
             info!("{}#{} accounting: {}", &hex_uid[.. 8], task.user_id, accounting.value());
         }
 
+        if print_jobs.len() > 0 && accounting.not_enough_credit() {
+            info!("not enough credit for one page, aborting");
+            break false
+        }
+
         if hungup && !print_jobs.is_empty() {
             if (current.total - counter_base.total) == i64::from(print_count) {
                 debug!("current: {:?}", current);
                 break true
             }
-        }
-
-        if accounting.not_enough_credit() {
-            info!("{}#{} not enough credit, aborting", &hex_uid[.. 8], task.user_id);
-            break false
         }
 
         if timeout.check() {
@@ -186,17 +187,48 @@ pub fn work(
 
     // clear jobqueue on every outcome in case printer wants to print more than
     // expected
+
+    // TODO move to function
     let _clear = clear(state.device_id);
+    if _clear.is_err() {
+        error!("clearing jobqueue failed");
+        let _clear = clear(state.device_id);
+        if _clear.is_err() {
+            error!("clearing jobqueue failed second time");
+        } else {
+            let _clear = clear(state.device_id);
+            info!("third _clear: {:?}", _clear);
+        }
+    }
 
-    thread::sleep(time::Duration::from_millis(80));
+    thread::sleep(time::Duration::from_millis(3000));
 
+    // TODO same here
     if let Ok(counter) = counter(state.device_id) {
         current = counter;
-    };
-    accounting.set_value(current.clone() - counter_base.clone());
-    accounting.finish();
+    }
+    else {
+        // just to be sure..
+        debug!("get counter failed");
+        if let Ok(counter) = counter(state.device_id) {
+            current = counter;
+        }
+        else {
+            debug!("get counter failed the second time");
+            if let Ok(counter) = counter(state.device_id) {
+                current = counter;
+            }
+            else {
+                error!("final get counter failed 3 times");
+            }
+        }
+    }
 
-    debug!("completed: {:?}, print_jobs: {:?}", completed, print_jobs);
+    let _clear = clear(state.device_id);
+
+    accounting.set_value(current.clone() - counter_base.clone());
+
+    debug!("completed: {:?}, print_jobs.len(): {:?}", completed, print_jobs.len());
 
     if completed {
         for job in print_jobs {
