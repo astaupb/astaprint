@@ -63,7 +63,7 @@ pub fn work(
 )
 {
     let hex_uid = hex::encode(&task.uid[..]);
-    info!("{}#{}", &hex_uid[.. 8], task.user_id);
+    info!("{} user {} has locked device {}", &hex_uid[.. 8], task.user_id, state.device_id);
     let command_client = CommandClient::from((&client, &hex_uid[..]));
 
     let connection = state.mysql_pool.get().expect("getting connection from mysql pool");
@@ -91,7 +91,7 @@ pub fn work(
                 match command {
                     WorkerCommand::Cancel => break false,
                     WorkerCommand::HeartBeat => {
-                        info!("{}#{} heartbeat", &hex_uid[.. 8], task.user_id);
+                        info!("{} heartbeat", &hex_uid[.. 8]);
                         timeout.refresh();
                         client.refresh_timeout().expect("setting redis key expiration");
                     },
@@ -103,14 +103,13 @@ pub fn work(
                             .expect("selecting job from database")
                         {
                             info!(
-                                "{}#{} printing job {}",
+                                "{} printing {}",
                                 &hex_uid[.. 8],
-                                task.user_id,
-                                job_row.id
+                                job_row.id,
                             );
 
                             if accounting.not_enough_credit() {
-                                info!("not enough credit for one page, aborting");
+                                info!("not enough credit, aborting {}", &hex_uid[..8]);
                                 break false
                             }
 
@@ -145,9 +144,8 @@ pub fn work(
                         }
                         else {
                             info!(
-                                "{}#{} unable to find job#{}",
+                                "{} unable to find job {}",
                                 &hex_uid[.. 8],
-                                task.user_id,
                                 job_id
                             );
                         }
