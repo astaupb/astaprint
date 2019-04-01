@@ -27,10 +27,6 @@ use mysql::admin::select::select_admin_by_login;
 use rocket::http::Status;
 use rocket_contrib::json::Json;
 use sodium::PasswordHash;
-use user::add::{
-    add_user,
-    UserAddError,
-};
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct NewAdmin
@@ -70,27 +66,4 @@ pub fn post_new_admin(
     new_admin.insert(&admin.connection)?;
 
     Ok(Status::new(204, "Success - No Content"))
-}
-
-#[derive(Deserialize, Debug, Clone)]
-pub struct NewUser
-{
-    name: String,
-    password: String,
-    card: Option<u64>,
-    pin: Option<u32>,
-}
-
-#[post("/user", data = "<new>")]
-pub fn post_new_user(
-    admin: AdminGuard,
-    new: Json<NewUser>,
-) -> QueryResult<Status>
-{
-    let new = new.into_inner();
-    match add_user(&new.name, &new.password, new.card, new.pin, false, &admin.connection) {
-        Ok(_id) => Ok(Status::new(204, "Success - No Content")),
-        Err(UserAddError::UsernameExists) => Ok(Status::new(472, "username already taken")),
-        Err(UserAddError::InsertError(e)) => Err(e),
-    }
 }

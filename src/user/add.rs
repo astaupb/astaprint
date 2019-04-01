@@ -29,13 +29,14 @@ use mysql::user::{
     select::*,
 };
 
-use legacy::tds::insert_user;
+use legacy::tds::insert_contingent;
 
 #[derive(Debug)]
 pub enum UserAddError
 {
     UsernameExists,
     InsertError(Error),
+    LegacyContingentError,
 }
 
 impl From<Error> for UserAddError
@@ -52,7 +53,7 @@ pub fn add_user(
     connection: &MysqlConnection,
 ) -> Result<u32, UserAddError>
 {
-    let user_id: Option<u32> = select_user_id_by_name(name, connection)?;
+    let user_id: Option<u32> = select_user_id_by_name_optional(name, connection)?;
 
     if user_id.is_some() {
         return Err(UserAddError::UsernameExists)
@@ -60,30 +61,23 @@ pub fn add_user(
 
     let (hash, salt) = PasswordHash::create(password);
 
-    let card = match card {
-        Some(sn) => format!("{}", sn),
-        None => name.to_string(),
-    };
 
-    let pin = match pin {
-        Some(pin) => format!("{}", pin),
-        None => name.to_string(),
-    };
-
-    let user_id = insert_user(&card);
-
-    println!("user_id: {}", user_id);
-
-    insert_into_user_with_id(
-        user_id,
+    insert_into_user(
         name,
         hash,
         salt,
-        card.parse::<u64>().ok(),
-        pin.parse::<u32>().ok(),
+        card,
+        pin,
         locked,
         connection,
     )?;
 
-    Ok(user_id)
+    let user_id = select_user_id_by_name(name, connection)?;
+
+    if insert_contingent(user_id) == 0 {
+        Ok(user_id)
+    } else {
+        Err(UserAddError::LegacyContingentError) 
+    }
+
 }

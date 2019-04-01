@@ -80,6 +80,9 @@ pub fn register_as_new_user(
         Err(UserAddError::UsernameExists) => {
             Ok(Custom(Status::new(470, "username already taken"), ()))
         },
+        Err(UserAddError::LegacyContingentError) => {
+            Ok(Custom(Status::new(500, "internal server error"), ())) 
+        },
         Err(UserAddError::InsertError(e)) => Err(e),
     }
 }

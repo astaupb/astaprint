@@ -76,6 +76,17 @@ pub fn select_token_ids_of_user(
 pub fn select_user_id_by_name(
     name: &str,
     connection: &MysqlConnection,
+) -> QueryResult<u32>
+{
+    user::table
+        .select(user::id)
+        .filter(user::name.eq(name))
+        .first(connection)
+}
+
+pub fn select_user_id_by_name_optional(
+    name: &str,
+    connection: &MysqlConnection,
 ) -> QueryResult<Option<u32>>
 {
     user::table
@@ -84,6 +95,7 @@ pub fn select_user_id_by_name(
         .first(connection)
         .optional()
 }
+
 
 pub fn select_user_name_by_id(
     id: u32,

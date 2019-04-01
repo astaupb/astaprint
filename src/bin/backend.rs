@@ -224,7 +224,6 @@ fn rocket() -> rocket::Rocket
             delete_queue_as_admin,
             get_queue_as_admin,
             post_new_admin,
-            post_new_user,
         ])
         .attach(cors())
 }

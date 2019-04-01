@@ -84,7 +84,7 @@ pub fn change_username(
         return Ok(Custom(Status::new(471, "Invalid Username"), ()))
     }
 
-    let user_id = select_user_id_by_name(&name, &user.connection)?;
+    let user_id = select_user_id_by_name_optional(&name, &user.connection)?;
 
     if user_id.is_some() {
         return Ok(Custom(Status::new(472, "Username Already Taken"), ()))
