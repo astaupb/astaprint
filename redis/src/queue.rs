@@ -67,11 +67,6 @@ where
     {
             if let Ok(decoded) = bincode::deserialize(&bincode[..]) {
                 handle(decoded, self.data.clone(), TaskQueueClient::from(self));
-                if let Ok(redis) = self.redis_pool.get() {
-                    let _removed: Value = redis.lrem(&self.processing, 0, bincode).expect("removing task from queue");
-                } else {
-                    error!("getting connection from pool");
-                }
             } else {
                 error!("deserializing to bincode");
             }
@@ -147,7 +142,8 @@ where
         let redis = self.redis_pool.get()
             .expect("getting connection from pool");
 
-        redis.expire(&self.processing, 72)
+        redis.expire(&self.processing, 72)?;
+        redis.expire(&self.incoming, 72)
     }
 
     pub fn get_processing(&self) -> Vec<T>

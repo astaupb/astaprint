@@ -66,7 +66,7 @@ pub fn dispatch(
     let hex_uid = hex::encode(&task.uid[..]);
     info!("{} {} started", task.user_id, &hex_uid[.. 8]);
 
-    let data = state.redis_store.get(task.uid).expect("getting file from store");
+    let data = state.redis_store.get(task.uid.clone()).expect("getting file from store");
 
     let result = sanitize(data);
 
@@ -104,6 +104,7 @@ pub fn dispatch(
     )
     .expect("inserting job into table");
 
+    client.remove(task.uid).expect("removing task from queue");
     info!(
         "{} finished, pagecount: {}, colored: {}, a3: {}",
         &hex_uid[.. 8],
