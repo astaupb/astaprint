@@ -181,6 +181,19 @@ where
 
         redis.lrem(&self.incoming, 0, uid)
     }
+
+    pub fn finish(&self, value: &T) -> RedisResult<()>
+    {
+        let encoded: Vec<u8> = bincode::serialize(value)
+            .expect("serializing value to bincode");
+
+        let redis = self.redis_pool.get()
+            .expect("getting connection from pool");
+
+        redis.lrem(&self.processing, 0, encoded)?;
+
+        Ok(())
+    }
     pub fn send(&self, value: &T) -> RedisResult<()>
     {
         let encoded: Vec<u8> = bincode::serialize(value)

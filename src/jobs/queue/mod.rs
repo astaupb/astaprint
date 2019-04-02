@@ -104,7 +104,7 @@ pub fn dispatch(
     )
     .expect("inserting job into table");
 
-    client.remove(task.uid).expect("removing task from queue");
+    client.finish(&task).expect("removing task from queue");
     info!(
         "{} finished, pagecount: {}, colored: {}, a3: {}",
         &hex_uid[.. 8],
