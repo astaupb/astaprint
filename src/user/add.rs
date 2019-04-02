@@ -61,23 +61,14 @@ pub fn add_user(
 
     let (hash, salt) = PasswordHash::create(password);
 
-
-    insert_into_user(
-        name,
-        hash,
-        salt,
-        card,
-        pin,
-        locked,
-        connection,
-    )?;
+    insert_into_user(name, hash, salt, card, pin, locked, connection)?;
 
     let user_id = select_user_id_by_name(name, connection)?;
 
     if insert_contingent(user_id) == 0 {
         Ok(user_id)
-    } else {
-        Err(UserAddError::LegacyContingentError) 
     }
-
+    else {
+        Err(UserAddError::LegacyContingentError)
+    }
 }
