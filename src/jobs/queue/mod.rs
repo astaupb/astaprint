@@ -26,6 +26,8 @@ use pdf::sanitize;
 
 use mysql::jobs::insert::insert_into_jobs;
 
+use redis::queue::TaskQueueClient;
+
 use model::{
     job::{
         info::JobInfo,
@@ -58,6 +60,7 @@ impl<'a> From<&'a DispatcherTask> for DispatcherTaskResponse
 pub fn dispatch(
     task: DispatcherTask,
     state: DispatcherState,
+    client: TaskQueueClient<DispatcherTask, ()>,
 )
 {
     let hex_uid = hex::encode(&task.uid[..]);
@@ -100,6 +103,7 @@ pub fn dispatch(
         &connection,
     )
     .expect("inserting job into table");
+
     info!(
         "{} finished, pagecount: {}, colored: {}, a3: {}",
         &hex_uid[.. 8],

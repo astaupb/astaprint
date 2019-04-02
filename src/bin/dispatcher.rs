@@ -74,13 +74,8 @@ fn main()
     info!("listening");
 
     taskqueue.listen(|task, state, _client| {
-        match thread::spawn(move || {
-            dispatch(task, state.clone());
-        })
-        .join()
-        {
-            Ok(_) => (),
-            Err(e) => error!("{:?}", e),
-        }
+        thread::spawn(move || {
+            dispatch(task, state.clone(), _client.clone());
+        });
     });
 }
