@@ -67,10 +67,10 @@ impl PageInfo
 
         let mut size = Is::Almost(PageSize::A4);
 
-        if x >= 841.5 && x <= 842.5 && y >= 594.5 && y <= 595.5 {
+        if x >= 841.0 && x <= 843.0 && y >= 594.0 && y <= 596.0 {
             size = Is::Valid(PageSize::A4);
         }
-        else if x >= 1189.5 && x <= 1190.5 && y >= 841.5 && y <= 842.5 {
+        else if x >= 1189.0 && x <= 1191.0 && y >= 841.0 && y <= 843.0 {
             size = Is::Valid(PageSize::A3);
         }
         else if x > 1016.0 {
