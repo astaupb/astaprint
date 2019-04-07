@@ -41,5 +41,6 @@ pub struct DispatcherTask
 {
     pub user_id: u32,
     pub filename: String,
+    pub keep: bool,
     pub uid: Vec<u8>,
 }

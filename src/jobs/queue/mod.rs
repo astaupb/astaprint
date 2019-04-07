@@ -24,7 +24,10 @@ pub mod data;
 
 use pdf::sanitize;
 
-use mysql::jobs::insert::insert_into_jobs;
+use mysql::{
+    jobs::insert::insert_into_jobs,
+    user::select::select_user_options,
+};
 
 use redis::queue::TaskQueueClient;
 
@@ -44,6 +47,7 @@ pub struct DispatcherTaskResponse
 {
     pub uid: String,
     pub filename: String,
+    pub keep: bool,
 }
 
 impl<'a> From<&'a DispatcherTask> for DispatcherTaskResponse
@@ -53,6 +57,7 @@ impl<'a> From<&'a DispatcherTask> for DispatcherTaskResponse
         DispatcherTaskResponse {
             uid: hex::encode(&task.uid[..]),
             filename: task.filename.clone(),
+            keep: task.keep,
         }
     }
 }
@@ -87,13 +92,18 @@ pub fn dispatch(
     })
     .expect("serializing JobInfo");
 
-    let options: Vec<u8> =
-        bincode::serialize(&JobOptions::default()).expect("serializing JobOptions");
+    let mut options: JobOptions =
+        match select_user_options(task.user_id, &connection).expect("selecting user default options") {
+            Some(options) => bincode::deserialize(&options[..]).expect("deserializing JobOptions"),
+            None => JobOptions::default()
+        };
+
+    options.keep = task.keep;
 
     insert_into_jobs(
         task.user_id,
         info,
-        options,
+        bincode::serialize(&options).expect("serializing JobOptions"),
         result.pdf,
         result.pdf_bw,
         result.preview_0,

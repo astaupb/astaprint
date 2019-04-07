@@ -194,3 +194,11 @@ pub fn select_user_info_by_id(user_id: u32, connection: &MysqlConnection) -> Que
         .filter(user::id.eq(user_id))
         .first(connection)
 }
+
+pub fn select_user_options(user_id: u32, connection: &MysqlConnection) -> QueryResult<Option<Vec<u8>>>
+{
+    user::table
+        .select(user::options)
+        .filter(user::id.eq(user_id))
+        .first(connection)
+}

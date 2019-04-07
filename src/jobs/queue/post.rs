@@ -39,21 +39,16 @@ use redis::{
     store::Store,
 };
 
-#[post("/queue?<filename>&<password>", data = "<data>", format = "application/pdf")]
+#[post("/queue?<filename>&<keep>", data = "<data>", format = "application/pdf")]
 pub fn upload_job<'a>(
     user: UserGuard,
     data: PdfBody,
     filename: Option<String>,
-    password: Option<String>,
+    keep: Option<bool>,
     taskqueue: State<TaskQueueClient<DispatcherTask, ()>>,
     store: State<Store>,
 ) -> io::Result<Result<Accepted<Json<String>>, BadRequest<&'a str>>>
 {
-    if let Some(_password) = password {
-        // TODO decrypt with qpdf
-    }
-    debug!("filename: {:?}", filename);
-
     let uid = store.set(data.bytes).expect("saving file in store");
 
     let hex_uid = hex::encode(&uid[..]);
@@ -72,10 +67,13 @@ pub fn upload_job<'a>(
         String::from("")
     };
 
+    let keep = if let Some(keep) = keep { keep } else { false };
+
     let task = DispatcherTask {
         user_id,
         uid,
         filename,
+        keep,
     };
 
     taskqueue.send(&task).expect("sending task to queue");
