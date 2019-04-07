@@ -24,7 +24,7 @@ pub mod post;
 pub mod timeout;
 
 use model::{
-    job::Job,
+    job::{Job, options::JobOptions},
     task::worker::{
         WorkerCommand,
         WorkerState,
@@ -80,7 +80,7 @@ pub fn work(
     let mut print_count = 0;
     let mut hungup = false;
     let mut last_value = counter_base.total;
-    let mut print_jobs: Vec<Job> = Vec::new();
+    let mut print_jobs: Vec<(u32, JobOptions)> = Vec::new();
 
     let command_receiver = command_client.get_command_receiver();
     let completed = loop {
@@ -104,11 +104,6 @@ pub fn work(
                         {
                             info!("{} printing {}", &hex_uid[.. 8], job_row.id,);
 
-                            if accounting.not_enough_credit() {
-                                info!("not enough credit, aborting {}", &hex_uid[.. 8]);
-                                break false
-                            }
-
                             let mut job = Job::from((
                                 job_row.id,
                                 job_row.info.clone(),
@@ -117,6 +112,20 @@ pub fn work(
                             ));
 
                             let color = job.options.color;
+
+                            print_count += job.pages_to_print();
+                            print_jobs.push((job.id, job.options.clone()));
+
+                            if accounting.not_enough_credit() {
+                                let pages_left = accounting.bw_pages_left();
+                                if print_count as i32 <= pages_left {
+                                    info!("print_pages: {}, pages_left: {}, continuing..", print_count, pages_left);
+                                } else {
+                                    info!("not enough credit, aborting {}", &hex_uid[.. 8]);
+                                    break false
+                                }
+                            }
+
 
                             let buf: Vec<u8> = job.translate_for_printer(
                                 &task.uid[..],
@@ -135,8 +144,6 @@ pub fn work(
 
                             lpr_connection.print(&buf).expect("printing job with lpr");
 
-                            print_count += job.pages_to_print();
-                            print_jobs.push(job);
                         }
                         else {
                             info!("{} unable to find job {}", &hex_uid[.. 8], job_id);
@@ -222,13 +229,13 @@ pub fn work(
     debug!("completed: {:?}, print_jobs.len(): {:?}", completed, print_jobs.len());
 
     if completed {
-        for job in print_jobs {
-            if !job.options.keep {
-                delete_job_by_id(job.id, &connection).expect("deleting job from table");
-                info!("{}#{} deleting job {}", &hex_uid[.. 8], task.user_id, job.id);
+        for (id, options) in print_jobs {
+            if !options.keep {
+                delete_job_by_id(id, &connection).expect("deleting job from table");
+                info!("{}#{} deleting job {}", &hex_uid[.. 8], task.user_id, id);
             }
             else {
-                info!("{}#{} keeping job {}", &hex_uid[.. 8], task.user_id, job.id);
+                info!("{}#{} keeping job {}", &hex_uid[.. 8], task.user_id, id);
             }
         }
     }

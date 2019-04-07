@@ -80,6 +80,10 @@ impl Accounting
         self.baseprice = baseprice
     }
 
+    pub fn bw_pages_left(&self) -> i32 {
+        (self.credit + self.value) / 5
+    }
+
     pub fn not_enough_credit(&self) -> bool { &self.credit + &self.value < self.baseprice as i32 }
 
     /// sets the value which will be accounted given a counter diff as parameter
