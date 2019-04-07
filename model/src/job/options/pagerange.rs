@@ -154,7 +154,7 @@ impl fmt::Display for PageRange
 #[cfg(test)]
 pub mod tests
 {
-    use jobs::options::pagerange::PageRange;
+    use super::PageRange;
     pub fn print_range(
         range_str: &str,
         pagecount: usize,
