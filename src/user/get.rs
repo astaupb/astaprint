@@ -26,6 +26,8 @@ use legacy::tds::get_credit;
 
 use user::guard::UserGuard;
 
+use model::job::options::JobOptions;
+
 use mysql::user::select::*;
 
 #[derive(Serialize, Debug)]
@@ -62,6 +64,17 @@ pub fn get_user_info(user: UserGuard) -> QueryResult<Json<UserInfo>>
         tokens,
         token_id: user.token_id,
     }))
+}
+
+#[get("/options")]
+pub fn get_user_default_options(user: UserGuard) -> QueryResult<Json<JobOptions>>
+{
+    let options = match select_user_options(user.id, &user.connection)? {
+        Some(options) => bincode::deserialize(&options[..]).expect("deserializing JobOptions"),
+        None => JobOptions::default(),
+    };
+
+    Ok(Json(options))
 }
 
 #[get("/name")]

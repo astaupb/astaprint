@@ -30,6 +30,8 @@ use crate::user::guard::UserGuard;
 
 use crate::admin::guard::AdminGuard;
 
+use model::job::options::JobOptions;
+
 use mysql::user::{
     select::*,
     update::*,
@@ -113,6 +115,19 @@ pub fn change_card(
     let card = card.into_inner();
 
     update_user_card_and_pin(user_id, card.sn, card.pin, &admin.connection)?;
+
+    Ok(Status::new(205, "Reset Content"))
+}
+
+#[put("/options", data = "<options>")]
+pub fn update_user_default_options(
+    user: UserGuard,
+    options: Json<JobOptions>,
+    ) -> QueryResult<Status>
+{
+    let options = bincode::serialize(&options.into_inner()).expect("deserializing JobOptions");
+
+    update_default_job_options(user.id, Some(options), &user.connection)?;
 
     Ok(Status::new(205, "Reset Content"))
 }

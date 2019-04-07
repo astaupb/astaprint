@@ -193,6 +193,8 @@ fn rocket() -> rocket::Rocket
         ])
         .mount("/user", routes![
             get_user_info,
+            get_user_default_options,
+            update_user_default_options,
             login,
             logout,
             credit_redirect,
