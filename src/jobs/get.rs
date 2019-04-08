@@ -57,6 +57,15 @@ pub fn fetch_pdf(
     Ok(select_pdf(id, user.id, &user.connection).expect("selecting pdf"))
 }
 
+#[get("/<id>/pdf/bw")]
+pub fn fetch_pdf_bw(
+    user: UserGuard,
+    id: u32,
+) -> QueryResult<Option<Vec<u8>>>
+{
+    Ok(select_pdf_bw(id, user.id, &user.connection).expect("selecting pdf"))
+}
+
 #[get("/<id>/preview/0")]
 pub fn fetch_preview_0(
     user: UserGuard,

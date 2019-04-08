@@ -186,6 +186,7 @@ fn rocket() -> rocket::Rocket
             delete_job,
             fetch_job,
             fetch_pdf,
+            fetch_pdf_bw,
             fetch_preview_0,
             fetch_preview_1,
             fetch_preview_2,
