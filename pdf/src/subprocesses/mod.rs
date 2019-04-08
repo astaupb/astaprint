@@ -114,6 +114,7 @@ pub fn ghostscript_pdfwrite_bw(
             "-dCompabilityLevel=1.4",
             "-sColorConversionStrategy=Gray",
             "-dProcessColorModel=/DeviceGray",
+            "-dPrinted",
             &format!("-sOutputFile={}", output),
             &input,
         ])
