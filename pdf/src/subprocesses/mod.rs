@@ -81,7 +81,7 @@ pub fn pdfjam(
 {
     let path = TmpFile::create(&data[..])?;
 
-    let mut arguments = ["--a4paper", "--no-landscape", "--checkfiles", "--trim", "0cm 1cm 0cm 1cm", "--scale", "0.85", "--outfile", &path, &path];
+    let mut arguments = ["--a4paper", "--no-landscape", "--checkfiles", "--outfile", &path, &path];
 
     if info.size == Almost(PageSize::A3) {
         arguments[0] = "--a3paper";
