@@ -112,6 +112,7 @@ pub fn work(
                             ));
 
                             let color = job.options.color;
+                            let colored = job.info.colored;
 
                             print_count += job.pages_to_print();
                             print_jobs.push((job.id, job.options.clone()));
@@ -130,7 +131,7 @@ pub fn work(
                             let buf: Vec<u8> = job.translate_for_printer(
                                 &task.uid[..],
                                 task.user_id,
-                                if color {
+                                if color || colored == 0 {
                                     job_row.pdf
                                 }
                                 else {
