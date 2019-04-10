@@ -31,6 +31,7 @@ use rocket::{
 };
 
 use user::guard::UserGuard;
+use admin::guard::AdminGuard;
 
 use redis::queue::{
     CommandClient,
@@ -76,36 +77,20 @@ pub fn delete_queue(
     }
 }
 
-#[delete("/printers/<device_id>/queue/<hex_uid>")]
+#[delete("/printers/<device_id>/queue")]
 pub fn delete_queue_as_admin(
-    user: UserGuard,
+    _admin: AdminGuard,
     device_id: u32,
-    hex_uid: String,
     queues: State<HashMap<u32, TaskQueueClient<WorkerTask, WorkerCommand>>>,
 ) -> Status
 {
-    let uid = match hex::decode(&hex_uid) {
-        Ok(uid) => uid,
-        Err(_) => return Status::new(400, "Bad Request"),
-    };
     let queue = match queues.get(&device_id) {
         Some(queue) => queue,
         None => return Status::new(404, "Device Not Found"),
     };
-    let incoming = queue.get_incoming();
-    for task in incoming {
-        if task.uid == uid && task.user_id == user.id {
-            if queue.remove(uid.clone()).expect("removing task") > 0 {
-                return Status::new(205, "Success - No Content")
-            }
-            else {
-                return Status::new(500, "Internal Server Error")
-            }
-        }
-    }
     let processing = queue.get_processing();
-    if processing.len() > 0 && processing[0].uid == uid {
-        let client = CommandClient::from((queue, &hex_uid[..]));
+    if processing.len() > 0 {
+        let client = CommandClient::from((queue, &hex::encode(&processing[0].uid[..])[..]));
         client.send_command(&WorkerCommand::Cancel).expect("sending cancel command");
 
         return Status::new(205, "Success - No Content")
