@@ -174,7 +174,7 @@ fn rocket() -> rocket::Rocket
             get_all_users,
             change_user_locked,
         ])
-        .mount("/", routes![get_printers, get_single_printer, post_admin_token])
+        .mount("/", routes![post_admin_token])
         .mount("/jobs/", routes![
             jobs,
             update_options,
@@ -219,6 +219,8 @@ fn rocket() -> rocket::Rocket
         ])
         .mount("/journal", routes![get_journal_as_user, post_to_journal_with_token, credit])
         .mount("/admin", routes![
+            get_printers,
+            get_single_printer,
             post_admin_token,
             get_journal_as_admin,
             get_dispatcher_queue_as_admin,

@@ -84,7 +84,7 @@ pub fn get_queue(
 pub fn get_queue_as_admin(
     _admin: AdminGuard,
     device_id: u32,
-    queues: State<HashMap<u32, TaskQueueClient<WorkerTask, ()>>>,
+    queues: State<HashMap<u32, TaskQueueClient<WorkerTask, WorkerCommand>>>,
 ) -> Option<Json<Option<WorkerTaskResponse>>>
 {
     let queue = match queues.get(&device_id) {
