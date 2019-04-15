@@ -5,4 +5,4 @@ target
 *.tsv
 *legacy*
 */Cargo.lock
-flushall.sh
+make.mk
