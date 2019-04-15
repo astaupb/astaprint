@@ -1,0 +1,23 @@
+backend_user = backend
+backend_host = backendhost
+backend_dir = /home/backend
+
+dispatcher_user = dispatcher
+dispatcher_host = dispatcherhost
+dispatcher_dir = /home/dispatcher
+
+worker_user = worker
+worker_host = workerhost
+worker_dir = /home/worker
+
+debug_backend_user = debugbackend
+debug_backend_host = debughost
+debug_backend_dir = /home/debugbackend
+
+debug_dispatcher_user = debugdispatcher
+debug_dispatcher_host = debughost
+debug_dispatcher_dir = /home/debugdispatcher
+
+debug_worker_user = debugworker
+debug_worker_host = debughost
+debug_worker_dir = /home/debugworker
