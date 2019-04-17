@@ -1,14 +1,20 @@
 backend_user = backend
 backend_host = backendhost
 backend_dir = /home/backend
+backend_redis_auth = foobared
 
 dispatcher_user = dispatcher
 dispatcher_host = dispatcherhost
 dispatcher_dir = /home/dispatcher
+dispatcher_redis_auth = foobared
 
 worker_user = worker
 worker_host = workerhost
 worker_dir = /home/worker
+worker_redis_auth = foobared
+
+database_host = databasehost
+database_redis_auth = foobared
 
 debug_backend_user = debugbackend
 debug_backend_host = debughost
