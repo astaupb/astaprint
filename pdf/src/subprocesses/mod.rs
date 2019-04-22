@@ -103,6 +103,7 @@ pub fn pdfjam(
 pub fn ghostscript_pdfwrite_bw(
     output: &str,
     input: &str,
+    a3: bool,
 ) -> Child
 {
     Command::new("gs")
@@ -110,6 +111,9 @@ pub fn ghostscript_pdfwrite_bw(
             "-dSAFER",
             "-dBATCH",
             "-dNOPAUSE",
+            "-dFIXEDMEDIA",
+            "-dUseTrimBox",
+            &format!("-sPAPERSIZE={}", if a3 { "a3" } else { "a4" }),
             "-sDEVICE=pdfwrite",
             "-dCompabilityLevel=1.4",
             "-sColorConversionStrategy=Gray",
