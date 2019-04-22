@@ -135,7 +135,7 @@ pub fn work(
                                     job_row.pdf
                                 }
                                 else {
-                                    job_row.pdf_bw
+                                    job_row.pdf_bw.unwrap()
                                 },
                             );
 

@@ -22,7 +22,7 @@ CREATE TABLE `jobs`(
   `info` VARBINARY(128) NOT NULL,
   `options` VARBINARY(128) NOT NULL,
   `pdf` LONGBLOB NOT NULL,
-  `pdf_bw` LONGBLOB NOT NULL,
+  `pdf_bw` LONGBLOB,
   `preview_0` MEDIUMBLOB NOT NULL,
   `preview_1` MEDIUMBLOB,
   `preview_2` MEDIUMBLOB,

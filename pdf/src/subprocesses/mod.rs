@@ -138,15 +138,12 @@ pub fn ghostscript_inkcov(input: &str) -> Child
         .expect("executing gs")
 }
 
-pub fn ghostscript(data: &[u8]) -> io::Result<(Vec<u8>, u32)>
+pub fn ghostscript(data: &[u8], pagecount: u32, a3: bool) -> io::Result<(Option<Vec<u8>>, u32)>
 {
     let path = TmpFile::create(&data[..])?;
     // input and output file can not be the same
     // create tmp outfile and rename afterwards to decrypt in place
     let outfile = format!("{}.grey", path);
-
-    // speculating that inkvoc is faster than pdfwrite
-    let gs_pdfbw = ghostscript_pdfwrite_bw(&outfile, &path);
 
     let gs_inkcov = ghostscript_inkcov(&path).wait_with_output().expect("waiting for gs_inkcov");
 
@@ -157,9 +154,14 @@ pub fn ghostscript(data: &[u8]) -> io::Result<(Vec<u8>, u32)>
             debug!("non_colored: {}", non_colored);
         }
     }
-    let _gs_pdfbw = gs_pdfbw.wait_with_output().expect("waiting for gs_pdfwrite_bw");
+    let pdf_bw = if non_colored == pagecount {
+        None
+    } else {
+        let _gs_pdfbw = ghostscript_pdfwrite_bw(&outfile, &path, a3)
+            .wait_with_output().expect("waiting for gs_pdfwrite_bw");
 
-    rename(&outfile, &path)?;
+        Some(TmpFile::remove(&outfile)?)
+    };
 
-    Ok((TmpFile::remove(&path)?, non_colored))
+    Ok((pdf_bw, pagecount - non_colored))
 }

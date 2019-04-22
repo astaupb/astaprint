@@ -101,7 +101,6 @@ pub fn select_pdf_bw(id: u32, user_id: u32, connection: &MysqlConnection) -> Que
         .filter(jobs::user_id.eq(user_id))
         .filter(jobs::id.eq(id))
         .first(connection)
-        .optional()
 }
 
 pub fn select_preview_0(id: u32, user_id: u32, connection: &MysqlConnection) -> QueryResult<Option<Vec<u8>>>
@@ -113,6 +112,7 @@ pub fn select_preview_0(id: u32, user_id: u32, connection: &MysqlConnection) -> 
         .first(connection)
         .optional()
 }
+
 pub fn select_preview_1(id: u32, user_id: u32, connection: &MysqlConnection) -> QueryResult<Option<Vec<u8>>>
 {
     jobs::table

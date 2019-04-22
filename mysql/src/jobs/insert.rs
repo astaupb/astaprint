@@ -9,7 +9,7 @@ pub fn insert_into_jobs(
     info: Vec<u8>,
     options: Vec<u8>,
     pdf: Vec<u8>,
-    pdf_bw: Vec<u8>,
+    pdf_bw: Option<Vec<u8>>,
     preview_0: Vec<u8>,
     preview_1: Option<Vec<u8>>,
     preview_2: Option<Vec<u8>>,

@@ -14,7 +14,7 @@ pub struct Job
     pub info: Vec<u8>,
     pub options: Vec<u8>,
     pub pdf: Vec<u8>,
-    pub pdf_bw: Vec<u8>,
+    pub pdf_bw: Option<Vec<u8>>,
     pub preview_0: Vec<u8>,
     pub preview_1: Option<Vec<u8>>,
     pub preview_2: Option<Vec<u8>>,
