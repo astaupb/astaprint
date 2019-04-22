@@ -123,7 +123,7 @@ pub fn change_card(
 pub fn update_user_default_options(
     user: UserGuard,
     options: Json<JobOptions>,
-    ) -> QueryResult<Status>
+) -> QueryResult<Status>
 {
     let options = bincode::serialize(&options.into_inner()).expect("deserializing JobOptions");
 

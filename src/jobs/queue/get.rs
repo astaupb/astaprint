@@ -25,8 +25,8 @@ use rocket::State;
 
 use rocket_contrib::json::Json;
 
-use user::guard::UserGuard;
 use admin::guard::AdminGuard;
+use user::guard::UserGuard;
 
 use redis::queue::TaskQueueClient;
 

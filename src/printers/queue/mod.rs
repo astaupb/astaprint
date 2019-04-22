@@ -24,7 +24,10 @@ pub mod post;
 pub mod timeout;
 
 use model::{
-    job::{Job, options::JobOptions},
+    job::{
+        options::JobOptions,
+        Job,
+    },
     task::worker::{
         WorkerCommand,
         WorkerState,
@@ -117,26 +120,25 @@ pub fn work(
                             if accounting.not_enough_credit() {
                                 let pages_left = accounting.bw_pages_left();
                                 if print_count as i32 <= pages_left {
-                                    info!("print_pages: {}, pages_left: {}, continuing..", print_count, pages_left);
-                                } else {
+                                    info!(
+                                        "print_pages: {}, pages_left: {}, continuing..",
+                                        print_count, pages_left
+                                    );
+                                }
+                                else {
                                     info!("not enough credit, aborting {}", &hex_uid[.. 8]);
                                     break false
                                 }
                             }
 
-
-                            let buf: Vec<u8> = job.translate_for_printer(
-                                &task.uid[..],
-                                task.user_id,
-                                job_row.pdf,
-                            );
+                            let buf: Vec<u8> =
+                                job.translate_for_printer(&task.uid[..], task.user_id, job_row.pdf);
 
                             let mut lpr_connection = LprConnection::new(
                                 &state.ip, 20000, // socket timeout in ms
                             );
 
                             lpr_connection.print(&buf).expect("printing job with lpr");
-
                         }
                         else {
                             info!("{} unable to find job {}", &hex_uid[.. 8], job_id);

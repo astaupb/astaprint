@@ -67,7 +67,12 @@ pub fn upload_job<'a>(
         String::from("")
     };
 
-    let keep = if let Some(keep) = keep { keep } else { false };
+    let keep = if let Some(keep) = keep {
+        keep
+    }
+    else {
+        false
+    };
 
     let task = DispatcherTask {
         user_id,

@@ -92,11 +92,12 @@ pub fn dispatch(
     })
     .expect("serializing JobInfo");
 
-    let mut options: JobOptions =
-        match select_user_options(task.user_id, &connection).expect("selecting user default options") {
-            Some(options) => bincode::deserialize(&options[..]).expect("deserializing JobOptions"),
-            None => JobOptions::default()
-        };
+    let mut options: JobOptions = match select_user_options(task.user_id, &connection)
+        .expect("selecting user default options")
+    {
+        Some(options) => bincode::deserialize(&options[..]).expect("deserializing JobOptions"),
+        None => JobOptions::default(),
+    };
 
     options.keep = task.keep;
 
