@@ -100,34 +100,6 @@ pub fn pdfjam(
     Ok(TmpFile::remove(&path)?)
 }
 
-pub fn ghostscript_pdfwrite_bw(
-    output: &str,
-    input: &str,
-    a3: bool,
-) -> Child
-{
-    Command::new("gs")
-        .args(&[
-            "-dSAFER",
-            "-dBATCH",
-            "-dNOPAUSE",
-            "-dFIXEDMEDIA",
-            "-dUseTrimBox",
-            &format!("-sPAPERSIZE={}", if a3 { "a3" } else { "a4" }),
-            "-sDEVICE=pdfwrite",
-            "-dCompabilityLevel=1.4",
-            "-sColorConversionStrategy=Gray",
-            "-dProcessColorModel=/DeviceGray",
-            "-dPrinted",
-            &format!("-sOutputFile={}", output),
-            &input,
-        ])
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .expect("executing gs")
-}
-
 pub fn ghostscript_inkcov(input: &str) -> Child
 {
     Command::new("gs")
@@ -138,12 +110,9 @@ pub fn ghostscript_inkcov(input: &str) -> Child
         .expect("executing gs")
 }
 
-pub fn ghostscript(data: &[u8], pagecount: u32, a3: bool) -> io::Result<(Option<Vec<u8>>, u32)>
+pub fn ghostscript_colored_pagecount(data: &[u8], pagecount: u32) -> io::Result<u32>
 {
     let path = TmpFile::create(&data[..])?;
-    // input and output file can not be the same
-    // create tmp outfile and rename afterwards to decrypt in place
-    let outfile = format!("{}.grey", path);
 
     let gs_inkcov = ghostscript_inkcov(&path).wait_with_output().expect("waiting for gs_inkcov");
 
@@ -154,14 +123,5 @@ pub fn ghostscript(data: &[u8], pagecount: u32, a3: bool) -> io::Result<(Option<
             debug!("non_colored: {}", non_colored);
         }
     }
-    let pdf_bw = if non_colored == pagecount {
-        None
-    } else {
-        let _gs_pdfbw = ghostscript_pdfwrite_bw(&outfile, &path, a3)
-            .wait_with_output().expect("waiting for gs_pdfwrite_bw");
-
-        Some(TmpFile::remove(&outfile)?)
-    };
-
-    Ok((pdf_bw, pagecount - non_colored))
+    Ok(pagecount - non_colored)
 }

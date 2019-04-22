@@ -41,3 +41,15 @@ pub fn change_user_locked(
         },
     }
 }
+
+/*
+#[put("/users/<id>/password", data = "<password>")]
+pub fn change_user_locked(
+    id: u32,
+    password: Json<String>,
+    admin: AdminGuard,
+) -> Status
+{
+    let password = password.into_inner();
+}
+*/

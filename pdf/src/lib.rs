@@ -30,7 +30,7 @@ use crate::{
         PageSize,
     },
     subprocesses::{
-        ghostscript,
+        ghostscript_colored_pagecount,
         pdfjam,
     },
 };
@@ -39,7 +39,6 @@ use crate::{
 pub struct DispatchResult
 {
     pub pdf: Vec<u8>,
-    pub pdf_bw: Option<Vec<u8>>,
     pub preview_0: Vec<u8>,
     pub preview_1: Option<Vec<u8>>,
     pub preview_2: Option<Vec<u8>>,
@@ -78,7 +77,7 @@ pub fn sanitize(mut pdf: Vec<u8>) -> DispatchResult
         _ => panic!("pdfjam does not work"),
     };
 
-    let (pdf_bw, colored) = ghostscript(&pdf[..], pdf_document.pagecount(), a3).expect("running ghostscript");
+    let colored = ghostscript_colored_pagecount(&pdf[..], pdf_document.pagecount()).expect("running ghostscript");
 
     let preview_0 = pdf_document.render_preview(0).unwrap();
     let preview_1 = pdf_document.render_preview(1);
@@ -87,7 +86,6 @@ pub fn sanitize(mut pdf: Vec<u8>) -> DispatchResult
 
     DispatchResult {
         pdf,
-        pdf_bw,
         preview_0,
         preview_1,
         preview_2,

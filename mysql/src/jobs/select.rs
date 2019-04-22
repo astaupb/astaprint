@@ -94,15 +94,6 @@ pub fn select_pdf(id: u32, user_id: u32, connection: &MysqlConnection) -> QueryR
         .optional()
 }
 
-pub fn select_pdf_bw(id: u32, user_id: u32, connection: &MysqlConnection) -> QueryResult<Option<Vec<u8>>>
-{
-    jobs::table
-        .select(jobs::pdf_bw)
-        .filter(jobs::user_id.eq(user_id))
-        .filter(jobs::id.eq(id))
-        .first(connection)
-}
-
 pub fn select_preview_0(id: u32, user_id: u32, connection: &MysqlConnection) -> QueryResult<Option<Vec<u8>>>
 {
     jobs::table

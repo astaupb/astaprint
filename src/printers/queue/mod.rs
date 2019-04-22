@@ -68,7 +68,7 @@ pub fn work(
 
     let connection = state.mysql_pool.get().expect("getting connection from mysql pool");
 
-    let counter_base = counter(state.device_id).expect("getting counter base");
+    let counter_base = counter(&state.ip).expect("getting counter base");
     let mut current = counter_base.clone();
 
     debug!("counter_base: {:?}", counter_base);
@@ -111,9 +111,6 @@ pub fn work(
                                 job_row.created,
                             ));
 
-                            let color = job.options.color;
-                            let colored = job.info.colored;
-
                             print_count += job.pages_to_print();
                             print_jobs.push((job.id, job.options.clone()));
 
@@ -131,12 +128,7 @@ pub fn work(
                             let buf: Vec<u8> = job.translate_for_printer(
                                 &task.uid[..],
                                 task.user_id,
-                                if color || colored == 0 {
-                                    job_row.pdf
-                                }
-                                else {
-                                    job_row.pdf_bw.unwrap()
-                                },
+                                job_row.pdf,
                             );
 
                             let mut lpr_connection = LprConnection::new(
@@ -154,7 +146,7 @@ pub fn work(
             },
             Err(_) => (),
         }
-        if let Ok(counter) = counter(state.device_id) {
+        if let Ok(counter) = counter(&state.ip) {
             current = counter;
         };
         if current.total > last_value {
@@ -203,18 +195,18 @@ pub fn work(
     thread::sleep(time::Duration::from_millis(3000));
 
     // TODO same here
-    if let Ok(counter) = counter(state.device_id) {
+    if let Ok(counter) = counter(&state.ip) {
         current = counter;
     }
     else {
         // just to be sure..
         debug!("get counter failed");
-        if let Ok(counter) = counter(state.device_id) {
+        if let Ok(counter) = counter(&state.ip) {
             current = counter;
         }
         else {
             debug!("get counter failed the second time");
-            if let Ok(counter) = counter(state.device_id) {
+            if let Ok(counter) = counter(&state.ip) {
                 current = counter;
             }
             else {

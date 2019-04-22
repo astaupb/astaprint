@@ -54,9 +54,9 @@ pub fn status(device_id: u32) -> Result<StatusValues, SnmpToolError>
     Ok(serde_json::from_str(&json)?)
 }
 
-pub fn counter(device_id: u32) -> Result<CounterValues, SnmpToolError>
+pub fn counter(ip: &str) -> Result<CounterValues, SnmpToolError>
 {
-    let output = snmptool(&[&format!("{}", device_id), "counter"])?.wait_with_output()?;
+    let output = snmptool(&[ip, "counter"])?.wait_with_output()?;
     let json = String::from_utf8_lossy(&output.stdout[..]);
     Ok(serde_json::from_str(&json)?)
 }

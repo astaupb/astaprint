@@ -136,6 +136,30 @@ impl Job
                     \x33\r\n".to_vec(),
             );
         }
+        if self.options.color {
+            header.append(&mut
+                  b"\x40\x50\x4a\x4c\x20\x53\x45\x54\
+                    \x20\x52\x45\x4e\x44\x45\x52\x4d\
+                    \x4f\x44\x45\x3d\x43\x4f\x4c\x4f\
+                    \x52\r\n\\
+                    \x40\x50\x4a\x4c\x20\x53\x45\x54\
+                    \x20\x44\x41\x54\x41\x4d\x4f\x44\
+                    \x45\x3d\x43\x4f\x4c\x4f\x52\r\n"
+                .to_vec(),
+            );
+        } else {
+            header.append(&mut
+                  b"\x40\x50\x4a\x4c\x20\x53\x45\x54\
+                    \x20\x52\x45\x4e\x44\x45\x52\x4d\
+                    \x4f\x44\x45\x3d\x47\x52\x41\x59\
+                    \x53\x43\x41\x4c\x45\r\n\\
+                    \x40\x50\x4a\x4c\x20\x53\x45\x54\
+                    \x20\x44\x41\x54\x41\x4d\x4f\x44\
+                    \x45\x3d\x47\x52\x41\x59\x53\x43\
+                    \x41\x4c\x45\r\n".to_vec(),
+            );
+        }
+
 
         match self.options.duplex {
             0 => {

@@ -105,7 +105,6 @@ pub fn dispatch(
         info,
         bincode::serialize(&options).expect("serializing JobOptions"),
         result.pdf,
-        result.pdf_bw,
         result.preview_0,
         result.preview_1,
         result.preview_2,

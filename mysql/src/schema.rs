@@ -34,7 +34,6 @@ table! {
         info -> Varbinary,
         options -> Varbinary,
         pdf -> Longblob,
-        pdf_bw -> Nullable<Longblob>,
         preview_0 -> Mediumblob,
         preview_1 -> Nullable<Mediumblob>,
         preview_2 -> Nullable<Mediumblob>,

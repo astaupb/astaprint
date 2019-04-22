@@ -70,7 +70,7 @@ impl From<Printer> for PrinterResponse
     {
         let status = Some(status(printer.device_id).unwrap_or(StatusValues::default()));
 
-        let counter = Some(counter(printer.device_id).unwrap_or(CounterValues::default()));
+        let counter = Some(counter(&printer.ip).unwrap_or(CounterValues::default()));
 
         PrinterResponse {
             id: printer.id,
