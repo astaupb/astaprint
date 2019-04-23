@@ -50,15 +50,14 @@ pub fn update_options(
             options.range = format!("{}", range);
             let _char = options.range.pop();
             debug!("options.range: {:?}", options.range);
-
-            let serialized = bincode::serialize(&options).expect("serializing JobOptions");
-            update_job_options(id, user.id, serialized, &user.connection)?;
-
-            Ok(Status::new(205, "Reset Content"))
         }
         else {
-            Ok(Status::new(400, "Bad Request"))
+            options.range = String::from("");
         }
+        let serialized = bincode::serialize(&options).expect("serializing JobOptions");
+        update_job_options(id, user.id, serialized, &user.connection)?;
+
+        Ok(Status::new(205, "Reset Content"))
     }
     else {
         Ok(Status::new(404, "Not Found"))
