@@ -19,19 +19,15 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use bincode;
 
-use model::job::{
-    options::JobOptions,
-};
+use model::job::options::JobOptions;
 
-use mysql::jobs::{
-    select::*,
-};
+use mysql::jobs::select::*;
 
 pub mod info;
 pub mod options;
 
-pub mod tmp;
 pub mod queue;
+pub mod tmp;
 
-pub mod get;
 pub mod delete;
+pub mod get;
