@@ -136,6 +136,21 @@ impl Job
                     \x33\r\n".to_vec(),
             );
         }
+        if self.options.a3 != self.info.a3 {
+            if !self.options.a3 {
+                header.append(&mut
+                  b"\x40\x50\x4a\x4c\x20\x53\x45\x54\
+                    \x20\x46\x49\x54\x54\x4f\x50\x41\
+                    \x47\x45\x53\x49\x5a\x45\x3d\x41\
+                    \x34\r\n".to_vec(),);
+            } else {
+                header.append(&mut
+                  b"\x40\x50\x4a\x4c\x20\x53\x45\x54\
+                    \x20\x46\x49\x54\x54\x4f\x50\x41\
+                    \x47\x45\x53\x49\x5a\x45\x3d\x41\
+                    \x33\r\n".to_vec(),);
+            }
+        }
  
         match self.options.duplex {
             0 => {
@@ -185,6 +200,7 @@ impl Job
                 ).as_bytes().to_owned(),);
             }
         }
+
         if self.options.color {
             header.append(&mut
                   b"\x40\x50\x4a\x4c\x20\x53\x45\x54\
@@ -208,88 +224,7 @@ impl Job
                     \x41\x4c\x45\r\n".to_vec(),
             );
         }
-         if self.options.range != "" {
-            // assuming pagerange is valid here
-            header.append(&mut format!(
-                   "\x40\x50\x4a\x4c\x20\x53\x45\x54\
-                    \x20\x50\x52\x49\x4e\x54\x50\x41\
-                    \x47\x45\x53\x3d\"{}\"\r\n",
-                    self.options.range
-                ).as_bytes().to_owned(),
-            );
-        }
-
-        if self.options.a3 != self.info.a3 {
-            if !self.options.a3 {
-                header.append(&mut
-                  b"\x40\x50\x4a\x4c\x20\x53\x45\x54\
-                    \x20\x46\x49\x54\x54\x4f\x50\x41\
-                    \x47\x45\x53\x49\x5a\x45\x3d\x41\
-                    \x34\r\n".to_vec(),);
-            } else {
-                header.append(&mut
-                  b"\x40\x50\x4a\x4c\x20\x53\x45\x54\
-                    \x20\x46\x49\x54\x54\x4f\x50\x41\
-                    \x47\x45\x53\x49\x5a\x45\x3d\x41\
-                    \x33\r\n".to_vec(),);
-            }
-            header.append(&mut
-                  b"\x40\x50\x4a\x4c\x20\x53\x45\x54\
-                    \x20\x46\x49\x54\x54\x4f\x50\x41\
-                    \x47\x45\x53\x49\x5a\x45\r\n".to_vec(),);
-        }
-
-        if self.options.nup > 1 {
-            match self.options.nup {
-                2 => {
-                    header.append(&mut
-                  b"\x40\x50\x4a\x4c\x20\x53\x45\x54\
-                    \x20\x4e\x55\x50\x3d\x32\r\n".to_vec(),);
-                },
-                4 => {
-                    header.append(&mut
-                  b"\x40\x50\x4a\x4c\x20\x53\x45\x54\
-                    \x20\x4e\x55\x50\x3d\x34\r\n".to_vec(),);
-                },
-                _ => (),
-            }
-            match self.options.nuppageorder {
-                0 => {
-                    header.append(&mut
-                  b"\x50\x4a\x4c\x20\x53\x45\x54\x20\
-                    \x4e\x55\x50\x50\x41\x47\x45\x4f\
-                    \x52\x44\x45\x52\x3d\x52\x49\x47\
-                    \x48\x54\x54\x48\x45\x4e\x44\x4f\
-                    \x57\x4e\r\n".to_vec(),);
-                },
-                1 => {
-                    header.append(&mut
-                  b"\x50\x4a\x4c\x20\x53\x45\x54\x20\
-                    \x4e\x55\x50\x50\x41\x47\x45\x4f\
-                    \x52\x44\x45\x52\x3d\x44\x4f\x57\
-                    \x4e\x54\x48\x45\x4e\x52\x49\x47\
-                    \x48\x54\r\n".to_vec(),);
-                },
-                2 => {
-                    header.append(&mut
-                  b"\x50\x4a\x4c\x20\x53\x45\x54\x20\
-                    \x4e\x55\x50\x50\x41\x47\x45\x4f\
-                    \x52\x44\x45\x52\x3d\x4c\x45\x46\
-                    \x54\x54\x48\x45\x4e\x44\x4f\x57\
-                    \x4e\r\n".to_vec(),);
-                },
-                3 => {
-                    header.append(&mut
-                  b"\x50\x4a\x4c\x20\x53\x45\x54\x20\
-                    \x4e\x55\x50\x50\x41\x47\x45\x4f\
-                    \x52\x44\x45\x52\x3d\x44\x4f\x57\
-                    \x4e\x54\x48\x45\x4e\x4c\x45\x46\
-                    \x54\r\n".to_vec(),);
-                },
-                _ => (),
-            }
-        }
-
+ 
         // set defaults for sanity
         header.append(&mut
                   b"\x40\x50\x4a\x4c\x20\x53\x45\x54\

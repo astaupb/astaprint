@@ -22,11 +22,11 @@ use std::{
     str::FromStr,
 };
 
-#[derive(Debug)]
-struct PageDifference
+#[derive(Debug, Clone)]
+pub struct PageDifference
 {
-    minuend: u32,
-    subtrahend: u32,
+    pub minuend: u32,
+    pub subtrahend: u32,
 }
 
 impl<'a> FromStr for PageDifference
@@ -61,10 +61,11 @@ impl<'a> FromStr for PageDifference
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PageRange
 {
-    pages: Vec<bool>,
+    pub pages: Vec<bool>,
+    pub ranges: Vec<PageDifference>,
 }
 
 impl PageRange
@@ -79,6 +80,7 @@ impl PageRange
         if range == "" || range == "-" {
             return Some(PageRange {
                 pages: vec![true; pagecount],
+                ranges: Vec::new(),
             })
         }
         let range = range.trim();
@@ -95,6 +97,7 @@ impl PageRange
                 page_singles.push(page);
             }
         }
+
         debug!("page_singles: {:?}", page_singles);
         let mut pages: Vec<bool> = vec![false; pagecount];
         for page in page_singles.iter() {
@@ -107,7 +110,7 @@ impl PageRange
         }
         else {
             Some(PageRange {
-                pages,
+                pages, ranges: page_differences,
             })
         }
     }

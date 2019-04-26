@@ -15,8 +15,6 @@
 ///
 /// You should have received a copy of the GNU Affero General Public
 /// License along with this program.  If not, see <https://www.gnu.org/licenses/>.
-pub mod soffice;
-
 use crate::{
     pageinfo::{
         Is::Almost,
@@ -27,8 +25,12 @@ use crate::{
     tmp::TmpFile,
 };
 
+use model::job::options::pagerange::PageRange;
+
 use std::{
-    fs::rename,
+    fs::{
+        rename,
+    },
     io,
     process::{
         Child,
@@ -73,6 +75,40 @@ pub fn decrypt_pdf(
         Err(DecryptionError::PasswordError)
     }
 }
+pub fn pdfnup(data: Vec<u8>, nup: u8, nuppageorder: u8, a3: bool, landscape: bool) -> io::Result<Vec<u8>>
+{
+    let path = TmpFile::create(&data[..])?;
+
+    let mut arguments = ["--a4paper", "--nup", "1x1", "--no-landscape", "--reflect", "false", "--checkfiles", "--outfile", &path, &path];
+
+    if a3 {
+        arguments[0] = "--a3paper";
+    }
+
+    if landscape {
+        arguments[3] = "--landscape";
+    }
+
+    if nuppageorder > 0 {
+        arguments[5] = "true";
+    }
+
+    arguments[2] = match nup {
+        1 => "1x1",
+        2 => "2x1",
+        4 => "2x2",
+        _ => "1x1",
+    };
+
+    Command::new("pdfjam")
+        .args(&arguments)
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .status()?;
+
+    Ok(TmpFile::remove(&path)?)
+
+}
 
 pub fn pdfjam(
     data: Vec<u8>,
@@ -99,6 +135,74 @@ pub fn pdfjam(
 
     Ok(TmpFile::remove(&path)?)
 }
+pub fn ghostscript_pdfwrite_trim(
+    output: &str,
+    input: &str,
+    first_page: u32,
+    last_page: u32,
+    a3: bool,
+) -> Child
+{
+    Command::new("gs")
+        .args(&[
+            "-dSAFER", "-dBATCH",
+            "-dNOPAUSE",
+            "-dFIXEDMEDIA",
+            "-dUseTrimBox",
+            &format!("-dFirstPage={}", first_page),
+            &format!("-dLastPage={}", last_page),
+            &format!(
+                "-sPAPERSIZE={}",
+                if a3 {
+                    "a3"
+                }
+                else {
+                    "a4"
+                }
+            ),
+            "-sDEVICE=pdfwrite",
+            "-dCompabilityLevel=1.6",
+            "-dPrinted",
+            &format!("-sOutputFile={}", output),
+            &input,
+        ])
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .expect("executing gs")
+}
+
+pub fn pdfunite(input: &[String], output: &str) -> Child
+{
+    Command::new("pdfunite")
+        .args(input)
+        .arg(output)
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .expect("executing pdf")
+}
+
+pub fn trim_pdf(input: Vec<u8>, pagerange: &PageRange, a3: bool) -> Vec<u8>
+{
+    let input = TmpFile::create(&input[..]).expect("creating TmpFile");
+    let mut files: Vec<String> = Vec::new();
+
+    let ranges = pagerange.ranges.clone();
+    for range in ranges {
+        let output = format!("{}_{}", input, range.minuend);
+        let _gs = ghostscript_pdfwrite_trim(&output, &input, range.subtrahend, range.minuend, a3)
+            .wait_with_output().expect("executing gs");
+        files.push(output);
+    }
+
+    let output = format!("{}_out", input);
+
+    let _pdfunite = pdfunite(&files, &output)
+        .wait_with_output().expect("executing pdfunite");
+
+    TmpFile::remove(&output).expect("removing TmpFile")
+}
 
 pub fn ghostscript_inkcov(input: &str) -> Child
 {
@@ -110,7 +214,10 @@ pub fn ghostscript_inkcov(input: &str) -> Child
         .expect("executing gs")
 }
 
-pub fn ghostscript_colored_pagecount(data: &[u8], pagecount: u32) -> io::Result<u32>
+pub fn ghostscript_colored_pagecount(
+    data: &[u8],
+    pagecount: u32,
+) -> io::Result<u32>
 {
     let path = TmpFile::create(&data[..])?;
 

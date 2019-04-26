@@ -25,7 +25,10 @@ pub mod timeout;
 
 use model::{
     job::{
-        options::JobOptions,
+        options::{
+            pagerange::PageRange,
+            JobOptions,
+        },
         Job,
     },
     task::worker::{
@@ -38,6 +41,15 @@ use model::{
 use std::{
     thread,
     time,
+};
+
+use pdf::{
+    document::PDFDocument,
+    pageinfo::PageOrientation,
+    subprocesses::{
+        pdfnup,
+        trim_pdf,
+    },
 };
 
 use lpr::LprConnection;
@@ -130,9 +142,32 @@ pub fn work(
                                     break false
                                 }
                             }
+                            // preprocess pagerange and nup
+                            let range =
+                                PageRange::new(&job.options.range, job.info.pagecount as usize)
+                                    .expect("valid PageRange");
+
+                            let mut data = job_row.pdf;
+
+                            if &format!("{}", range) != "" {
+                                data = trim_pdf(data, &range, job.info.a3);
+                            }
+
+                            if job.options.nup != 1 {
+                                let pageinfo = PDFDocument::new(&data[..], "").get_pageinfo();
+
+                                data = pdfnup(
+                                    data,
+                                    job.options.nup,
+                                    job.options.nuppageorder,
+                                    job.info.a3,
+                                    pageinfo.orientation == PageOrientation::Landscape,
+                                )
+                                .expect("nup-ing pdffile");
+                            }
 
                             let buf: Vec<u8> =
-                                job.translate_for_printer(&task.uid[..], task.user_id, job_row.pdf);
+                                job.translate_for_printer(&task.uid[..], task.user_id, data);
 
                             let mut lpr_connection = LprConnection::new(
                                 &state.ip, 20000, // socket timeout in ms

@@ -811,6 +811,7 @@ dependencies = [
  "cairo-rs 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "hex 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
+ "model 0.1.0",
  "poppler 0.2.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "sodium 0.1.0",
 ]
