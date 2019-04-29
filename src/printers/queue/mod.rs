@@ -142,16 +142,18 @@ pub fn work(
                                     break false
                                 }
                             }
-                            // preprocess pagerange and nup
+                            let mut data = job_row.pdf;
+                            // preprocess and nup
+                            /*
                             let range =
                                 PageRange::new(&job.options.range, job.info.pagecount as usize)
                                     .expect("valid PageRange");
 
-                            let mut data = job_row.pdf;
-
                             if &format!("{}", range) != "" {
                                 data = trim_pdf(data, &range, job.info.a3);
                             }
+                            */
+
 
                             if job.options.nup != 1 {
                                 let pageinfo = PDFDocument::new(&data[..], "").get_pageinfo();

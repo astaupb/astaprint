@@ -77,6 +77,7 @@ impl PageRange
         pagecount: usize,
     ) -> Option<PageRange>
     {
+        info!("{:?}", range);
         if range == "" || range == "-" {
             return Some(PageRange {
                 pages: vec![true; pagecount],
@@ -91,14 +92,13 @@ impl PageRange
 
         let page_differences: Vec<PageDifference> =
             steps.iter().filter_map(|s| PageDifference::from_str(s).ok()).collect();
-
+    
         for diff in page_differences.iter() {
             for page in diff.minuend ..= diff.subtrahend {
                 page_singles.push(page);
             }
         }
 
-        debug!("page_singles: {:?}", page_singles);
         let mut pages: Vec<bool> = vec![false; pagecount];
         for page in page_singles.iter() {
             if *page <= pagecount as u32 {

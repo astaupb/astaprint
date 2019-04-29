@@ -22,7 +22,7 @@ deploy_debug: debug flushall
 	ssh $(worker_user)@$(worker_host) "systemctl --user daemon-reload && systemctl --user start worker"
 	./flushall.sh
 
-deploy_release: release flushall test
+deploy_release: flushall release support flushall
 	#backend
 	ssh $(backend_user)@$(backend_host) "systemctl --user stop backend && rm $(backend_dir)/bin/backend"
 	scp ./target/release/backend $(backend_user)@$(backend_host):$(backend_dir)/bin
@@ -36,6 +36,11 @@ deploy_release: release flushall test
 	scp ./target/release/worker $(worker_user)@$(worker_host):$(worker_dir)/bin
 	ssh $(worker_user)@$(worker_host) "systemctl --user daemon-reload && systemctl --user start worker"
 
+support:
+	#dispatcher
+	ssh $(debug_dispatcher_user)@$(debug_dispatcher_host) "systemctl --user stop dispatcher && rm $(debug_dispatcher_dir)/bin/dispatcher"
+	scp ./target/release/dispatcher $(debug_dispatcher_user)@$(debug_dispatcher_host):$(debug_dispatcher_dir)/bin
+	ssh $(debug_dispatcher_user)@$(debug_dispatcher_host) "systemctl --user daemon-reload && systemctl --user start dispatcher"
 test:
 	#backend
 	ssh $(debug_backend_user)@$(debug_backend_host) "systemctl --user stop backend && rm $(debug_backend_dir)/bin/backend"

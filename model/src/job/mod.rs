@@ -122,6 +122,16 @@ impl Job
                     \"\r\n", date, time
             ).as_bytes().to_owned(),
         );
+    if self.options.range != "" {
+        // assuming pagerange is valid here
+         header.append(&mut format!(
+            "\x40\x50\x4a\x4c\x20\x53\x45\x54\
+            \x20\x50\x52\x49\x4e\x54\x50\x41\
+                \x47\x45\x53\x3d\"{}\"\r\n",
+                            self.options.range
+                                                ).as_bytes().to_owned(),
+                                                            );
+                                                                                                                                                            }
 
         if !self.options.a3 {
             header.append(&mut
