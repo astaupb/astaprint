@@ -24,25 +24,36 @@ use rocket_contrib::json::Json;
 
 use model::job::{
     info::JobInfo,
-    options::pagerange::PageRange,
+    options::{
+        pagerange::PageRange,
+        JobOptions,
+    },
 };
 
-use jobs::*;
+use jobs::options::{
+    JobOptionsUpdate,
+    Update,
+};
 
-use mysql::jobs::update::*;
-
+use mysql::jobs::{
+    select::*,
+    update::*,
+};
 use user::guard::UserGuard;
 
-#[put("/<id>/options", data = "<options>")]
+#[put("/<id>/options", data = "<update>")]
 pub fn update_options(
     user: UserGuard,
     id: u32,
-    options: Json<JobOptions>,
+    update: Json<JobOptionsUpdate>,
 ) -> QueryResult<Status>
 {
-    if let Some(info) = select_job_info(id, user.id, &user.connection)? {
+    if let Some((id, info, options, _created)) = select_job_of_user(user.id, id, &user.connection)?
+    {
         let info: JobInfo = bincode::deserialize(&info[..]).expect("deserializing JobInfo");
-        let mut options: JobOptions = options.into_inner();
+        let mut options: JobOptions =
+            bincode::deserialize(&options[..]).expect("deserializing JobOptions");
+        options.merge(update.into_inner());
         debug!("to parse: ({:?}, {:?}", options.range, info.pagecount);
         if let Some(range) = PageRange::new(&options.range, info.pagecount as usize) {
             debug!("range: {:?}", range);

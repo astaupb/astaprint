@@ -34,10 +34,11 @@ pub enum Value
 #[derive(Serialize, Deserialize, Debug)]
 pub struct JobOptionsUpdate
 {
-    pub color: Option<u8>,
+    pub color: Option<bool>,
     pub duplex: Option<u8>,
     pub copies: Option<u16>,
     pub collate: Option<bool>,
+    pub bypass: Option<bool>,
     pub keep: Option<bool>,
     pub a3: Option<bool>,
     pub nup: Option<u8>,
@@ -70,6 +71,10 @@ impl Update for JobOptions
 
         if let Some(collate) = update.collate {
             self.collate = collate;
+        }
+
+        if let Some(bypass) = update.bypass {
+            self.bypass = bypass;
         }
 
         if let Some(keep) = update.keep {
