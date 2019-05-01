@@ -126,9 +126,6 @@ pub fn work(
                                 job_row.created,
                             ));
 
-                            print_count += job.pages_to_print();
-                            print_jobs.push((job.id, job.options.clone()));
-
                             if accounting.not_enough_credit() {
                                 let pages_left = accounting.bw_pages_left();
                                 if print_count as i32 <= pages_left {
@@ -175,7 +172,10 @@ pub fn work(
                                 &state.ip, 20000, // socket timeout in ms
                             );
 
-                            lpr_connection.print(&buf).expect("printing job with lpr");
+                            if let Ok(_) = lpr_connection.print(&buf) {
+                                print_count += job.pages_to_print();
+                                print_jobs.push((job.id, job.options.clone()));
+                            }
                         }
                         else {
                             info!("{} unable to find job {}", &hex_uid[.. 8], job_id);
