@@ -27,8 +27,8 @@ extern crate mysql;
 use mysql::{
     create_mysql_pool,
     jobs::{
-        select::*,
         delete::*,
+        select::*,
     },
 };
 
@@ -38,7 +38,8 @@ use model::job::options::JobOptions;
 use std::{
     env,
     time::{
-        SystemTime, UNIX_EPOCH, 
+        SystemTime,
+        UNIX_EPOCH,
     },
 };
 
@@ -49,24 +50,21 @@ fn main()
 
     let connection = create_mysql_pool(&mysql_url, 1).get().unwrap();
 
-    let jobs: Vec<(u32, Vec<u8>, Vec<u8>, NaiveDateTime)> = select_jobs_essentials(&connection)
-        .expect("selecting essentials of all jobs");
-    
+    let jobs: Vec<(u32, Vec<u8>, Vec<u8>, NaiveDateTime)> =
+        select_jobs_essentials(&connection).expect("selecting essentials of all jobs");
+
     let mut cleaned = 0;
 
     let now = SystemTime::now().duration_since(UNIX_EPOCH).expect("getting timestamp").as_secs();
 
     for (id, _info, options, created) in jobs {
         if now as i64 - created.timestamp() > 60 * 60 * 24 * 3 {
-            let options: JobOptions = deserialize(&options[..])
-                .expect("deserializing JobOptions");
+            let options: JobOptions = deserialize(&options[..]).expect("deserializing JobOptions");
             if !options.keep {
-                delete_job_by_id(id, &connection)
-                    .expect("deleting job"); 
+                delete_job_by_id(id, &connection).expect("deleting job");
                 cleaned += 1;
             }
         }
     }
     println!("{} jobs cleaned", cleaned);
-
 }

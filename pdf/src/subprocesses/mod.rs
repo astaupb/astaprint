@@ -25,8 +25,6 @@ use crate::{
     tmp::TmpFile,
 };
 
-use model::job::options::pagerange::PageRange;
-
 use std::{
     fs::{
         rename,
@@ -85,7 +83,7 @@ pub fn pdfnup(data: Vec<u8>, nup: u8, nuppageorder: u8, a3: bool, landscape: boo
         arguments[0] = "--a3paper";
     }
 
-    if landscape {
+    if landscape || nup == 2 {
         arguments[3] = "--landscape";
     }
 
@@ -135,73 +133,27 @@ pub fn pdfjam(
 
     Ok(TmpFile::remove(&path)?)
 }
-pub fn ghostscript_pdfwrite_trim(
-    output: &str,
-    input: &str,
-    first_page: u32,
-    last_page: u32,
-    a3: bool,
-) -> Child
+
+pub fn qpdf_pages(infile: &str, pages: &str, outfile: &str) -> Child
 {
-    Command::new("gs")
-        .args(&[
-            "-dSAFER", "-dBATCH",
-            "-dNOPAUSE",
-            "-dFIXEDMEDIA",
-            "-dUseTrimBox",
-            &format!("-dFirstPage={}", first_page),
-            &format!("-dLastPage={}", last_page),
-            &format!(
-                "-sPAPERSIZE={}",
-                if a3 {
-                    "a3"
-                }
-                else {
-                    "a4"
-                }
-            ),
-            "-sDEVICE=pdfwrite",
-            "-dCompabilityLevel=1.6",
-            "-dPrinted",
-            &format!("-sOutputFile={}", output),
-            &input,
-        ])
+    Command::new("qpdf")
+        .args(&["--empty", "--pages", infile, pages, "--", outfile])
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()
-        .expect("executing gs")
+        .expect("executing qpdf pages")
 }
 
-pub fn pdfunite(input: &[String], output: &str) -> Child
+pub fn trim_pdf(input: Vec<u8>, pagerange: &str) -> Vec<u8>
 {
-    Command::new("pdfunite")
-        .args(input)
-        .arg(output)
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .expect("executing pdf")
-}
+    let infile = TmpFile::create(&input[..]).expect("creating TmpFile");
 
-pub fn trim_pdf(input: Vec<u8>, pagerange: &PageRange, a3: bool) -> Vec<u8>
-{
-    let input = TmpFile::create(&input[..]).expect("creating TmpFile");
-    let mut files: Vec<String> = Vec::new();
+    let outfile = format!("{}_out", infile);
 
-    let ranges = pagerange.ranges.clone();
-    for range in ranges {
-        let output = format!("{}_{}", input, range.minuend);
-        let _gs = ghostscript_pdfwrite_trim(&output, &input, range.subtrahend, range.minuend, a3)
-            .wait_with_output().expect("executing gs");
-        files.push(output);
-    }
+    let _qpdf = qpdf_pages(&infile, pagerange, &outfile)
+        .wait_with_output().expect("waiting for qpdf");
 
-    let output = format!("{}_out", input);
-
-    let _pdfunite = pdfunite(&files, &output)
-        .wait_with_output().expect("executing pdfunite");
-
-    TmpFile::remove(&output).expect("removing TmpFile")
+    TmpFile::remove(&outfile).expect("removing TmpFile")
 }
 
 pub fn ghostscript_inkcov(input: &str) -> Child

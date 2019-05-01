@@ -10,6 +10,13 @@ pub fn select_jobs(connection: &MysqlConnection) -> QueryResult<Vec<Job>>
     jobs::table.select(jobs::all_columns).load(connection)
 }
 
+pub fn select_jobs_essentials(connection: &MysqlConnection) -> QueryResult<Vec<(u32, Vec<u8>, Vec<u8>, NaiveDateTime)>>
+{
+    jobs::table
+        .select((jobs::id, jobs::info, jobs::options, jobs::updated))
+        .load(connection)
+}
+
 pub fn select_job_ids(connection: &MysqlConnection) -> QueryResult<Vec<u32>>
 {
     jobs::table.select(jobs::id).load(connection)

@@ -122,16 +122,6 @@ impl Job
                     \"\r\n", date, time
             ).as_bytes().to_owned(),
         );
-    if self.options.range != "" {
-        // assuming pagerange is valid here
-         header.append(&mut format!(
-            "\x40\x50\x4a\x4c\x20\x53\x45\x54\
-            \x20\x50\x52\x49\x4e\x54\x50\x41\
-                \x47\x45\x53\x3d\"{}\"\r\n",
-                            self.options.range
-                                                ).as_bytes().to_owned(),
-                                                            );
-                                                                                                                                                            }
 
         if !self.options.a3 {
             header.append(&mut
@@ -211,7 +201,24 @@ impl Job
             }
         }
 
-        if self.options.color {
+
+        if self.options.nup > 1 {
+            match self.options.nup {
+                2 => {
+                    header.append(&mut
+                  b"\x40\x50\x4a\x4c\x20\x53\x45\x54\
+                    \x20\x4e\x55\x50\x3d\x32\r\n".to_vec(),);
+                },
+                4 => {
+                    header.append(&mut
+                  b"\x40\x50\x4a\x4c\x20\x53\x45\x54\
+                    \x20\x4e\x55\x50\x3d\x34\r\n".to_vec(),);
+                },
+                _ => (),
+            }
+        }
+
+      if self.options.color {
             header.append(&mut
                   b"\x40\x50\x4a\x4c\x20\x53\x45\x54\
                     \x20\x52\x45\x4e\x44\x45\x52\x4d\
@@ -234,7 +241,7 @@ impl Job
                     \x41\x4c\x45\r\n".to_vec(),
             );
         }
- 
+
         // set defaults for sanity
         header.append(&mut
                   b"\x40\x50\x4a\x4c\x20\x53\x45\x54\
@@ -257,7 +264,7 @@ impl Job
                     .to_vec(),
         );
 
-        header.append(&mut data);
+       header.append(&mut data);
 
         header.append(&mut
                   b"\x1b\x25\x2d\x31\x32\x33\x34\x35\

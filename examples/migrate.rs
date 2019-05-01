@@ -35,8 +35,8 @@ extern crate astaprint;
 
 extern crate model;
 use model::job::{
-    options::JobOptions,
     info::JobInfo,
+    options::JobOptions,
 };
 
 extern crate bincode;
@@ -61,7 +61,7 @@ impl<'a> From<&'a OldJobOptions> for JobOptions
 {
     fn from(old: &OldJobOptions) -> JobOptions
     {
-        JobOptions{
+        JobOptions {
             color: old.color,
             duplex: old.duplex,
             copies: old.copies,
@@ -72,7 +72,7 @@ impl<'a> From<&'a OldJobOptions> for JobOptions
             nup: old.nup,
             nuppageorder: old.nuppageorder,
             range: old.range.clone(),
-        } 
+        }
     }
 }
 
@@ -108,13 +108,13 @@ impl<'a> From<&'a OldJobInfo> for JobInfo
 {
     fn from(old: &OldJobInfo) -> JobInfo
     {
-        JobInfo{
+        JobInfo {
             filename: old.filename.clone(),
             title: old.title.clone(),
             pagecount: old.pagecount,
             colored: old.colored,
             a3: old.a3,
-        } 
+        }
     }
 }
 
@@ -127,40 +127,42 @@ fn main()
 
     let connection = create_mysql_pool(&mysql_url, 1).get().unwrap();
 
-    let job_ids = select_job_ids(&connection)
-        .expect("selecting ids of all jobs");
+    let job_ids = select_job_ids(&connection).expect("selecting ids of all jobs");
 
     if arg.len() == 1 {
-        if let Ok(options) = bincode::deserialize::<JobOptions>(&select_job_options_by_id(job_ids[0], &connection).expect("selecting JobOptions")) {
+        if let Ok(options) = bincode::deserialize::<JobOptions>(
+            &select_job_options_by_id(job_ids[0], &connection).expect("selecting JobOptions"),
+        ) {
             println!("options: {:?}", options);
         };
-            
     }
     if arg.len() == 2 {
         if arg[1] == "options" {
             for id in job_ids {
                 let options: OldJobOptions = bincode::deserialize(
-                    &select_job_options_by_id(id, &connection).expect("selecting JobOptions")
-                ).expect("deserializing OldJobOptions");
+                    &select_job_options_by_id(id, &connection).expect("selecting JobOptions"),
+                )
+                .expect("deserializing OldJobOptions");
 
                 let value = bincode::serialize(&JobOptions::from(&options))
                     .expect("serializing JobOptions");
 
-                update_job_options_by_id(id, value, &connection)
-                    .expect("updating job options");
-            }  
+                update_job_options_by_id(id, value, &connection).expect("updating job options");
+            }
             println!("jobs migrated");
 
             // update user default options
-            let user_ids = select_user_id(&connection)
-                .expect("selecting user ids");
+            let user_ids = select_user_id(&connection).expect("selecting user ids");
 
             let mut count = 0;
             for id in user_ids {
-                let options: OldJobOptions = if let Some(value) = select_user_options(id, &connection).expect("selecting JobOptions") {
+                let options: OldJobOptions = if let Some(value) =
+                    select_user_options(id, &connection).expect("selecting JobOptions")
+                {
                     bincode::deserialize(&value).expect("deserializing OldJobOptions")
-                } else {
-                    OldJobOptions::default() 
+                }
+                else {
+                    OldJobOptions::default()
                 };
 
                 let value = bincode::serialize(&JobOptions::from(&options))
@@ -171,12 +173,11 @@ fn main()
 
                 count += 1;
                 if count % 100 == 0 {
-                    println!("user {} migrated", id); 
+                    println!("user {} migrated", id);
                     count = 0;
                 }
             }
             println!("user migrated");
         }
-    
     }
 }

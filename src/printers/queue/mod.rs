@@ -25,10 +25,7 @@ pub mod timeout;
 
 use model::{
     job::{
-        options::{
-            pagerange::PageRange,
-            JobOptions,
-        },
+        options::JobOptions,
         Job,
     },
     task::worker::{
@@ -43,14 +40,7 @@ use std::{
     time,
 };
 
-use pdf::{
-    document::PDFDocument,
-    pageinfo::PageOrientation,
-    subprocesses::{
-        pdfnup,
-        trim_pdf,
-    },
-};
+use pdf::subprocesses::trim_pdf;
 
 use lpr::LprConnection;
 
@@ -140,29 +130,9 @@ pub fn work(
                                 }
                             }
                             let mut data = job_row.pdf;
-                            // preprocess and nup
-                            /*
-                            let range =
-                                PageRange::new(&job.options.range, job.info.pagecount as usize)
-                                    .expect("valid PageRange");
-
-                            if &format!("{}", range) != "" {
-                                data = trim_pdf(data, &range, job.info.a3);
-                            }
-                            */
-
-
-                            if job.options.nup != 1 {
-                                let pageinfo = PDFDocument::new(&data[..], "").get_pageinfo();
-
-                                data = pdfnup(
-                                    data,
-                                    job.options.nup,
-                                    job.options.nuppageorder,
-                                    job.info.a3,
-                                    pageinfo.orientation == PageOrientation::Landscape,
-                                )
-                                .expect("nup-ing pdffile");
+                            // preprocess pagerange
+                            if job.options.range != "" {
+                                data = trim_pdf(data, &job.options.range);
                             }
 
                             let buf: Vec<u8> =
