@@ -22,7 +22,7 @@ deploy_debug: debug flushall
 	ssh $(worker_user)@$(worker_host) "systemctl --user daemon-reload && systemctl --user start worker"
 	./flushall.sh
 
-deploy_release: flushall release support flushall
+deploy_release: release
 	#backend
 	ssh $(backend_user)@$(backend_host) "systemctl --user stop backend && rm $(backend_dir)/bin/backend"
 	scp ./target/release/backend $(backend_user)@$(backend_host):$(backend_dir)/bin
