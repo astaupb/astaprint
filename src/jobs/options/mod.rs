@@ -61,6 +61,10 @@ impl Update for JobOptions
         update: JobOptionsUpdate,
     )
     {
+        if let Some(color) = update.color {
+            self.color = color; 
+        }
+
         if let Some(duplex) = update.duplex {
             self.duplex = duplex;
         }
