@@ -10,6 +10,11 @@ pub fn select_user(connection: &MysqlConnection) -> QueryResult<Vec<User>>
     user::table.select(user::all_columns).load(connection)
 }
 
+pub fn select_user_id(connection: &MysqlConnection) -> QueryResult<Vec<u32>>
+{
+        user::table.select(user::id).order(user::id.desc()).load(connection)
+}
+
 pub fn select_user_with_limit_offset(limit: i64, offset: i64, connection: &MysqlConnection) -> QueryResult<Vec<User>>
 {
     user::table

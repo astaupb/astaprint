@@ -10,6 +10,11 @@ pub fn select_jobs(connection: &MysqlConnection) -> QueryResult<Vec<Job>>
     jobs::table.select(jobs::all_columns).load(connection)
 }
 
+pub fn select_job_ids(connection: &MysqlConnection) -> QueryResult<Vec<u32>>
+{
+    jobs::table.select(jobs::id).load(connection)
+}
+
 pub fn select_full_job(id: u32, connection: &MysqlConnection) -> QueryResult<Option<Job>>
 {
     jobs::table
@@ -70,6 +75,18 @@ pub fn select_job_info(
         .optional()
 }
 
+pub fn select_job_info_by_id(
+    id: u32,
+    connection: &MysqlConnection,
+) -> QueryResult<Option<Vec<u8>>>
+{
+    jobs::table
+        .select(jobs::info)
+        .filter(jobs::id.eq(id))
+        .first(connection)
+        .optional()
+}
+
 pub fn select_job_options(
     job_id: u32,
     user_id: u32,
@@ -83,6 +100,18 @@ pub fn select_job_options(
         .first(connection)
         .optional()
 }
+
+pub fn select_job_options_by_id(
+    id: u32,
+    connection: &MysqlConnection,
+) -> QueryResult<Vec<u8>>
+{
+    jobs::table
+        .select(jobs::options)
+        .filter(jobs::id.eq(id))
+        .first(connection)
+}
+
 
 pub fn select_pdf(id: u32, user_id: u32, connection: &MysqlConnection) -> QueryResult<Option<Vec<u8>>>
 {

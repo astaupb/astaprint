@@ -20,3 +20,31 @@ pub fn update_job_options(
         .set(jobs::options.eq(value))
         .execute(connection)
 }
+
+pub fn update_job_options_by_id(
+    id: u32,
+    value: Vec<u8>,
+    connection: &MysqlConnection
+) -> QueryResult<usize>
+{
+    update(
+        jobs::table
+            .filter(jobs::id.eq(id))
+        )
+        .set(jobs::options.eq(value))
+        .execute(connection)
+}
+
+pub fn update_job_info_by_id(
+    id: u32,
+    value: Vec<u8>,
+    connection: &MysqlConnection
+) -> QueryResult<usize>
+{
+    update(
+        jobs::table
+            .filter(jobs::id.eq(id))
+        )
+        .set(jobs::info.eq(value))
+        .execute(connection)
+}
