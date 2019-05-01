@@ -38,21 +38,22 @@ deploy_release: flushall release support flushall
 
 support:
 	#dispatcher
-	ssh $(debug_dispatcher_user)@$(debug_dispatcher_host) "systemctl --user stop dispatcher && rm $(debug_dispatcher_dir)/bin/dispatcher"
+	ssh $(debug_dispatcher_user)@$(debug_dispatcher_host) "systemctl --user stop dispatcher && rm $(debug_dispatcher_dir)/bin/dispatcher && cp .prodenv .env"
 	scp ./target/release/dispatcher $(debug_dispatcher_user)@$(debug_dispatcher_host):$(debug_dispatcher_dir)/bin
 	ssh $(debug_dispatcher_user)@$(debug_dispatcher_host) "systemctl --user daemon-reload && systemctl --user start dispatcher"
-test:
+
+test: debug
 	#backend
 	ssh $(debug_backend_user)@$(debug_backend_host) "systemctl --user stop backend && rm $(debug_backend_dir)/bin/backend"
-	scp ./target/release/backend $(debug_backend_user)@$(debug_backend_host):$(debug_backend_dir)/bin
+	scp ./target/debug/backend $(debug_backend_user)@$(debug_backend_host):$(debug_backend_dir)/bin
 	ssh $(debug_backend_user)@$(debug_backend_host) "systemctl --user daemon-reload && systemctl --user start backend"
 	#dispatcher
-	ssh $(debug_dispatcher_user)@$(debug_dispatcher_host) "systemctl --user stop dispatcher && rm $(debug_dispatcher_dir)/bin/dispatcher"
-	scp ./target/release/dispatcher $(debug_dispatcher_user)@$(debug_dispatcher_host):$(debug_dispatcher_dir)/bin
+	ssh $(debug_dispatcher_user)@$(debug_dispatcher_host) "systemctl --user stop dispatcher && rm $(debug_dispatcher_dir)/bin/dispatcher && cp .testenv .env"
+	scp ./target/debug/dispatcher $(debug_dispatcher_user)@$(debug_dispatcher_host):$(debug_dispatcher_dir)/bin
 	ssh $(debug_dispatcher_user)@$(debug_dispatcher_host) "systemctl --user daemon-reload && systemctl --user start dispatcher"
 	#worker
 	ssh $(debug_worker_user)@$(debug_worker_host) "systemctl --user stop worker && rm $(debug_worker_dir)/bin/worker"
-	scp ./target/release/worker $(debug_worker_user)@$(debug_worker_host):$(debug_worker_dir)/bin
+	scp ./target/debug/worker $(debug_worker_user)@$(debug_worker_host):$(debug_worker_dir)/bin
 	ssh $(debug_worker_user)@$(debug_worker_host) "systemctl --user daemon-reload && systemctl --user start worker"
 
 restart: flushall
