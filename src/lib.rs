@@ -47,7 +47,6 @@ extern crate snmp;
 extern crate threadpool;
 
 extern crate base64;
-extern crate bigdecimal;
 extern crate chrono;
 
 extern crate lpr;

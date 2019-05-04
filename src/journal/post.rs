@@ -17,10 +17,6 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use bigdecimal::{
-    BigDecimal,
-    ToPrimitive,
-};
 use rocket::{
     http::Status,
     State,
@@ -83,7 +79,7 @@ pub fn post_to_journal_with_token(
 
             insert_transaction(
                 user.id,
-                (token.value * BigDecimal::from(100)).to_i32().unwrap(),
+                token.value as i32,
                 &format!("created with token {}", token.content),
                 false,
                 None,
@@ -119,7 +115,7 @@ pub fn post_journal_token_as_admin(
 {
     let content = base64::encode_config(&random_bytes(12)[..], base64::URL_SAFE);
     insert_into_journal_token(
-        BigDecimal::from(value) / BigDecimal::from(100),
+        value,
         content.clone(),
         false,
         &admin.connection,

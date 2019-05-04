@@ -17,18 +17,12 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use bigdecimal::{
-    BigDecimal,
-    ToPrimitive,
-};
-
 use rocket_contrib::json::Json;
 
 use legacy::tds::get_credit;
 
 use user::guard::UserGuard;
 
-pub fn decimal_to_cent(dec: BigDecimal) -> i32 { ((dec * BigDecimal::from(100)).to_i32()).unwrap() }
 #[get("/credit")]
 pub fn credit(user: UserGuard) -> Json<i32>
 {

@@ -3,7 +3,6 @@ pub mod insert;
 pub mod update;
 
 use crate::schema::*;
-use bigdecimal::BigDecimal;
 use chrono::NaiveDateTime;
 use std::fmt;
 
@@ -15,7 +14,7 @@ pub struct Journal
 {
     pub id: u32,
     pub user_id: u32,
-    pub value: BigDecimal,
+    pub value: i32,
     pub description: String,
     pub created: NaiveDateTime,
 }
@@ -26,7 +25,7 @@ pub struct JournalDigest
 {
     pub id: u32,
     pub digest: Vec<u8>,
-    pub credit: BigDecimal,
+    pub credit: i32,
     pub created: NaiveDateTime,
 }
 
@@ -35,7 +34,7 @@ pub struct JournalDigest
 pub struct JournalToken
 {
     pub id: u32,
-    pub value: BigDecimal,
+    pub value: u32,
     pub content: String,
     pub used: bool,
     pub used_by: Option<u32>,

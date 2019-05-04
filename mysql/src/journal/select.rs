@@ -75,7 +75,7 @@ pub fn select_latest_journal_id_of_user(
 pub fn select_credit_by_id(
     id: u32,
     connection: &MysqlConnection,
-) -> QueryResult<BigDecimal>
+) -> QueryResult<i32>
 {
     journal_digest::table
         .select(journal_digest::credit)

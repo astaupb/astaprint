@@ -47,7 +47,7 @@ table! {
     journal (id) {
         id -> Unsigned<Integer>,
         user_id -> Unsigned<Integer>,
-        value -> Decimal,
+        value -> Integer,
         description -> Varchar,
         created -> Timestamp,
     }
@@ -57,7 +57,7 @@ table! {
     journal_digest (id) {
         id -> Unsigned<Integer>,
         digest -> Binary,
-        credit -> Decimal,
+        credit -> Integer,
         created -> Timestamp,
     }
 }
@@ -65,7 +65,7 @@ table! {
 table! {
     journal_tokens (id) {
         id -> Unsigned<Integer>,
-        value -> Decimal,
+        value -> Unsigned<Integer>,
         content -> Varchar,
         used -> Bool,
         used_by -> Nullable<Unsigned<Integer>>,

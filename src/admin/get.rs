@@ -41,11 +41,6 @@ use mysql::{
     },
 };
 
-use bigdecimal::{
-    BigDecimal,
-    ToPrimitive,
-};
-
 use rocket_contrib::json::Json;
 
 #[derive(Serialize, Debug, Clone)]
@@ -99,7 +94,7 @@ impl<'a> From<&'a JournalToken> for JournalTokenResponse
     {
         JournalTokenResponse {
             id: token.id,
-            value: (token.value.clone() * BigDecimal::from(100)).to_u32().unwrap(),
+            value: token.value,
             content: token.content.clone(),
             used: token.used,
             used_by: token.used_by,
