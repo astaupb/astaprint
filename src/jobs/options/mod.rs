@@ -66,11 +66,15 @@ impl Update for JobOptions
         }
 
         if let Some(duplex) = update.duplex {
-            self.duplex = duplex;
+            if duplex < 3 {
+                self.duplex = duplex;
+            }
         }
 
         if let Some(copies) = update.copies {
-            self.copies = copies;
+            if copies > 0 && copies < 1000 {
+                self.copies = copies;
+            }
         }
 
         if let Some(collate) = update.collate {
@@ -90,11 +94,15 @@ impl Update for JobOptions
         }
 
         if let Some(nup) = update.nup {
-            self.nup = nup;
+            if nup == 1 || nup == 2 || nup == 4 {
+                self.nup = nup;
+            }
         }
 
         if let Some(nuppageorder) = update.nuppageorder {
-            self.nuppageorder = nuppageorder;
+            if nuppageorder < 4 {
+                self.nuppageorder = nuppageorder;
+            }
         }
 
         if let Some(range) = update.range {
