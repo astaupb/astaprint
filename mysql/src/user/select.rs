@@ -19,6 +19,7 @@ pub fn select_user_with_limit_offset(limit: i64, offset: i64, connection: &Mysql
 {
     user::table
         .select(user::all_columns)
+        .order(user::id.desc())
         .limit(limit)
         .offset(offset)
         .load(connection)
