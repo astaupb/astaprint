@@ -54,7 +54,7 @@ pub fn get_single_printer(
     let mut response = PrinterResponse::from(select_printer_by_device_id(id, connection)?);
 
     let processing = queue.get_processing();
-    if processing.len() > 0 {
+    if processing.is_empty() {
         response.queue = Some(WorkerTaskResponse::from(&processing[0]));
     }
     Ok(Some(Json(response)))

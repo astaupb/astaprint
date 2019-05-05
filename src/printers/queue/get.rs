@@ -71,7 +71,7 @@ pub fn get_queue(
     };
 
     Some(Json(WorkerQueueResponse {
-        incoming: queue.get_incoming().iter().map(|task| WorkerTaskResponse::from(task)).collect(),
+        incoming: queue.get_incoming().iter().map(WorkerTaskResponse::from).collect(),
         processing: queue
             .get_processing()
             .iter()
@@ -94,7 +94,7 @@ pub fn get_queue_as_admin(
 
     let incoming = queue.get_incoming();
     Some(Json(
-        if incoming.len() > 0 {
+        if incoming.is_empty() {
             Some(WorkerTaskResponse::from(&incoming[1]))
         }
         else {

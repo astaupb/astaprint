@@ -80,7 +80,8 @@ pub fn work(
 
     let mut accounting = Accounting::new(task.user_id, counter_base.clone(), state.mysql_pool);
 
-    let _wake = wake(state.device_id);
+    wake(state.device_id);
+
     let mut timeout = TimeOut::new(60);
     let mut print_count = 0;
     let mut hungup = false;
@@ -166,16 +167,17 @@ pub fn work(
             info!("{}#{} accounting: {}", &hex_uid[.. 8], task.user_id, accounting.value());
         }
 
-        if print_jobs.len() > 0 && accounting.not_enough_credit() {
+        if print_jobs.is_empty() && accounting.not_enough_credit() {
             info!("not enough credit for one page, aborting");
             break false
         }
 
-        if hungup && !print_jobs.is_empty() {
-            if (current.total - counter_base.total) == i64::from(print_count) {
-                debug!("current: {:?}", current);
-                break true
-            }
+        if hungup
+            && !print_jobs.is_empty()
+            && (current.total - counter_base.total) == i64::from(print_count)
+        {
+            debug!("current: {:?}", current);
+            break true
         }
 
         if timeout.check() {

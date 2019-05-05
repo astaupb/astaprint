@@ -58,7 +58,7 @@ impl PDFDocument
             pages.push(data.get_page(i).expect("getting page from poppler document"));
         }
 
-        let pagesizes = pages.iter().map(|page| page.get_size()).collect();
+        let pagesizes = pages.iter().map(PopplerPage::get_size).collect();
 
         PDFDocument {
             title,

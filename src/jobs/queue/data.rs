@@ -81,10 +81,10 @@ impl FromDataSimple for PdfBody
             if bytes_read == 0 {
                 break
             }
-            bytes.extend_from_slice(&mut chunk[.. bytes_read]);
+            bytes.extend_from_slice(&chunk[.. bytes_read]);
         }
 
-        return Outcome::Success(PdfBody {
+        Outcome::Success(PdfBody {
             bytes,
         })
     }

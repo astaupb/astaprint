@@ -107,7 +107,7 @@ impl Drop for Accounting
         if self.value < 0 {
             let _connection = self.mysql_pool.get().expect("getting mysql connection from pool");
 
-            let credit = &self.credit + &self.value;
+            let credit = self.credit + self.value;
 
             let total = self.counter.print_total;
             let colored = total - self.counter.print_bw;

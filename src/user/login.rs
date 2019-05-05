@@ -123,7 +123,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for LoginGuard
         }
         // check password for being pin
         let passed_with_pin = match select_user_pin_by_id(user.id, &connection) {
-            Ok(Some(pin)) => &format!("{}", pin) == credentials[1],
+            Ok(Some(pin)) => format!("{}", pin) == credentials[1],
             _ => false,
         };
 

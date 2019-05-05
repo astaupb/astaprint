@@ -60,7 +60,7 @@ pub fn delete_queue(
         None => return Status::new(404, "Device Not Found"),
     };
     let processing = queue.get_processing();
-    if processing.len() == 0 {
+    if processing.is_empty() {
         return Status::new(404, "Task Not Found")
     }
     let task = processing[0].clone();
@@ -70,10 +70,10 @@ pub fn delete_queue(
         let client = CommandClient::from((queue, &hex_uid[..]));
         client.send_command(&WorkerCommand::Cancel).expect("sending cancel command");
 
-        return Status::new(205, "Success - No Content")
+        Status::new(205, "Success - No Content")
     }
     else {
-        return Status::new(401, "Unauthorized")
+        Status::new(401, "Unauthorized")
     }
 }
 
@@ -93,9 +93,9 @@ pub fn delete_queue_as_admin(
         let client = CommandClient::from((queue, &hex::encode(&processing[0].uid[..])[..]));
         client.send_command(&WorkerCommand::Cancel).expect("sending cancel command");
 
-        return Status::new(205, "Success - No Content")
+        Status::new(205, "Success - No Content")
     }
     else {
-        return Status::new(404, "Task Not Found")
+        Status::new(404, "Task Not Found")
     }
 }

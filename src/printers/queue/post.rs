@@ -93,12 +93,12 @@ pub fn post_to_queue(
 
     let mut hungup = false;
     let processing = queue.get_processing();
-    let hex_uid = if processing.len() > 0 && processing[0].user_id == user.id {
+    let hex_uid = if processing.is_empty() && processing[0].user_id == user.id {
         info!("found processing queue element with uid {:x?}", &processing[0].uid[.. 8]);
         hex::encode(&processing[0].uid)
     }
     else {
-        if processing.len() > 0 {
+        if processing.is_empty() {
             return Ok(Err(Custom(Status::new(423, "Queue Locked"), ())))
         }
         let uid = random_bytes(20);
@@ -127,12 +127,8 @@ pub fn post_to_queue(
             queue.send_command(&WorkerCommand::Hungup).expect("sending hungup command to worker");
         }
     }
-    else {
-        if !hungup {
-            queue
-                .send_command(&WorkerCommand::HeartBeat)
-                .expect("sending heartbeat command to worker");
-        }
+    else if !hungup {
+        queue.send_command(&WorkerCommand::HeartBeat).expect("sending heartbeat command to worker");
     }
 
     Ok(Ok(Accepted(Some(Json(hex_uid)))))
