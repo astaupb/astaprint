@@ -150,7 +150,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for LoginGuard
             String::from(user_agent[0])
         };
 
-        let mmdb_reader = request.guard::<State<maxminddb::OwnedReaderFile<'_>>>()?;
+        let mmdb_reader = request.guard::<State<maxminddb::Reader<Vec<u8>>>>()?;
 
         let city: String = match mmdb_reader.lookup::<geoip2::City>(remote.ip()) {
             Ok(city) => {

@@ -5,7 +5,7 @@ authors = ["Gerrit Pape <papeg@mail.upb.de>"]
 edition = "2018"
 
 [dependencies]
-serde = "*"
-serde_json = "*"
-serde_derive = "*"
+serde = "1.0"
+serde_json = "1.0"
+serde_derive = "1.0"
 

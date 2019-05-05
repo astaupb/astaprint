@@ -21,7 +21,7 @@ use poppler::{
 };
 
 use cairo::{
-    enums::Format::ARgb32,
+    Format,
     Context,
     ImageSurface,
 };
@@ -91,7 +91,7 @@ impl PDFDocument
 
         let page = &self.pages[number];
 
-        let surface = ImageSurface::create(ARgb32, w as i32, h as i32)
+        let surface = ImageSurface::create(Format::ARgb32, w as i32, h as i32)
             .expect("creating cairo image surface for preview rendering");
 
         let mut context = Context::new(&surface);

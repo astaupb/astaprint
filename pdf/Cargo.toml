@@ -9,5 +9,5 @@ sodium = {path = "../sodium"}
 log = {version = "0.4", features = ["std", "max_level_debug", "release_max_level_info"]}
 model = {path = "../model"}
 hex = "0.3"
-cairo-rs = { version= "0.3", features = ["png"]}
-poppler = "0.2"
+cairo-rs = { version= "0.6", features = ["png"]}
+poppler = "0.2.5"

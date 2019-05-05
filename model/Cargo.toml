@@ -6,13 +6,13 @@ edition = "2018"
 
 [dependencies]
 log = {version = "0.4", features = ["std", "max_level_debug", "release_max_level_info"]}
-diesel = {version = "1.3", features = ["mysql", "r2d2", "chrono"]}
+diesel = {version = "1.4", features = ["mysql", "r2d2", "chrono"]}
 mysql = {path = "../mysql"}
 redis = {path = "../redis"}
 sodium = {path = "../sodium"}
 r2d2_redis = "0.9"
 hex = "0.3"
-bincode = "1.0"
+bincode = "1.1"
 chrono = "0.4"
 serde = "1.0"
 serde_derive = "1.0"
