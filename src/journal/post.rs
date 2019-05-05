@@ -114,12 +114,7 @@ pub fn post_journal_token_as_admin(
 ) -> QueryResult<Json<String>>
 {
     let content = base64::encode_config(&random_bytes(12)[..], base64::URL_SAFE);
-    insert_into_journal_token(
-        value,
-        content.clone(),
-        false,
-        &admin.connection,
-    )?;
+    insert_into_journal_token(value, content.clone(), false, &admin.connection)?;
 
     Ok(Json(content))
 }

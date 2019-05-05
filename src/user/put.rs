@@ -30,7 +30,10 @@ use crate::user::guard::UserGuard;
 
 use crate::admin::guard::AdminGuard;
 
-use crate::jobs::options::{Update, JobOptionsUpdate};
+use crate::jobs::options::{
+    JobOptionsUpdate,
+    Update,
+};
 
 use model::job::options::JobOptions;
 
@@ -127,10 +130,13 @@ pub fn update_user_default_options(
     update: Json<JobOptionsUpdate>,
 ) -> QueryResult<Status>
 {
-    let mut options: JobOptions = if let Some(options) = select_user_options(user.id, &user.connection).expect("selecting user options") {
+    let mut options: JobOptions = if let Some(options) =
+        select_user_options(user.id, &user.connection).expect("selecting user options")
+    {
         bincode::deserialize(&options).expect("deserializing JobOptions")
-    }  else {
-        JobOptions::default()  
+    }
+    else {
+        JobOptions::default()
     };
 
     options.merge(update.into_inner());
