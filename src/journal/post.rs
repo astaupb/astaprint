@@ -19,6 +19,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use rocket::{
     http::Status,
+    response::status::Custom,
     State,
 };
 use rocket_contrib::json::Json;
@@ -60,17 +61,17 @@ pub fn post_to_journal_with_token(
     user: UserGuard,
     token: Json<String>,
     redis: State<Pool<RedisConnectionManager>>,
-) -> QueryResult<Status>
+) -> QueryResult<Custom<()>>
 {
     let token: Option<JournalToken> =
         select_journal_token_by_content(token.into_inner(), &user.connection)
             .expect("selecting journal token");
 
     match token {
-        None => Ok(Status::new(401, "Unauthorized")),
+        None => Ok(Custom(Status::new(401, "Unauthorized"), ())),
         Some(token) => {
             if token.used {
-                return Ok(Status::new(472, "Token Already Consumed"))
+                return Ok(Custom(Status::new(472, "Token Already Consumed"), ()))
             }
 
             update_journal_token(token.id, true, user.id, &user.connection)?;
@@ -85,7 +86,7 @@ pub fn post_to_journal_with_token(
                 None,
             );
 
-            Ok(Status::new(204, "Success - No Content"))
+            Ok(Custom(Status::new(204, "Success - No Content"), ()))
         },
     }
 }
