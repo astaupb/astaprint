@@ -94,7 +94,7 @@ pub fn get_queue_as_admin(
 
     let incoming = queue.get_incoming();
     Some(Json(
-        if incoming.is_empty() {
+        if !incoming.is_empty() {
             Some(WorkerTaskResponse::from(&incoming[1]))
         }
         else {

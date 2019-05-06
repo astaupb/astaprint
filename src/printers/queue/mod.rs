@@ -167,7 +167,7 @@ pub fn work(
             info!("{}#{} accounting: {}", &hex_uid[.. 8], task.user_id, accounting.value());
         }
 
-        if print_jobs.is_empty() && accounting.not_enough_credit() {
+        if !print_jobs.is_empty() && accounting.not_enough_credit() {
             info!("not enough credit for one page, aborting");
             break false
         }

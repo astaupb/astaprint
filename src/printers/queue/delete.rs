@@ -89,7 +89,7 @@ pub fn delete_queue_as_admin(
         None => return Status::new(404, "Device Not Found"),
     };
     let processing = queue.get_processing();
-    if processing.len() > 0 {
+    if !processing.is_empty() {
         let client = CommandClient::from((queue, &hex::encode(&processing[0].uid[..])[..]));
         client.send_command(&WorkerCommand::Cancel).expect("sending cancel command");
 

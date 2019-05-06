@@ -93,12 +93,12 @@ pub fn post_to_queue(
 
     let mut hungup = false;
     let processing = queue.get_processing();
-    let hex_uid = if processing.is_empty() && processing[0].user_id == user.id {
+    let hex_uid = if !processing.is_empty() && processing[0].user_id == user.id {
         info!("found processing queue element with uid {:x?}", &processing[0].uid[.. 8]);
         hex::encode(&processing[0].uid)
     }
     else {
-        if processing.is_empty() {
+        if !processing.is_empty() {
             return Ok(Err(Custom(Status::new(423, "Queue Locked"), ())))
         }
         let uid = random_bytes(20);
