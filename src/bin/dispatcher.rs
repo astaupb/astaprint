@@ -73,9 +73,19 @@ fn main()
 
     info!("listening");
 
-    taskqueue.listen(|task, state, _client| {
-        thread::spawn(move || {
-            dispatch(task, state.clone(), _client.clone());
-        });
+    taskqueue.listen(|task, state, client| {
+        let t = task.clone();
+        let c = client.clone();
+
+        let join_result = thread::spawn(move || {
+            dispatch(task, state, client);
+        })
+        .join();
+
+        if let Err(e) = join_result {
+            error!("{:?}", e);
+        }
+
+        c.finish(&t).expect("removing task from queue");
     });
 }

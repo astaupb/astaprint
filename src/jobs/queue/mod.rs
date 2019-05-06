@@ -65,7 +65,7 @@ impl<'a> From<&'a DispatcherTask> for DispatcherTaskResponse
 pub fn dispatch(
     task: DispatcherTask,
     state: DispatcherState,
-    client: TaskQueueClient<DispatcherTask, ()>,
+    _client: TaskQueueClient<DispatcherTask, ()>,
 )
 {
     let hex_uid = hex::encode(&task.uid[..]);
@@ -114,7 +114,6 @@ pub fn dispatch(
     )
     .expect("inserting job into table");
 
-    client.finish(&task).expect("removing task from queue");
     info!(
         "{} finished, pagecount: {}, colored: {}, a3: {}",
         &hex_uid[.. 8],

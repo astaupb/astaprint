@@ -96,7 +96,8 @@ fn spawn_worker(
 
             let join_result = thread::spawn(move || {
                 work(task, state, client);
-            }).join();
+            })
+            .join();
 
             if let Err(e) = join_result {
                 error!("{:?}", e);
