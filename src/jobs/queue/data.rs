@@ -53,7 +53,7 @@ impl FromDataSimple for PdfBody
         if req.content_type() != Some(&ContentType::new("application", "pdf")) {
             return Outcome::Forward(data)
         }
-        {
+        /*{
             let peek = data.peek();
 
             if !&String::from_utf8_lossy(&peek).contains("%PDF-1") {
@@ -63,7 +63,7 @@ impl FromDataSimple for PdfBody
                     "could not find %PDF-1 while peeking".to_string(),
                 ))
             }
-        }
+        }*/
 
         let mut bytes = Vec::<u8>::with_capacity(8192);
 
