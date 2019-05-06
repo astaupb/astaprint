@@ -53,6 +53,8 @@ extern crate lpr;
 
 extern crate sodium;
 
+extern crate poppler;
+
 // routes
 pub mod admin;
 pub mod jobs;

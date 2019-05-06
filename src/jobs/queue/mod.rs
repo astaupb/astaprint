@@ -65,17 +65,32 @@ impl<'a> From<&'a DispatcherTask> for DispatcherTaskResponse
 pub fn dispatch(
     task: DispatcherTask,
     state: DispatcherState,
-    _client: TaskQueueClient<DispatcherTask, ()>,
+    client: TaskQueueClient<DispatcherTask, ()>,
 )
 {
     let hex_uid = hex::encode(&task.uid[..]);
+
     info!("{} {} started", task.user_id, &hex_uid[.. 8]);
 
-    let data = state.redis_store.get(task.uid.clone()).expect("getting file from store");
+    let data = if let Ok(data) = state.redis_store.get(task.uid.clone()) {
+        data
+    }
+    else {
+        error!("getting data from store");
+        client.finish(&task).expect("removing task from queue");
+        return
+    };
 
     let result = sanitize(data);
 
-    let connection = state.mysql_pool.get().expect("getting mysql connection from pool");
+    let connection = if let Ok(connection) = state.mysql_pool.get() {
+        connection
+    }
+    else {
+        error!("getting mysql connection from pool");
+        client.finish(&task).expect("removing task from queue");
+        return
+    };
 
     let filename = if task.filename == "" {
         result.title.clone()
@@ -83,6 +98,7 @@ pub fn dispatch(
     else {
         task.filename.clone()
     };
+
     let info: Vec<u8> = bincode::serialize(&JobInfo {
         filename,
         title: result.title,
@@ -92,16 +108,19 @@ pub fn dispatch(
     })
     .expect("serializing JobInfo");
 
-    let mut options: JobOptions = match select_user_options(task.user_id, &connection)
-        .expect("selecting user default options")
-    {
-        Some(options) => bincode::deserialize(&options[..]).expect("deserializing JobOptions"),
-        None => JobOptions::default(),
+    let mut options: JobOptions = match select_user_options(task.user_id, &connection) {
+        Ok(Some(options)) => bincode::deserialize(&options[..]).expect("deserializing JobOptions"),
+        Ok(None) => JobOptions::default(),
+        Err(e) => {
+            error!("selecting user options: {:?}", e);
+            client.finish(&task).expect("removing task from queue");
+            return
+        },
     };
 
     options.keep = task.keep;
 
-    insert_into_jobs(
+    match insert_into_jobs(
         task.user_id,
         info,
         bincode::serialize(&options).expect("serializing JobOptions"),
@@ -111,14 +130,19 @@ pub fn dispatch(
         result.preview_2,
         result.preview_3,
         &connection,
-    )
-    .expect("inserting job into table");
-
-    info!(
-        "{} finished, pagecount: {}, colored: {}, a3: {}",
-        &hex_uid[.. 8],
-        result.pagecount,
-        result.colored,
-        result.a3
-    );
+    ) {
+        Ok(_) => {
+            info!(
+                "{} finished, pagecount: {}, colored: {}, a3: {}",
+                &hex_uid[.. 8],
+                result.pagecount,
+                result.colored,
+                result.a3
+            );
+        },
+        Err(e) => {
+            error!("inserting job: {:?}", e);
+        },
+    }
+    client.finish(&task).expect("removing task from queue");
 }

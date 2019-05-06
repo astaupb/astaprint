@@ -31,7 +31,6 @@ extern crate pdf;
 
 use logger::Logger;
 
-use std::thread;
 use threadpool::ThreadPool;
 
 use redis::{
@@ -58,7 +57,7 @@ fn main()
 
     let mysql_pool = get_mysql_pool(20);
 
-    let thread_pool = ThreadPool::new(20);
+    let thread_pool = ThreadPool::new(42);
 
     let state = DispatcherState {
         mysql_pool,
@@ -74,18 +73,9 @@ fn main()
     info!("listening");
 
     taskqueue.listen(|task, state, client| {
-        let t = task.clone();
-        let c = client.clone();
-
-        let join_result = thread::spawn(move || {
+        let pool = state.thread_pool.clone();
+        pool.execute(move || {
             dispatch(task, state, client);
-        })
-        .join();
-
-        if let Err(e) = join_result {
-            error!("{:?}", e);
-        }
-
-        c.finish(&t).expect("removing task from queue");
+        });
     });
 }

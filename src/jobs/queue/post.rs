@@ -17,8 +17,6 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use std::io;
-
 use rocket::{
     response::status::{
         Accepted,
@@ -47,7 +45,7 @@ pub fn upload_job<'a>(
     keep: Option<bool>,
     taskqueue: State<TaskQueueClient<DispatcherTask, ()>>,
     store: State<Store>,
-) -> io::Result<Result<Accepted<Json<String>>, BadRequest<&'a str>>>
+) -> Result<Accepted<Json<String>>, BadRequest<&'a str>>
 {
     let uid = store.set(data.bytes).expect("saving file in store");
 
@@ -85,5 +83,5 @@ pub fn upload_job<'a>(
 
     info!("{} uploaded job with uid {}", user.id, hex_uid);
 
-    Ok(Ok(Accepted(Some(Json(hex_uid)))))
+    Ok(Accepted(Some(Json(hex_uid))))
 }

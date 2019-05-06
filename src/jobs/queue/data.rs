@@ -33,6 +33,8 @@ use rocket::{
     Request,
 };
 
+use poppler::PopplerDocument;
+
 pub const CHUNK_SIZE: usize = 4096;
 
 #[derive(Debug, Clone)]
@@ -84,8 +86,19 @@ impl FromDataSimple for PdfBody
             bytes.extend_from_slice(&chunk[.. bytes_read]);
         }
 
-        Outcome::Success(PdfBody {
-            bytes,
-        })
+        match PopplerDocument::new_from_data(&bytes[..], "") {
+            Ok(_) => {
+                Outcome::Success(PdfBody {
+                    bytes,
+                })
+            },
+            Err(e) => {
+                error!("creating PopplerDocument: {:?}", e);
+                Outcome::Failure((
+                    Status::BadRequest,
+                    format!("unable to create PopplerDocument: {:?}", e),
+                ))
+            },
+        }
     }
 }
