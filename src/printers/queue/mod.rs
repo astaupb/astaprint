@@ -244,6 +244,5 @@ pub fn work(
         }
     }
 
-    client.finish(&task).expect("removing task from queue");
     info!("{}#{} finished", &hex_uid[.. 8], task.user_id);
 }

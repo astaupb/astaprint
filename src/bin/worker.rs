@@ -91,7 +91,18 @@ fn spawn_worker(
     thread::spawn(move || {
         info!("{} listening", device_id);
         taskqueue.listen(|task, state, client| {
-            work(task, state.clone(), client.clone());
+            let c = client.clone();
+            let t = task.clone();
+
+            let join_result = thread::spawn(move || {
+                work(task, state, client);
+            }).join();
+
+            if let Err(e) = join_result {
+                error!("{:?}", e);
+            }
+
+            c.finish(&t).expect("removing task from queue");
         });
     })
 }
