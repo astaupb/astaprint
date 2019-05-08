@@ -77,7 +77,6 @@ impl PageRange
         pagecount: usize,
     ) -> Option<PageRange>
     {
-        info!("{:?}", range);
         if range == "" || range == "-" {
             return Some(PageRange {
                 pages: vec![true; pagecount],
