@@ -273,13 +273,27 @@ where
                 let redis = redis_pool.get()
                     .expect("getting connection from pool");
                 loop {
-                    let binary: Vec<Vec<u8>> = redis.brpop(&queue, 0)
-                        .expect("getting command from queue");
+                    match redis.brpop::<&str, Vec<Vec<u8>>>(&queue, 72) {
+                        Ok(bulk) => {
+                            if bulk.is_empty() {
+                                debug!("brpop timeout");
+                                return;
+                            } else {
+                                let command: C = bincode::deserialize(&bulk[1][..])
+                                    .expect("deserializing Command");
 
-                    let command: C = bincode::deserialize(&binary[1][..])
-                        .expect("deserializing Command");
+                                if let Err(e) = sender.send(command) {
+                                    error!("sending command: {:?}", e);
+                                    return;
+                                }
+                            }
+                        },
+                        Err(e) => {
+                            error!("brpop: {:?}", e);
+                            return;
+                        }
+                    }
 
-                    sender.send(command).expect("sending command");
                 }
             });
         }
