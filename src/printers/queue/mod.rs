@@ -67,25 +67,30 @@ pub fn work(
     client: TaskQueueClient<WorkerTask, WorkerCommand>,
 )
 {
+    wake(state.device_id);
+    let counter_base = match counter(&state.ip) {
+        Ok(counter) => counter,
+        Err(_) => return,
+    };
+    debug!("counter_base: {:?}", counter_base);
+
+    let mut current = counter_base.clone();
+
+    let mut accounting = Accounting::new(task.user_id, counter_base.clone(), state.mysql_pool.clone());
+
     let hex_uid = hex::encode(&task.uid[..]);
+
     info!("{} user {} has locked device {}", &hex_uid[.. 8], task.user_id, state.device_id);
+
     let command_client = CommandClient::from((&client, &hex_uid[..]));
 
     let connection = state.mysql_pool.get().expect("getting connection from mysql pool");
-
-    let counter_base = counter(&state.ip).expect("getting counter base");
-    let mut current = counter_base.clone();
-
-    debug!("counter_base: {:?}", counter_base);
-
-    let mut accounting = Accounting::new(task.user_id, counter_base.clone(), state.mysql_pool);
-
-    wake(state.device_id);
 
     let mut timeout = TimeOut::new(60);
     let mut print_count = 0;
     let mut hungup = false;
     let mut last_value = counter_base.total;
+
     let mut print_jobs: Vec<(u32, JobOptions)> = Vec::new();
 
     let command_receiver = command_client.get_command_receiver();
@@ -168,8 +173,14 @@ pub fn work(
         }
 
         if !print_jobs.is_empty() && accounting.not_enough_credit() {
-            info!("not enough credit for one page, aborting");
-            break false
+            let pages_left = accounting.bw_pages_left();
+            if print_count as i32 <= pages_left {
+                info!("print_count: {}, pages_left: {}, continuing..", print_count, pages_left);
+            }
+            else {
+                info!("not enough credit, aborting {}", &hex_uid[.. 8]);
+                break false
+            }
         }
 
         if hungup
