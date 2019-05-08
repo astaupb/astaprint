@@ -105,7 +105,7 @@ pub fn work(
                         hungup = true;
                     },
                     WorkerCommand::Print(job_id) => {
-                        if let Some(job_row) = select_full_job(job_id, &connection)
+                        if let Some(job_row) = select_full_job_of_user(task.user_id, job_id, &connection)
                             .expect("selecting job from database")
                         {
                             info!("{} printing {}", &hex_uid[.. 8], job_row.id,);
