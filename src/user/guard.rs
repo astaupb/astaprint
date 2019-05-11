@@ -92,17 +92,18 @@ impl<'a, 'r> FromRequest<'a, 'r> for UserGuard
             let hash = GenericHash::with_salt(&token[..], &salt[..]);
 
             let result: QueryResult<u32> = select_user_token_id_by_hash(user_id, hash, &connection);
-
-            if let Ok(token_id) = result {
-                Outcome::Success(UserGuard {
-                    id: user_id,
-                    token_id,
-                    connection,
-                })
-            }
-            else {
-                info!("could not find token for user {}", user_id);
-                Outcome::Failure((Status::Unauthorized, ()))
+            match result {
+                Ok(token_id) => {
+                    Outcome::Success(UserGuard {
+                        id: user_id,
+                        token_id,
+                        connection,
+                    })
+                },
+                Err(e) => {
+                    info!("could not find token for user {}", user_id);
+                    Outcome::Failure((Status::Unauthorized, ()))
+                },
             }
         }
         else {

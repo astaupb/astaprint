@@ -100,27 +100,25 @@ pub fn work(
 
     let command_receiver = command_client.get_command_receiver();
     loop {
-        match command_receiver.try_recv() {
-            Ok(command) => {
-                match command {
-                    WorkerCommand::Cancel => break,
-                    WorkerCommand::HeartBeat => {
-                        info!("{} heartbeat", &hex_uid[.. 8]);
-                        timeout.refresh();
-                        client.refresh_timeout().expect("setting redis key expiration");
-                    },
-                    WorkerCommand::Hungup => {
-                        debug!("{} heartbeat", &hex_uid[.. 8]);
-                        hungup = true;
-                    },
-                    WorkerCommand::Print(job_id) => {
-                        to_print.push_back(job_id);
-                        debug!("{:?}", to_print);
-                    },
-                }
-            },
-            Err(e) => error!("{:?}", e),
+        if let Ok(command) = command_receiver.try_recv() {
+            match command {
+                WorkerCommand::Cancel => break,
+                WorkerCommand::HeartBeat => {
+                    info!("{} heartbeat", &hex_uid[.. 8]);
+                    timeout.refresh();
+                    client.refresh_timeout().expect("setting redis key expiration");
+                },
+                WorkerCommand::Hungup => {
+                    debug!("{} heartbeat", &hex_uid[.. 8]);
+                    hungup = true;
+                },
+                WorkerCommand::Print(job_id) => {
+                    to_print.push_back(job_id);
+                    debug!("{:?}", to_print);
+                },
+            }
         }
+
         if let Some(_id) = printing {
             if accounting.update(counter(&state.ip).ok()) {
                 if accounting.not_enough_credit() {
@@ -196,7 +194,7 @@ pub fn work(
 
     // clear jobqueue on every outcome in case printer wants to print more than
     // expected
-    for _ in 0..4 {
+    for _ in 0 .. 4 {
         if let Err(e) = clear(&state.ip) {
             error!("clearing jobqueue: {:?}", e);
         }
