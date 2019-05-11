@@ -76,70 +76,10 @@ table! {
         community -> Varchar,
         mac -> Varchar,
         device_id -> Unsigned<Integer>,
-        counter_id -> Unsigned<Integer>,
-        control_id -> Unsigned<Integer>,
-        status_id -> Unsigned<Integer>,
-        info_id -> Unsigned<Integer>,
         location -> Varchar,
         has_a3 -> Bool,
         coin_operated -> Bool,
         description -> Varchar,
-        created -> Timestamp,
-        updated -> Timestamp,
-    }
-}
-
-table! {
-    printer_control (id) {
-        id -> Unsigned<Integer>,
-        queue -> Varchar,
-        cancel -> Integer,
-        clear -> Integer,
-        energy -> Varchar,
-        wake -> Integer,
-        sleep -> Integer,
-        created -> Timestamp,
-        updated -> Timestamp,
-    }
-}
-
-table! {
-    printer_counter (id) {
-        id -> Unsigned<Integer>,
-        total -> Varchar,
-        copy_total -> Varchar,
-        copy_bw -> Varchar,
-        print_total -> Varchar,
-        print_bw -> Varchar,
-        created -> Timestamp,
-        updated -> Timestamp,
-    }
-}
-
-table! {
-    printer_info (id) {
-        id -> Unsigned<Integer>,
-        model -> Varchar,
-        hostname -> Varchar,
-        location -> Varchar,
-        mac -> Varchar,
-        created -> Timestamp,
-        updated -> Timestamp,
-    }
-}
-
-table! {
-    printer_status (id) {
-        id -> Unsigned<Integer>,
-        uptime -> Varchar,
-        scan -> Varchar,
-        copy -> Varchar,
-        toner -> Varchar,
-        tray_1 -> Varchar,
-        tray_2 -> Varchar,
-        tray_3 -> Varchar,
-        tray_4 -> Varchar,
-        tray_5 -> Varchar,
         created -> Timestamp,
         updated -> Timestamp,
     }
@@ -193,10 +133,6 @@ allow_tables_to_appear_in_same_query!(
     journal,
     journal_tokens,
     printers,
-    printer_control,
-    printer_counter,
-    printer_info,
-    printer_status,
     print_journal,
     user,
     user_tokens,
