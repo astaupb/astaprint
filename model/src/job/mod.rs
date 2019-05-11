@@ -74,8 +74,10 @@ impl Job
     pub fn score(&self) -> u16
     {
         let range = PageRange::new(&self.options.range, self.info.pagecount as usize).expect("valid PageRange");
-
-        range.pagecount() as u16 - self.pages_to_print()
+        debug!("range.pagecount(): {}, self.pages_to_print(): {}", range.pagecount(), self.pages_to_print());
+        //TODO
+        //calculate saved paper here
+        0
     }
 
     pub fn translate_for_printer(&mut self, uid: &[u8], user_id: u32, mut data: Vec<u8>) -> Vec<u8>
