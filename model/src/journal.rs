@@ -6,13 +6,11 @@ use mysql::journal::{
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct JournalResponse
 {
-    pub user_id: u32,
-    pub credit: i32,
     pub value: i32,
-    pub print_id: Option<u32>,
     pub admin_id: Option<u32>,
+    pub without_receipt: bool,
     pub description: String,
-    pub timestamp: i64,
+    pub timestamp: String,
 }
 
 impl<'a> From<&'a Journal> for JournalResponse
@@ -20,13 +18,11 @@ impl<'a> From<&'a Journal> for JournalResponse
     fn from(journal: &Journal) -> JournalResponse
     {
         JournalResponse{
-            user_id: journal.user_id,
-            credit: journal.credit,
             value: journal.value,
-            print_id: journal.print_id,
             admin_id: journal.admin_id,
+            without_receipt: true,
             description: journal.description.clone(),
-            timestamp: journal.created.timestamp()
+            timestamp: format!("{}", journal.created),
         }
     }
 }
