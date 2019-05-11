@@ -25,22 +25,31 @@ use diesel::{
     },
 };
 
-use legacy::tds::{
-    get_credit,
-    insert_transaction,
+use model::job::Job;
+
+use mysql::{
+    journal::select::select_latest_credit_of_user,
+    update_credit_after_print,
 };
 
 use snmp::CounterValues;
 
-use std::ops::Drop;
+use std::{
+    convert::TryInto,
+    ops::Drop,
+};
 
 pub struct Accounting
 {
     user_id: u32,
-    baseprice: u32,
-    counter: CounterValues,
+    printer_id: u32,
+    job: Option<Job>,
     credit: i32,
     value: i32,
+    expected: u16,
+    baseprice: u8,
+    basecounter: CounterValues,
+    counter: CounterValues,
     mysql_pool: Pool<ConnectionManager<MysqlConnection>>,
 }
 
@@ -48,82 +57,135 @@ impl Accounting
 {
     pub fn new(
         user_id: u32,
+        printer_id: u32,
         counter: CounterValues,
         mysql_pool: Pool<ConnectionManager<MysqlConnection>>,
     ) -> Accounting
     {
-        let baseprice = 20;
-
-        let _connection = mysql_pool.get().expect("gettting connection from pool");
-
-        let credit = get_credit(user_id);
-
-        let value = 0;
-
         Accounting {
             user_id,
-            baseprice,
+            printer_id,
+            credit: 0,
+            job: None,
+            value: 0,
+            expected: 0,
+            baseprice: 5,
+            basecounter: counter.clone(),
             counter,
-            credit,
-            value,
             mysql_pool,
         }
     }
 
-    pub fn value(&self) -> i32 { self.value }
-
-    pub fn set_baseprice(
-        &mut self,
-        baseprice: u32,
-    )
+    pub fn credit(&mut self) -> i32
     {
-        self.baseprice = baseprice
+        let connection = self.mysql_pool.get().expect("gettting connection from pool");
+
+        self.credit =
+            select_latest_credit_of_user(self.user_id, &connection).expect("selecting credit");
+
+        self.credit
     }
 
-    pub fn bw_pages_left(&self) -> i32 { (self.credit + self.value) / 5 }
+    pub fn value(&self) -> i32 { self.value }
 
-    pub fn not_enough_credit(&self) -> bool { &self.credit + &self.value < self.baseprice as i32 }
+    pub fn pages_left(&self) -> i32 { (self.credit + self.value) / self.baseprice as i32 }
 
-    /// sets the value which will be accounted given a counter diff as parameter
-    /// returns true if there's enough credit for another page
-    pub fn set_value(
+    pub fn not_enough_credit(&self) -> bool { self.credit + self.value < i32::from(self.baseprice) }
+
+    pub fn start(
         &mut self,
+        job: Job,
         counter: CounterValues,
     )
     {
-        self.value = -((counter.print_bw * 5 + (counter.print_total - counter.print_bw) * 20)
-            + (counter.copy_bw * 5 + (counter.copy_total - counter.copy_bw) * 20))
-            as i32;
+        self.credit();
+        self.expected = job.pages_to_print();
+        self.baseprice = if job.options.color {
+            20
+        }
+        else {
+            5
+        };
+        self.job = Some(job);
+        self.counter = counter.clone();
+        self.basecounter = counter;
+    }
 
-        self.counter = counter;
+    pub fn update(
+        &mut self,
+        counter: Option<CounterValues>,
+    ) -> bool
+    {
+        if let Some(counter) = counter {
+            if counter.total > self.counter.total {
+                let (print_total, print_bw) = (
+                    counter.print_total - self.basecounter.print_total,
+                    counter.print_bw - self.basecounter.print_bw,
+                );
+                self.counter = counter;
 
-        debug!("calculated value for {}: {}", self.user_id, self.value);
+                self.value = (-(print_bw * 5 + (print_total - print_bw) * 20))
+                    .try_into()
+                    .expect("value fits in i64");;
+
+                if let Ok(connection) = self.mysql_pool.get() {
+                    if let Ok(credit) = select_latest_credit_of_user(self.user_id, &connection) {
+                        self.credit = credit;
+                    }
+                }
+
+                info!(
+                    "calculated credit for {}: {} + {} = {}",
+                    self.user_id,
+                    self.credit,
+                    self.value,
+                    self.credit + self.value
+                );
+
+                return true
+            }
+        }
+        false
+    }
+
+    pub fn finished(&mut self) -> bool
+    {
+        self.job.is_some()
+            && (self.counter.print_total - self.basecounter.print_total) as u16 == self.expected
+            && self.finish()
+    }
+
+    pub fn finish(&mut self) -> bool
+    {
+        if self.value < 0 {
+            let connection = self.mysql_pool.get().expect("getting mysql connection from pool");
+
+            let job = self.job.clone().unwrap();
+            self.credit = update_credit_after_print(
+                self.user_id,
+                self.value,
+                job.id,
+                (self.counter.total - self.basecounter.total).try_into().unwrap(),
+                (self.counter.print_total - self.counter.print_bw).try_into().unwrap(),
+                job.score(),
+                self.printer_id,
+                bincode::serialize(&job.options).expect("serializing JobOptions"),
+                &connection,
+            )
+            .expect("updating credit");
+
+            info!("new credit for {}: {}", self.user_id, self.credit);
+
+            self.value = 0;
+            self.job = None;
+            self.expected = 0;
+
+            return true
+        }
+        false
     }
 }
 impl Drop for Accounting
 {
-    fn drop(&mut self)
-    {
-        if self.value < 0 {
-            let _connection = self.mysql_pool.get().expect("getting mysql connection from pool");
-
-            let credit = self.credit + self.value;
-
-            let total = self.counter.print_total;
-            let colored = total - self.counter.print_bw;
-
-            insert_transaction(
-                self.user_id,
-                self.value,
-                &format!("{} Seiten gedruckt, davon {} in Farbe", total, colored),
-                false,
-                None,
-            );
-
-            info!("new credit for {}: {}", &self.user_id, &credit);
-        }
-        else {
-            info!("accounting for {} finished without value", self.user_id);
-        }
-    }
+    fn drop(&mut self) { self.finish(); }
 }

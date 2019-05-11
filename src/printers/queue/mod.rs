@@ -24,10 +24,7 @@ pub mod post;
 pub mod timeout;
 
 use model::{
-    job::{
-        options::JobOptions,
-        Job,
-    },
+    job::Job,
     task::worker::{
         WorkerCommand,
         WorkerState,
@@ -36,6 +33,7 @@ use model::{
 };
 
 use std::{
+    collections::VecDeque,
     thread,
     time,
 };
@@ -70,13 +68,12 @@ pub fn work(
     wake(state.device_id);
     let counter_base = match counter(&state.ip) {
         Ok(counter) => counter,
-        Err(_) => return,
+        Err(e) => {
+            error!("get counter: {:?}", e);
+            return
+        },
     };
     debug!("counter_base: {:?}", counter_base);
-
-    let mut current = counter_base.clone();
-
-    let mut accounting = Accounting::new(task.user_id, counter_base.clone(), state.mysql_pool.clone());
 
     let hex_uid = hex::encode(&task.uid[..]);
 
@@ -84,172 +81,129 @@ pub fn work(
 
     let command_client = CommandClient::from((&client, &hex_uid[..]));
 
-    let connection = state.mysql_pool.get().expect("getting connection from mysql pool");
+    let connection = match state.mysql_pool.get() {
+        Ok(connection) => connection,
+        Err(e) => {
+            error!("getting connection: {:?}", e);
+            return
+        },
+    };
+
+    let mut accounting =
+        Accounting::new(task.user_id, state.device_id, counter_base, state.mysql_pool.clone());
 
     let mut timeout = TimeOut::new(60);
-    let mut print_count = 0;
     let mut hungup = false;
-    let mut last_value = counter_base.total;
 
-    let mut print_jobs: Vec<(u32, JobOptions)> = Vec::new();
+    let mut to_print: VecDeque<u32> = VecDeque::new();
+    let mut printing: Option<(u32, bool)> = None;
 
     let command_receiver = command_client.get_command_receiver();
-    let completed = loop {
+    loop {
         match command_receiver.try_recv() {
             Ok(command) => {
-                debug!("timeout: {:?}", timeout);
-                debug!("command: {:?}", command);
                 match command {
-                    WorkerCommand::Cancel => break false,
+                    WorkerCommand::Cancel => break,
                     WorkerCommand::HeartBeat => {
                         info!("{} heartbeat", &hex_uid[.. 8]);
                         timeout.refresh();
                         client.refresh_timeout().expect("setting redis key expiration");
                     },
                     WorkerCommand::Hungup => {
+                        debug!("{} heartbeat", &hex_uid[.. 8]);
                         hungup = true;
                     },
                     WorkerCommand::Print(job_id) => {
-                        if let Some(job_row) = select_full_job_of_user(task.user_id, job_id, &connection)
-                            .expect("selecting job from database")
-                        {
-                            info!("{} printing {}", &hex_uid[.. 8], job_row.id,);
-
-                            let mut job = Job::from((
-                                job_row.id,
-                                job_row.info.clone(),
-                                job_row.options.clone(),
-                                job_row.created,
-                            ));
-
-                            if accounting.not_enough_credit() {
-                                let pages_left = accounting.bw_pages_left();
-                                if print_count as i32 <= pages_left {
-
-                                }
-                                else {
-                                    info!("not enough credit, aborting {}", &hex_uid[.. 8]);
-                                    break false
-                                }
-                            }
-                            let mut data = job_row.pdf;
-                            // preprocess pagerange
-                            if job.options.range != "" {
-                                data = trim_pdf(data, &job.options.range);
-                            }
-
-                            let buf: Vec<u8> =
-                                job.translate_for_printer(&task.uid[..], task.user_id, data);
-
-                            let mut lpr_connection = LprConnection::new(
-                                &state.ip, 20000, // socket timeout in ms
-                            );
-
-                            if let Ok(_) = lpr_connection.print(&buf) {
-                                print_count += job.pages_to_print();
-                                print_jobs.push((job.id, job.options.clone()));
-                            }
-                        }
-                        else {
-                            info!("{} unable to find job {}", &hex_uid[.. 8], job_id);
-                        }
+                        to_print.push_back(job_id);
+                        debug!("{:?}", to_print);
                     },
                 }
             },
-            Err(_) => (),
+            Err(e) => error!("{:?}", e),
         }
-        if let Ok(counter) = counter(&state.ip) {
-            current = counter;
-        };
-        if current.total > last_value {
-            debug!("{:?}", current);
-            timeout.refresh();
-            last_value = current.total;
-            accounting.set_value(current.clone() - counter_base.clone());
-            info!("{}#{} accounting: {}", &hex_uid[.. 8], task.user_id, accounting.value());
-        }
-
-        if !print_jobs.is_empty() && accounting.not_enough_credit() {
-            let pages_left = accounting.bw_pages_left();
-            if print_count as i32 <= pages_left {
-                info!("print_count: {}, pages_left: {}, continuing..", print_count, pages_left);
+        if let Some(_id) = printing {
+            if accounting.update(counter(&state.ip).ok()) {
+                if accounting.not_enough_credit() {
+                    info!("{} not enought credit, aborting", &hex_uid[..]);
+                    break
+                }
+                if accounting.finished() {
+                    let (id, keep) = printing.take().unwrap();
+                    if !keep {
+                        delete_job_by_id(id, &connection).expect("deleting job from table");
+                        info!("{}#{} deleting job {}", &hex_uid[.. 8], task.user_id, id);
+                    }
+                    else {
+                        info!("{}#{} keeping job {}", &hex_uid[.. 8], task.user_id, id);
+                    }
+                }
+                else {
+                    timeout.refresh();
+                }
             }
-            else {
-                info!("not enough credit, aborting {}", &hex_uid[.. 8]);
-                break false
+        }
+        else if let Some(job_id) = to_print.pop_front() {
+            if let Some(job_row) =
+                select_full_job_of_user(task.user_id, job_id, &connection).expect("selecting job")
+            {
+                let mut job = Job::from((
+                    job_row.id,
+                    job_row.info.clone(),
+                    job_row.options.clone(),
+                    job_row.created,
+                ));
+
+                let counter = match counter(&state.ip) {
+                    Ok(counter) => counter,
+                    Err(_) => break,
+                };
+
+                accounting.start(job.clone(), counter);
+
+                let mut data = job_row.pdf;
+                // preprocess pagerange
+                if job.options.range != "" {
+                    data = trim_pdf(data, &job.options.range);
+                }
+
+                let buf: Vec<u8> = job.translate_for_printer(&task.uid[..], task.user_id, data);
+                let mut lpr_connection = LprConnection::new(
+                    &state.ip, 20000, // socket timeout in ms
+                );
+
+                match lpr_connection.print(&buf) {
+                    Ok(_) => {
+                        printing = Some((job.id, job.options.keep));
+                        timeout.refresh();
+                    },
+                    Err(e) => {
+                        error!("lpr: {:?}", e);
+                        break
+                    },
+                }
             }
         }
-
-        if hungup
-            && !print_jobs.is_empty()
-            && (current.total - counter_base.total) == i64::from(print_count)
-        {
-            debug!("current: {:?}", current);
-            break true
+        else if hungup {
+            info!("{} hungup", &hex_uid[.. 8]);
+            break
         }
 
         if timeout.check() {
             info!("{}#{} timeout", &hex_uid[.. 8], task.user_id);
-            break false
+            break
         }
-    };
+    }
 
     // clear jobqueue on every outcome in case printer wants to print more than
     // expected
-
-    // TODO move to function
     let _clear = clear(state.device_id);
-    if _clear.is_err() {
-        error!("clearing jobqueue failed");
-        let _clear = clear(state.device_id);
-        if _clear.is_err() {
-            error!("clearing jobqueue failed second time");
-        }
-        else {
-            let _clear = clear(state.device_id);
-            info!("third _clear: {:?}", _clear);
-        }
-    }
 
     thread::sleep(time::Duration::from_millis(3000));
 
-    // TODO same here
-    if let Ok(counter) = counter(&state.ip) {
-        current = counter;
-    }
-    else {
-        // just to be sure..
-        debug!("get counter failed");
-        if let Ok(counter) = counter(&state.ip) {
-            current = counter;
-        }
-        else {
-            debug!("get counter failed the second time");
-            if let Ok(counter) = counter(&state.ip) {
-                current = counter;
-            }
-            else {
-                error!("final get counter failed 3 times");
-            }
-        }
-    }
-
     let _clear = clear(state.device_id);
 
-    accounting.set_value(current.clone() - counter_base.clone());
-
-    debug!("completed: {:?}, print_jobs.len(): {:?}", completed, print_jobs.len());
-
-    if completed {
-        for (id, options) in print_jobs {
-            if !options.keep {
-                delete_job_by_id(id, &connection).expect("deleting job from table");
-                info!("{}#{} deleting job {}", &hex_uid[.. 8], task.user_id, id);
-            }
-            else {
-                info!("{}#{} keeping job {}", &hex_uid[.. 8], task.user_id, id);
-            }
-        }
+    for _i in 0 .. 3 {
+        accounting.update(counter(&state.ip).ok());
     }
 
     info!("{}#{} finished", &hex_uid[.. 8], task.user_id);
