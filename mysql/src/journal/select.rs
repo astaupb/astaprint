@@ -10,8 +10,29 @@ pub fn select_journal(connection: &MysqlConnection)
     journal::table.select(journal::all_columns).load(connection)
 }
 
-pub fn select_journal_of_user(
+pub fn select_print_journal(connection: &MysqlConnection) -> QueryResult<Vec<PrintJournal>>
+{
+    print_journal::table.select(print_journal::all_columns).load(connection)
+}
+
+pub fn select_journal_with_limit_and_offset(
+    limit: i64,
+    offset: i64,
+    connection: &MysqlConnection,
+) -> QueryResult<Vec<Journal>>
+{
+    journal::table
+        .select(journal::all_columns)
+        .order(journal::id.desc())
+        .limit(limit)
+        .offset(offset)
+        .load(connection)
+}
+
+pub fn select_journal_of_user_with_limit_and_offset(
     user_id: u32,
+    limit: i64,
+    offset: i64,
     connection: &MysqlConnection,
 ) -> QueryResult<Vec<Journal>>
 {
@@ -19,36 +40,32 @@ pub fn select_journal_of_user(
         .select(journal::all_columns)
         .filter(journal::user_id.eq(user_id))
         .order(journal::id.desc())
+        .limit(limit)
+        .offset(offset)
         .load(connection)
 }
 
-pub fn select_latest_journal_entry(
+pub fn select_latest_credit_of_user(
+    user_id: u32,
     connection: &MysqlConnection,
-) -> QueryResult<Journal>
+) -> QueryResult<i32>
 {
     journal::table
-        .select(journal::all_columns)
+        .select(journal::credit)
+        .filter(journal::user_id.eq(user_id))
         .order(journal::id.desc())
         .first(connection)
 }
 
-pub fn select_journal_digest(
+pub fn select_latest_print_journal_id(
     connection: &MysqlConnection,
-) -> QueryResult<Vec<JournalDigest>>
+) -> QueryResult<u32>
 {
-    journal_digest::table.select(journal_digest::all_columns).load(connection)
-}
-
-pub fn select_latest_journal_digest(
-    connection: &MysqlConnection,
-) -> QueryResult<JournalDigest>
-{
-    journal_digest::table
-        .select(journal_digest::all_columns)
-        .order(journal_digest::id.desc())
+    print_journal::table
+        .select(print_journal::id)
+        .order(print_journal::id.desc())
         .first(connection)
 }
-
 
 pub fn select_journal_tokens(
     connection: &MysqlConnection,
@@ -72,14 +89,11 @@ pub fn select_latest_journal_id_of_user(
         .optional()
 }
 
-pub fn select_credit_by_id(
-    id: u32,
-    connection: &MysqlConnection,
-) -> QueryResult<i32>
+pub fn select_journal_token_by_id(id: u32, connection: &MysqlConnection) -> QueryResult<JournalToken>
 {
-    journal_digest::table
-        .select(journal_digest::credit)
-        .filter(journal_digest::id.eq(id))
+    journal_tokens::table
+        .select(journal_tokens::all_columns)
+        .filter(journal_tokens::id.eq(id))
         .first(connection)
 }
 

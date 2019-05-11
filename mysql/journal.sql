@@ -19,27 +19,31 @@
 CREATE TABLE `journal`(
   `id` INT UNSIGNED UNIQUE PRIMARY KEY AUTO_INCREMENT,
   `user_id` INT UNSIGNED NOT NULL,
+  `credit` INT NOT NULL,
   `value` INT NOT NULL,
+  `print_id` INT UNSIGNED,
+  `admin_id` INT UNSIGNED,
   `description` VARCHAR(128) NOT NULL,
   `created` TIMESTAMP NOT NULL);
 
-CREATE TABLE `journal_digest`(
+CREATE TABLE `print_journal`(
   `id` INT UNSIGNED UNIQUE PRIMARY KEY AUTO_INCREMENT,
-  `digest` BINARY(64) NOT NULL,
-  `credit` INT NOT NULL DEFAULT 0,
+  `job_id` INT UNSIGNED NOT NULL,
+  `pages`  SMALLINT UNSIGNED NOT NULL,
+  `colored`  SMALLINT UNSIGNED NOT NULL,
+  `score`  SMALLINT UNSIGNED NOT NULL,
+  `device_id` INT UNSIGNED NOT NULL,
+  `options` VARBINARY(512) NOT NULL,
   `created` TIMESTAMP NOT NULL);
 
 CREATE TABLE `journal_tokens`(
   `id` INT UNSIGNED UNIQUE PRIMARY KEY AUTO_INCREMENT,
-  `value` INT UNSIGNED NOT NULL DEFAULT 100,
+  `value` INT UNSIGNED NOT NULL,
   `content` VARCHAR(128) NOT NULL,
   `used` BOOLEAN NOT NULL,
   `used_by` INT UNSIGNED,
   `created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP);
-
--- seed journal_digest
-INSERT INTO `journal_digest`(digest, credit) VALUES (UNHEX(SHA2(NOW(), 512)), 0.0);
 
 CREATE TRIGGER `journal_update`
 BEFORE UPDATE ON `journal`
@@ -50,13 +54,3 @@ CREATE TRIGGER `journal_delete`
 BEFORE DELETE ON `journal`
 FOR EACH ROW SIGNAL SQLSTATE "45000"
 	SET MESSAGE_TEXT = "delete on journal not allowed";
-
-CREATE TRIGGER `journal_digest_update`
-BEFORE UPDATE ON `journal_digest`
-FOR EACH ROW SIGNAL SQLSTATE "45000"
-	SET MESSAGE_TEXT = "update on journal_digest not allowed";
-
-CREATE TRIGGER `journal_digest_delete`
-BEFORE DELETE ON `journal_digest`
-FOR EACH ROW SIGNAL SQLSTATE "45000"
-	SET MESSAGE_TEXT = "delete on journal_digest not allowed";

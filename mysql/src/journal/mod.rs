@@ -7,6 +7,8 @@ use chrono::NaiveDateTime;
 use std::fmt;
 
 joinable!(journal -> user (user_id));
+joinable!(journal -> print_journal (print_id));
+joinable!(journal -> admin (admin_id));
 
 #[derive(Identifiable, Queryable, Insertable, Associations, Debug)]
 #[table_name = "journal"]
@@ -14,18 +16,27 @@ pub struct Journal
 {
     pub id: u32,
     pub user_id: u32,
+    pub credit: i32,
     pub value: i32,
+    pub print_id: Option<u32>,
+    pub admin_id: Option<u32>,
     pub description: String,
     pub created: NaiveDateTime,
 }
 
+joinable!(print_journal -> printers (device_id));
+
 #[derive(Identifiable, Queryable, Insertable, Associations, Debug)]
-#[table_name = "journal_digest"]
-pub struct JournalDigest
+#[table_name = "print_journal"]
+pub struct PrintJournal
 {
     pub id: u32,
-    pub digest: Vec<u8>,
-    pub credit: i32,
+    pub job_id: u32,
+    pub pages: u16,
+    pub colored: u16,
+    pub score: u16,
+    pub device_id: u32,
+    pub options: Vec<u8>,
     pub created: NaiveDateTime,
 }
 

@@ -8,8 +8,8 @@ table! {
         salt -> Nullable<Binary>,
         service -> Bool,
         locked -> Bool,
-        owner -> Bool,
         expires -> Date,
+        created_by -> Nullable<Unsigned<Integer>>,
         created -> Timestamp,
         updated -> Timestamp,
     }
@@ -47,17 +47,11 @@ table! {
     journal (id) {
         id -> Unsigned<Integer>,
         user_id -> Unsigned<Integer>,
-        value -> Integer,
-        description -> Varchar,
-        created -> Timestamp,
-    }
-}
-
-table! {
-    journal_digest (id) {
-        id -> Unsigned<Integer>,
-        digest -> Binary,
         credit -> Integer,
+        value -> Integer,
+        print_id -> Nullable<Unsigned<Integer>>,
+        admin_id -> Nullable<Unsigned<Integer>>,
+        description -> Varchar,
         created -> Timestamp,
     }
 }
@@ -152,11 +146,25 @@ table! {
 }
 
 table! {
+    print_journal (id) {
+        id -> Unsigned<Integer>,
+        job_id -> Unsigned<Integer>,
+        pages -> Unsigned<Smallint>,
+        colored -> Unsigned<Smallint>,
+        score -> Unsigned<Smallint>,
+        device_id -> Unsigned<Integer>,
+        options -> Varbinary,
+        created -> Timestamp,
+    }
+}
+
+table! {
     user (id) {
         id -> Unsigned<Integer>,
         name -> Varchar,
         hash -> Binary,
         salt -> Binary,
+        credit -> Integer,
         options -> Nullable<Binary>,
         card -> Nullable<Unsigned<Bigint>>,
         pin -> Nullable<Unsigned<Integer>>,
@@ -183,13 +191,13 @@ allow_tables_to_appear_in_same_query!(
     admin_tokens,
     jobs,
     journal,
-    journal_digest,
     journal_tokens,
     printers,
     printer_control,
     printer_counter,
     printer_info,
     printer_status,
+    print_journal,
     user,
     user_tokens,
 );

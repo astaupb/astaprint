@@ -21,6 +21,7 @@ CREATE TABLE `user`(
   `name` VARCHAR(32) UNIQUE NOT NULL,
   `hash` BINARY(64) NOT NULL,
   `salt` BINARY(16) NOT NULL,
+  `credit` INT NOT NULL DEFAULT 0,
   `options` BINARY(128),
   `card` BIGINT UNSIGNED UNIQUE,
   `pin` INT UNSIGNED,

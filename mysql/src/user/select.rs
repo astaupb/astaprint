@@ -30,6 +30,11 @@ pub fn select_user_by_id(user_id: u32, connection: &MysqlConnection) -> QueryRes
     user::table.select(user::all_columns).filter(user::id.eq(user_id)).first(connection)
 }
 
+pub fn select_user_credit_by_id(id: u32, connection : &MysqlConnection) -> QueryResult<i32>
+{
+    user::table.select(user::credit).filter(user::id.eq(id)).first(connection)
+}
+
 pub fn select_user_pin_by_id(user_id: u32, connection: &MysqlConnection) -> QueryResult<Option<u32>>
 {
     user::table.select(user::pin).filter(user::id.eq(user_id)).first(connection)
@@ -193,10 +198,10 @@ pub fn select_user_by_name_optional(
         .optional()
 }
 
-pub fn select_user_info_by_id(user_id: u32, connection: &MysqlConnection) -> QueryResult<(String, Option<u64>, Option<u32>)>
+pub fn select_user_info_by_id(user_id: u32, connection: &MysqlConnection) -> QueryResult<(String, i32, Option<u64>, Option<u32>)>
 {
     user::table
-        .select((user::name, user::card, user::pin))
+        .select((user::name, user::credit, user::card, user::pin))
         .filter(user::id.eq(user_id))
         .first(connection)
 }
