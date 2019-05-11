@@ -71,13 +71,20 @@ impl Job
         count as u16 * self.options.copies
     }
 
-    pub fn score(&self) -> u16
+    pub fn score(&self) -> i16
     {
         let range = PageRange::new(&self.options.range, self.info.pagecount as usize).expect("valid PageRange");
-        debug!("range.pagecount(): {}, self.pages_to_print(): {}", range.pagecount(), self.pages_to_print());
-        //TODO
-        //calculate saved paper here
-        0
+
+        let max_pages = range.pagecount() as u16 * self.options.copies;
+
+        let mut paper_to_print = self.pages_to_print();
+
+        if self.options.duplex > 0 {
+            paper_to_print = (paper_to_print / 2) + (paper_to_print % 2);
+        }
+
+        debug!("max_pages: {}, paper_to_print: {}", max_pages, paper_to_print);
+        max_pages as i16 - paper_to_print as i16
     }
 
     pub fn translate_for_printer(&mut self, uid: &[u8], user_id: u32, mut data: Vec<u8>) -> Vec<u8>

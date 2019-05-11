@@ -100,7 +100,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for UserGuard
                         connection,
                     })
                 },
-                Err(e) => {
+                Err(_) => {
                     info!("could not find token for user {}", user_id);
                     Outcome::Failure((Status::Unauthorized, ()))
                 },

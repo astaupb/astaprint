@@ -34,7 +34,7 @@ pub struct PrintJournal
     pub job_id: u32,
     pub pages: u16,
     pub colored: u16,
-    pub score: u16,
+    pub score: i16,
     pub device_id: u32,
     pub options: Vec<u8>,
     pub created: NaiveDateTime,

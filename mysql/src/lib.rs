@@ -95,7 +95,7 @@ pub fn update_credit_with_unused_token(user_id: u32, token_id: u32, connection: 
 
 use journal::insert::insert_into_print_journal;
 
-pub fn update_credit_after_print(user_id: u32, value: i32, job_id: u32, pages: u16, colored: u16, score: u16, device_id: u32, options: Vec<u8>, connection: &MysqlConnection) -> QueryResult<i32>
+pub fn update_credit_after_print(user_id: u32, value: i32, job_id: u32, pages: u16, colored: u16, score: i16, device_id: u32, options: Vec<u8>, connection: &MysqlConnection) -> QueryResult<i32>
 {
 
     connection.transaction::<_, Error, _>(|| {

@@ -18,7 +18,7 @@ pub fn insert_into_journal(user_id: u32, credit: i32, value: i32, print_id: Opti
         .execute(connection)
 }
 
-pub fn insert_into_print_journal(job_id: u32, pages: u16, colored: u16, score: u16, device_id: u32, options: Vec<u8>, connection: &MysqlConnection) -> QueryResult<usize>
+pub fn insert_into_print_journal(job_id: u32, pages: u16, colored: u16, score: i16, device_id: u32, options: Vec<u8>, connection: &MysqlConnection) -> QueryResult<usize>
 {
     insert_into(print_journal::table)
         .values((

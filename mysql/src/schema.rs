@@ -91,7 +91,7 @@ table! {
         job_id -> Unsigned<Integer>,
         pages -> Unsigned<Smallint>,
         colored -> Unsigned<Smallint>,
-        score -> Unsigned<Smallint>,
+        score -> Smallint,
         device_id -> Unsigned<Integer>,
         options -> Varbinary,
         created -> Timestamp,
