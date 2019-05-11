@@ -65,7 +65,7 @@ pub fn work(
     client: TaskQueueClient<WorkerTask, WorkerCommand>,
 )
 {
-    wake(state.device_id);
+    wake(&state.ip);
     let counter_base = match counter(&state.ip) {
         Ok(counter) => counter,
         Err(e) => {
@@ -196,13 +196,15 @@ pub fn work(
 
     // clear jobqueue on every outcome in case printer wants to print more than
     // expected
-    let _clear = clear(state.device_id);
+    for _ in 0..4 {
+        if let Err(e) = clear(&state.ip) {
+            error!("clearing jobqueue: {:?}", e);
+        }
+    }
 
     thread::sleep(time::Duration::from_millis(3000));
 
-    let _clear = clear(state.device_id);
-
-    for _i in 0 .. 3 {
+    for _ in 0 .. 4 {
         accounting.update(counter(&state.ip).ok());
     }
 

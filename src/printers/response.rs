@@ -68,7 +68,7 @@ impl From<Printer> for PrinterResponse
 {
     fn from(printer: Printer) -> PrinterResponse
     {
-        let status = Some(status(printer.device_id).unwrap_or_default());
+        let status = Some(status(&printer.ip).unwrap_or_default());
 
         let counter = Some(counter(&printer.ip).unwrap_or_default());
 
