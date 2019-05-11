@@ -22,8 +22,6 @@ use rocket_contrib::json::Json;
 
 use diesel::QueryResult;
 
-use legacy::tds::get_credit;
-
 use user::guard::UserGuard;
 
 use model::job::options::JobOptions;
@@ -35,9 +33,9 @@ pub struct UserInfo
 {
     id: u32,
     name: String,
+    credit: i32,
     card: Option<u64>,
     pin: Option<u32>,
-    credit: i32,
     tokens: usize,
     token_id: u32,
 }
@@ -50,17 +48,15 @@ pub fn get_user_info(user: UserGuard) -> QueryResult<Json<UserInfo>>
 
     let tokens = tokens.len();
 
-    let credit = get_credit(user.id);
-
-    let info: (String, Option<u64>, Option<u32>) =
+    let info: (String, i32, Option<u64>, Option<u32>) =
         select_user_info_by_id(user.id, &user.connection)?;
 
     Ok(Json(UserInfo {
         id,
         name: info.0,
-        card: info.1,
-        pin: info.2,
-        credit,
+        credit: info.1,
+        card: info.2,
+        pin: info.3,
         tokens,
         token_id: user.token_id,
     }))

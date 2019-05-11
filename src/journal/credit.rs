@@ -17,18 +17,14 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
+use diesel::prelude::*;
 use rocket_contrib::json::Json;
 
-use legacy::tds::get_credit;
-
+use mysql::user::select::select_user_credit_by_id;
 use user::guard::UserGuard;
 
 #[get("/credit")]
-pub fn credit(user: UserGuard) -> Json<i32>
+pub fn credit(user: UserGuard) -> QueryResult<Json<i32>>
 {
-    let credit = get_credit(user.id);
-
-    info!("{} fetched credit {}", user.id, credit);
-
-    Json(credit)
+    Ok(Json(select_user_credit_by_id(user.id, &user.connection)?))
 }

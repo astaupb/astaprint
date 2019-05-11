@@ -20,31 +20,24 @@
 use rocket::{
     http::Status,
     response::status::Custom,
-    State,
 };
 use rocket_contrib::json::Json;
 
 use diesel::prelude::*;
 
-use r2d2_redis::{
-    r2d2::Pool,
-    RedisConnectionManager,
-};
-
 use admin::guard::AdminGuard;
 use user::guard::UserGuard;
 
-use legacy::tds::insert_transaction;
-
-use journal::lock::JournalLock;
-
 use sodium::random_bytes;
 
-use mysql::journal::{
-    insert::insert_into_journal_token,
-    select::select_journal_token_by_content,
-    update::update_journal_token,
-    JournalToken,
+use mysql::{
+    journal::{
+        insert::insert_into_journal_token,
+        select::select_journal_token_by_content,
+        JournalToken,
+    },
+    update_credit_as_admin,
+    update_credit_with_unused_token,
 };
 
 #[derive(Deserialize, Debug, Clone)]
@@ -60,7 +53,6 @@ pub struct JournalPost
 pub fn post_to_journal_with_token(
     user: UserGuard,
     token: Json<String>,
-    redis: State<Pool<RedisConnectionManager>>,
 ) -> QueryResult<Custom<()>>
 {
     let token: Option<JournalToken> =
@@ -73,18 +65,7 @@ pub fn post_to_journal_with_token(
             if token.used {
                 return Ok(Custom(Status::new(472, "Token Already Consumed"), ()))
             }
-
-            update_journal_token(token.id, true, user.id, &user.connection)?;
-
-            let _lock = JournalLock::from(redis.clone());
-
-            insert_transaction(
-                user.id,
-                token.value as i32,
-                &format!("created with token {}", token.content),
-                false,
-                None,
-            );
+            update_credit_with_unused_token(user.id, token.id, &user.connection)?;
 
             Ok(Custom(Status::new(204, "Success - No Content"), ()))
         },
@@ -95,17 +76,17 @@ pub fn post_to_journal_with_token(
 pub fn post_to_journal_as_admin(
     body: Json<JournalPost>,
     admin: AdminGuard,
-) -> Status
+) -> QueryResult<Status>
 {
-    insert_transaction(
+    update_credit_as_admin(
         body.user_id,
         body.value,
+        admin.id,
         &body.description,
-        body.without_receipt,
-        Some(admin.id),
-    );
+        &admin.connection,
+    )?;
 
-    Status::new(204, "Success - No Content")
+    Ok(Status::new(204, "Success - No Content"))
 }
 
 #[post("/journal/tokens?<value>")]

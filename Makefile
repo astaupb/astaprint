@@ -75,7 +75,6 @@ singles:
 	cd logger && cargo build
 	cd model && cargo build
 	cd pdf && cargo build
-	cd legacy && cargo build
 	cd redis && cargo build
 	cd snmp && cargo build
 

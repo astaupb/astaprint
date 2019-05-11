@@ -20,7 +20,6 @@
 #![feature(proc_macro_hygiene, decl_macro)]
 #[macro_use]
 extern crate rocket;
-extern crate legacy;
 extern crate model;
 extern crate rocket_contrib;
 extern crate rocket_cors;

@@ -18,19 +18,20 @@ use self::{
 pub struct Job
 {
     pub id: u32,
-    pub timestamp: i64,
     pub info: JobInfo,
     pub options: JobOptions,
+    pub timestamp: i64,
 }
 
 impl From<(u32, Vec<u8>, Vec<u8>, NaiveDateTime)> for Job
 {
     fn from(row: (u32, Vec<u8>, Vec<u8>, NaiveDateTime)) -> Job
     {
+        let info = bincode::deserialize(&row.1[..]).expect("deserializing JobInfo");
+        let options = bincode::deserialize(&row.2[..]).expect("deserializing JobOptions");
         Job {
             id: row.0,
-            info: bincode::deserialize(&row.1[..]).expect("deserializing JobInfo"),
-            options: bincode::deserialize(&row.2[..]).expect("deserializing JobOptions"),
+            info, options,
             timestamp: row.3.timestamp(),
         }
     }
@@ -40,10 +41,11 @@ impl<'a> From<(u32, &'a [u8], &'a [u8], NaiveDateTime)> for Job
 {
     fn from((id, info, options, created): (u32, &'a [u8], &'a [u8], NaiveDateTime)) -> Job
     {
+        let info = bincode::deserialize(info).expect("deserializing JobInfo");
+        let options = bincode::deserialize(options).expect("deserializing JobOptions");
         Job {
             id,
-            info: bincode::deserialize(info).expect("deserializing JobInfo"),
-            options: bincode::deserialize(options).expect("deserializing JobOptions"),
+            info, options,
             timestamp: created.timestamp(),
         }
     }
@@ -51,11 +53,9 @@ impl<'a> From<(u32, &'a [u8], &'a [u8], NaiveDateTime)> for Job
 
 impl Job
 {
-    pub fn pages_to_print(&self) -> u32
+    pub fn pages_to_print(&self) -> u16
     {
-        let range = PageRange::new(&self.options.range, self.info.pagecount as usize)
-            .expect("valid PageRange at this point");
-
+        let range = PageRange::new(&self.options.range, self.info.pagecount as usize).expect("valid PageRange");
         let mut count = range.pagecount();
 
         count = (count / usize::from(self.options.nup))
@@ -68,7 +68,14 @@ impl Job
             count *= 2;
         }
 
-        count as u32 * u32::from(self.options.copies)
+        count as u16 * self.options.copies
+    }
+
+    pub fn score(&self) -> u16
+    {
+        let range = PageRange::new(&self.options.range, self.info.pagecount as usize).expect("valid PageRange");
+
+        range.pagecount() as u16 - self.pages_to_print()
     }
 
     pub fn translate_for_printer(&mut self, uid: &[u8], user_id: u32, mut data: Vec<u8>) -> Vec<u8>

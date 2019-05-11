@@ -35,9 +35,6 @@ fn main()
         .expect("reading ASTAPRINT_DATABASE_URL from environment");
 
     let connection = create_mysql_pool(&mysql_url, 1).get().unwrap();
-    let sn: Option<u64> = arg[1].parse().ok();
-    let pin: Option<u32> = arg[2].parse().ok();
-    println!("sn: {:?}, pin: {:?}", sn, pin);
 
-    add_user(&arg[1], &arg[2], sn, pin, false, &connection).expect("adding user");
+    add_user(&arg[1], &arg[2], false, &connection).expect("adding user");
 }

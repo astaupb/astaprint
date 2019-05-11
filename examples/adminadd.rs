@@ -60,7 +60,7 @@ fn main()
         salt,
         service: false,
         locked: false,
-        owner: false,
+        created_by: None,
         expires,
     };
 

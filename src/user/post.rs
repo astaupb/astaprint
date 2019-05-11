@@ -75,13 +75,10 @@ pub fn register_as_new_user(
     if user.name.chars().any(|c| !c.is_alphanumeric()) || user.name.bytes().count() > 32 {
         return Ok(Custom(Status::new(471, "Invalid Username"), ()))
     }
-    match add_user(&user.name, &user.password, None, None, false, &connection) {
+    match add_user(&user.name, &user.password, false, &connection) {
         Ok(_id) => Ok(Custom(Status::new(204, "Success - No Content"), ())),
         Err(UserAddError::UsernameExists) => {
             Ok(Custom(Status::new(470, "username already taken"), ()))
-        },
-        Err(UserAddError::LegacyContingentError) => {
-            Ok(Custom(Status::new(500, "internal server error"), ()))
         },
         Err(UserAddError::InsertError(e)) => Err(e),
     }

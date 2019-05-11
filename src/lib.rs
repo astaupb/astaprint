@@ -38,7 +38,6 @@ extern crate rocket_contrib;
 extern crate r2d2_redis;
 extern crate redis;
 
-extern crate legacy;
 extern crate model;
 extern crate mysql;
 extern crate pdf;

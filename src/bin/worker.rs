@@ -20,7 +20,6 @@
 #[macro_use]
 extern crate log;
 extern crate diesel;
-extern crate legacy;
 
 extern crate logger;
 extern crate r2d2_redis;

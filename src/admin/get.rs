@@ -19,22 +19,24 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use admin::guard::AdminGuard;
 use diesel::prelude::*;
-use legacy::tds::{
-    get_credit,
-    get_journal_of_user,
-};
+
 use model::{
     job::options::JobOptions,
-    journal::Transaction,
-};
-use mysql::{
     journal::{
-        select::select_journal_tokens,
-        JournalToken,
+        JournalResponse,
+        JournalTokenResponse,
+    },
+};
+
+use mysql::{
+    journal::select::{
+        select_journal_of_user_with_limit_and_offset,
+        select_journal_tokens,
     },
     user::{
         select::{
             select_user_by_id,
+            select_user_credit_by_id,
             select_user_with_limit_offset,
         },
         User,
@@ -48,6 +50,7 @@ pub struct UserResponse
 {
     pub id: u32,
     pub name: String,
+    pub credit: i32,
     pub options: Option<JobOptions>,
     pub card: Option<u64>,
     pub pin: Option<u32>,
@@ -63,6 +66,7 @@ impl<'a> From<&'a User> for UserResponse
         UserResponse {
             id: user.id,
             name: user.name.clone(),
+            credit: user.credit,
             options: user
                 .options
                 .clone()
@@ -72,34 +76,6 @@ impl<'a> From<&'a User> for UserResponse
             locked: user.locked,
             created: format!("{}", user.created),
             updated: format!("{}", user.updated),
-        }
-    }
-}
-
-#[derive(Serialize, Debug, Clone)]
-pub struct JournalTokenResponse
-{
-    id: u32,
-    value: u32,
-    content: String,
-    used: bool,
-    used_by: Option<u32>,
-    created: String,
-    updated: String,
-}
-
-impl<'a> From<&'a JournalToken> for JournalTokenResponse
-{
-    fn from(token: &JournalToken) -> JournalTokenResponse
-    {
-        JournalTokenResponse {
-            id: token.id,
-            value: token.value,
-            content: token.content.clone(),
-            used: token.used,
-            used_by: token.used_by,
-            created: format!("{}", token.created),
-            updated: format!("{}", token.updated),
         }
     }
 }
@@ -128,30 +104,34 @@ pub fn get_user_as_admin(
     Ok(Json(UserResponse::from(&select_user_by_id(id, &admin.connection)?)))
 }
 
-#[get("/users/<id>/journal?<desc>&<offset>&<limit>")]
+#[get("/users/<id>/journal?<offset>&<limit>")]
 pub fn get_user_journal_as_admin(
     id: u32,
-    desc: Option<bool>,
-    offset: Option<i32>,
-    limit: Option<u32>,
-    _admin: AdminGuard,
-) -> Json<Vec<Transaction>>
+    offset: Option<i64>,
+    limit: Option<i64>,
+    admin: AdminGuard,
+) -> QueryResult<Json<Vec<JournalResponse>>>
 {
-    Json(get_journal_of_user(
-        id,
-        desc.unwrap_or(true),
-        offset.unwrap_or(0),
-        limit.unwrap_or(u32::max_value()),
+    Ok(Json(
+        select_journal_of_user_with_limit_and_offset(
+            id,
+            limit.unwrap_or_else(|| i32::max_value().into()),
+            offset.unwrap_or(0),
+            &admin.connection,
+        )?
+        .iter()
+        .map(JournalResponse::from)
+        .collect(),
     ))
 }
 
 #[get("/users/<id>/credit")]
 pub fn get_user_credit_as_admin(
     id: u32,
-    _admin: AdminGuard,
-) -> Json<i32>
+    admin: AdminGuard,
+) -> QueryResult<Json<i32>>
 {
-    Json(get_credit(id))
+    Ok(Json(select_user_credit_by_id(id, &admin.connection)?))
 }
 
 #[get("/journal/tokens")]

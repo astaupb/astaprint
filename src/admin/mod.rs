@@ -39,8 +39,8 @@ pub struct Admin
     pub salt: Option<Vec<u8>>,
     pub service: bool,
     pub locked: bool,
-    pub owner: bool,
     pub expires: NaiveDate,
+    pub created_by: Option<u32>,
 }
 
 impl Admin
@@ -59,8 +59,8 @@ impl Admin
                 self.salt,
                 self.service,
                 self.locked,
-                self.owner,
                 self.expires,
+                self.created_by,
             ),
             connection,
         )

@@ -72,11 +72,7 @@ pub fn get_queue(
 
     Some(Json(WorkerQueueResponse {
         incoming: queue.get_incoming().iter().map(WorkerTaskResponse::from).collect(),
-        processing: queue
-            .get_processing()
-            .iter()
-            .map(|task| WorkerTaskResponse::from(task))
-            .collect(),
+        processing: queue.get_processing().iter().map(WorkerTaskResponse::from).collect(),
     }))
 }
 

@@ -35,7 +35,6 @@ pub struct NewAdmin
     pub last_name: String,
     pub login: String,
     pub password: String,
-    pub owner: bool,
 }
 
 #[post("/", data = "<new>")]
@@ -59,7 +58,7 @@ pub fn post_new_admin(
         salt: Some(salt),
         service: false,
         locked: false,
-        owner: new.owner,
+        created_by: Some(admin.id),
         expires: NaiveDate::from_yo(2019, 1),
     };
 

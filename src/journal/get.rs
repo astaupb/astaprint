@@ -17,41 +17,53 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
+use diesel::prelude::*;
 use rocket_contrib::json::Json;
 
 use admin::guard::AdminGuard;
 use user::guard::UserGuard;
 
-use model::journal::Transaction;
+use model::journal::JournalResponse;
 
-use legacy::tds::{
-    get_journal,
-    get_journal_of_user,
+use mysql::journal::select::{
+    select_journal_of_user_with_limit_and_offset,
+    select_journal_with_limit_and_offset,
 };
 
-#[get("/?<desc>&<offset>&<limit>")]
+#[get("/?<offset>&<limit>")]
 pub fn get_journal_as_user(
-    desc: Option<bool>,
-    offset: Option<i32>,
-    limit: Option<u32>,
+    offset: Option<i64>,
+    limit: Option<i64>,
     user: UserGuard,
-) -> Json<Vec<Transaction>>
+) -> QueryResult<Json<Vec<JournalResponse>>>
 {
-    Json(get_journal_of_user(
-        user.id,
-        desc.unwrap_or(true),
-        offset.unwrap_or(0),
-        limit.unwrap_or(u32::from(u16::max_value()) * 2),
+    Ok(Json(
+        select_journal_of_user_with_limit_and_offset(
+            user.id,
+            limit.unwrap_or(i64::from(u16::max_value()) * 2),
+            offset.unwrap_or(0),
+            &user.connection,
+        )?
+        .iter()
+        .map(JournalResponse::from)
+        .collect(),
     ))
 }
-
-#[get("/journal?<desc>&<offset>&<limit>")]
+#[get("/journal?<offset>&<limit>")]
 pub fn get_journal_as_admin(
-    desc: Option<bool>,
-    offset: Option<i32>,
-    limit: Option<u32>,
-    _admin: AdminGuard,
-) -> Json<Vec<Transaction>>
+    offset: Option<i64>,
+    limit: Option<i64>,
+    admin: AdminGuard,
+) -> QueryResult<Json<Vec<JournalResponse>>>
 {
-    Json(get_journal(desc.unwrap_or(true), offset.unwrap_or(0), limit.unwrap_or(100)))
+    Ok(Json(
+        select_journal_with_limit_and_offset(
+            limit.unwrap_or(i64::from(u16::max_value()) * 2),
+            offset.unwrap_or(0),
+            &admin.connection,
+        )?
+        .iter()
+        .map(JournalResponse::from)
+        .collect(),
+    ))
 }

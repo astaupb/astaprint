@@ -24,19 +24,16 @@ use diesel::{
 
 use sodium::PasswordHash;
 
-use mysql::user::{
-    insert::*,
-    select::*,
+use mysql::{
+    insert_user,
+    user::select::*,
 };
-
-use legacy::tds::insert_contingent;
 
 #[derive(Debug)]
 pub enum UserAddError
 {
     UsernameExists,
     InsertError(Error),
-    LegacyContingentError,
 }
 
 impl From<Error> for UserAddError
@@ -47,8 +44,6 @@ impl From<Error> for UserAddError
 pub fn add_user(
     name: &str,
     password: &str,
-    card: Option<u64>,
-    pin: Option<u32>,
     locked: bool,
     connection: &MysqlConnection,
 ) -> Result<u32, UserAddError>
@@ -61,14 +56,5 @@ pub fn add_user(
 
     let (hash, salt) = PasswordHash::create(password);
 
-    insert_into_user(name, hash, salt, card, pin, locked, connection)?;
-
-    let user_id = select_user_id_by_name(name, connection)?;
-
-    if insert_contingent(user_id) == 0 {
-        Ok(user_id)
-    }
-    else {
-        Err(UserAddError::LegacyContingentError)
-    }
+    Ok(insert_user(name, hash, salt, locked, connection)?)
 }
