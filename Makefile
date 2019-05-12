@@ -7,7 +7,7 @@ release:
 
 deploy: deploy_release
 
-deploy_debug: debug flushall
+deploy_debug: debug
 	#backend
 	ssh $(backend_user)@$(backend_host) "systemctl --user stop backend && rm $(backend_dir)/bin/backend"
 	scp ./target/debug/backend $(backend_user)@$(backend_host):$(backend_dir)/bin
@@ -20,7 +20,6 @@ deploy_debug: debug flushall
 	ssh $(worker_user)@$(worker_host) "systemctl --user stop worker && rm $(worker_dir)/bin/worker"
 	scp ./target/debug/worker $(worker_user)@$(worker_host):$(worker_dir)/bin
 	ssh $(worker_user)@$(worker_host) "systemctl --user daemon-reload && systemctl --user start worker"
-	./flushall.sh
 
 deploy_release: release
 	#backend
