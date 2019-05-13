@@ -44,9 +44,12 @@ pub fn insert_user(name: &str, hash: Vec<u8>, salt: Vec<u8>, locked: bool, conne
 {
     connection.transaction::<_, Error, _>(|| {
         let _affected_rows = insert_into_user(name, hash, salt, None, None, locked, connection)?; 
+
         assert_eq!(_affected_rows, 1);
 
         let user_id = select_user_id_by_name(name, connection)?;
+
+        let _affected_rows = insert_into_journal(user_id, 0, 0, None, None, "created", connection)?;
 
         Ok(user_id)
     })
@@ -105,7 +108,7 @@ pub fn update_credit_after_print(user_id: u32, value: i32, job_id: u32, pages: u
 
         let credit = value + select_latest_credit_of_user(user_id, connection)?;
 
-        let _rows_affected = insert_into_journal(user_id, credit, value, Some(print_id), None, "print", connection)?;
+        let _rows_affected = insert_into_journal(user_id, credit, value, Some(print_id), None, &format!("{} Seiten", pages), connection)?;
 
         let _rows_affected = update_user_credit(user_id, credit, connection)?;
 

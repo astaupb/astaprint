@@ -52,11 +52,3 @@ pub struct JournalToken
     pub created: NaiveDateTime,
     pub updated: NaiveDateTime,
 }
-
-impl fmt::Display for Journal
-{
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
-    {
-        write!(f, "{}{}{}{}{}", self.id, self.user_id, self.value, self.description, self.created)
-    }
-}
