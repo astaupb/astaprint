@@ -24,7 +24,10 @@ use admin::{
 use chrono::NaiveDate;
 use diesel::prelude::*;
 use mysql::admin::select::select_admin_by_login;
-use rocket::http::Status;
+use rocket::{
+    http::Status,
+    response::status::Custom,
+};
 use rocket_contrib::json::Json;
 use sodium::PasswordHash;
 
@@ -41,10 +44,10 @@ pub struct NewAdmin
 pub fn post_new_admin(
     admin: AdminGuard,
     new: Json<NewAdmin>,
-) -> QueryResult<Status>
+) -> QueryResult<Custom<()>>
 {
     if select_admin_by_login(&new.login, &admin.connection).is_ok() {
-        return Ok(Status::new(472, "login already taken"))
+        return Ok(Custom(Status::new(472, "login already taken"), ()))
     }
     let new = new.into_inner();
 
@@ -64,5 +67,5 @@ pub fn post_new_admin(
 
     new_admin.insert(&admin.connection)?;
 
-    Ok(Status::new(204, "Success - No Content"))
+    Ok(Custom(Status::new(204, "Success - No Content"), ()))
 }

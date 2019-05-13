@@ -109,11 +109,12 @@ pub fn work(
                     client.refresh_timeout().expect("setting redis key expiration");
                 },
                 WorkerCommand::Hungup => {
-                    debug!("{} heartbeat", &hex_uid[.. 8]);
+                    debug!("{} hungup", &hex_uid[.. 8]);
                     hungup = true;
                 },
                 WorkerCommand::Print(job_id) => {
                     to_print.push_back(job_id);
+                    info!("{} printing {}", &hex_uid[.. 8], job_id);
                     debug!("{:?}", to_print);
                 },
             }
@@ -129,10 +130,10 @@ pub fn work(
                     let (id, keep) = printing.take().unwrap();
                     if !keep {
                         delete_job_by_id(id, &connection).expect("deleting job from table");
-                        info!("{}#{} deleting job {}", &hex_uid[.. 8], task.user_id, id);
+                        info!("{} {} deleting job {}", &hex_uid[.. 8], task.user_id, id);
                     }
                     else {
-                        info!("{}#{} keeping job {}", &hex_uid[.. 8], task.user_id, id);
+                        info!("{} {} keeping job {}", &hex_uid[.. 8], task.user_id, id);
                     }
                 }
                 else {
@@ -187,7 +188,7 @@ pub fn work(
         }
 
         if timeout.check() {
-            info!("{}#{} timeout", &hex_uid[.. 8], task.user_id);
+            info!("{} timeout", &hex_uid[.. 8]);
             break
         }
     }
@@ -206,5 +207,5 @@ pub fn work(
         accounting.update(counter(&state.ip).ok());
     }
 
-    info!("{}#{} finished", &hex_uid[.. 8], task.user_id);
+    info!("{} {} finished", &hex_uid[.. 8], task.user_id);
 }

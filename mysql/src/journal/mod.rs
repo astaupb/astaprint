@@ -4,7 +4,6 @@ pub mod update;
 
 use crate::schema::*;
 use chrono::NaiveDateTime;
-use std::fmt;
 
 joinable!(journal -> user (user_id));
 joinable!(journal -> print_journal (print_id));
