@@ -166,14 +166,20 @@ pub fn work(
                 }
 
                 let buf: Vec<u8> = job.translate_for_printer(&task.uid[..], task.user_id, data);
-                let mut lpr_connection = LprConnection::new(
+                match LprConnection::new(
                     &state.ip, 20000, // socket timeout in ms
-                );
-
-                match lpr_connection.print(&buf) {
-                    Ok(_) => {
-                        printing = Some((job.id, job.options.keep));
-                        timeout.refresh();
+                ) {
+                    Ok(mut connection) => {
+                        match connection.print(&buf) {
+                            Ok(_) => {
+                                printing = Some((job.id, job.options.keep));
+                                timeout.refresh();
+                            },
+                            Err(e) => {
+                                error!("lpr: {:?}", e);
+                                break
+                            },
+                        }
                     },
                     Err(e) => {
                         error!("lpr: {:?}", e);
