@@ -82,7 +82,7 @@ pub fn sanitize(mut pdf: Vec<u8>) -> DispatchResult
     info!("PDF minor version: {}", version);
 
     if version > 4 {
-        info!("starting compability convert");
+        info!("starting compatibility convert");
         pdf = compatibility_convert(pdf, a3)
             .expect("converting pdf");
         info!("compatibility convert done");
