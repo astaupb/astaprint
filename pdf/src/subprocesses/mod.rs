@@ -156,6 +156,40 @@ pub fn trim_pdf(input: Vec<u8>, pagerange: &str) -> Vec<u8>
     TmpFile::remove(&outfile).expect("removing TmpFile")
 }
 
+pub fn ghostscript_pdfwrite(input: &str, output: &str, a3: bool) -> Child
+{
+    Command::new("gs")
+        .args(&[
+              "-dSAFER",
+              "-dBATCH",
+              "-dNOPAUSE",
+              "-dFIXEDMEDIA",
+              "-dUseTrimBox",
+              "-dNumRenderingThreads=4",
+              &format!("-sPAPERSIZE={}", if a3 { "a3" } else { "a4" }),
+              "-sDEVICE=pdfwrite",
+              "-dCompatibilityLevel=1.4",
+              &format!("-sOutputFile={}", output),
+              &input,
+        ])
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .expect("executing gs")
+}
+
+pub fn compatibility_convert(input: Vec<u8>, a3: bool) -> io::Result<Vec<u8>>
+{
+    let infile = TmpFile::create(&input[..])?;
+
+    let outfile = format!("{}_out", infile);
+
+    let _gs = ghostscript_pdfwrite(&infile, &outfile, a3)
+        .wait_with_output().expect("waiting for qpdf");
+
+    TmpFile::remove(&outfile)
+}
+
 pub fn ghostscript_inkcov(input: &str) -> Child
 {
     Command::new("gs")

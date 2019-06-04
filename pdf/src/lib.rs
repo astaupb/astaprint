@@ -30,6 +30,7 @@ use crate::{
         PageSize,
     },
     subprocesses::{
+        compatibility_convert,
         ghostscript_colored_pagecount,
         pdfjam,
     },
@@ -76,6 +77,16 @@ pub fn sanitize(mut pdf: Vec<u8>) -> DispatchResult
         Valid(PageSize::A4) => false,
         _ => panic!("pdfjam does not work"),
     };
+    let version = pdf_document.get_minor_version();
+
+    info!("PDF minor version: {}", version);
+
+    if version > 4 {
+        info!("starting compability convert");
+        pdf = compatibility_convert(pdf, a3)
+            .expect("converting pdf");
+        info!("compability convert done");
+    }
 
     let colored = ghostscript_colored_pagecount(&pdf[..], pdf_document.pagecount()).expect("running ghostscript");
 

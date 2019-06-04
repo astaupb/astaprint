@@ -36,6 +36,7 @@ pub struct PDFDocument
     pages: Vec<PopplerPage>,
     pagesizes: Vec<(f64, f64)>,
     pagecount: usize,
+    version: String,
 }
 
 impl PDFDocument
@@ -60,11 +61,15 @@ impl PDFDocument
 
         let pagesizes = pages.iter().map(PopplerPage::get_size).collect();
 
+        let version = data.get_pdf_version_string()
+            .expect("valid PDF version string");
+
         PDFDocument {
             title,
             pages,
             pagesizes,
             pagecount,
+            version,
         }
     }
 
@@ -78,6 +83,13 @@ impl PDFDocument
     }
 
     pub fn get_pageinfo(&self) -> PageInfo { PageInfo::from_multiple(self.get_full_pageinfo()) }
+
+    pub fn get_minor_version(&self) -> u32
+    {
+        let split: Vec<&str> = self.version.split('.').collect();
+
+        split[1].parse::<u32>().expect("parsing minor version")
+    }
 
     pub fn render_preview(
         &self,

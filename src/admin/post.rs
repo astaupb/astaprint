@@ -109,4 +109,3 @@ pub fn change_user_name_as_admin(
 
     Ok(Status::new(205, "Reset Content"))
 }
-
