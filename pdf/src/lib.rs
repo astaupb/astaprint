@@ -85,7 +85,7 @@ pub fn sanitize(mut pdf: Vec<u8>) -> DispatchResult
         info!("starting compability convert");
         pdf = compatibility_convert(pdf, a3)
             .expect("converting pdf");
-        info!("compability convert done");
+        info!("compatibility convert done");
     }
 
     let colored = ghostscript_colored_pagecount(&pdf[..], pdf_document.pagecount()).expect("running ghostscript");
