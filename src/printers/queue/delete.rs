@@ -70,7 +70,7 @@ pub fn delete_queue(
         let client = CommandClient::from((queue, &hex_uid[..]));
         client.send_command(&WorkerCommand::Cancel).expect("sending cancel command");
 
-        Status::new(205, "Success - No Content")
+        Status::new(205, "Success - Reset Content")
     }
     else {
         Status::new(401, "Unauthorized")
@@ -79,7 +79,7 @@ pub fn delete_queue(
 
 #[delete("/printers/<device_id>/queue")]
 pub fn delete_queue_as_admin(
-    _admin: AdminGuard,
+    admin: AdminGuard,
     device_id: u32,
     queues: State<HashMap<u32, TaskQueueClient<WorkerTask, WorkerCommand>>>,
 ) -> Status
@@ -93,7 +93,9 @@ pub fn delete_queue_as_admin(
         let client = CommandClient::from((queue, &hex::encode(&processing[0].uid[..])[..]));
         client.send_command(&WorkerCommand::Cancel).expect("sending cancel command");
 
-        Status::new(205, "Success - No Content")
+        info!("admin {} cleared queue of printer {}", admin.id, device_id);
+
+        Status::new(205, "Success - Reset Content")
     }
     else {
         Status::new(404, "Task Not Found")

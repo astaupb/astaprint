@@ -166,14 +166,6 @@ fn rocket() -> rocket::Rocket
         .manage(dispatcher_queue)
         .manage(worker_queues)
         .mount("/", routes![api_reference])
-        .mount("/", routes![
-            get_user_as_admin,
-            get_user_credit_as_admin,
-            get_user_journal_as_admin,
-            get_all_users,
-            change_user_locked,
-        ])
-        .mount("/", routes![post_admin_token])
         .mount("/jobs/", routes![
             jobs,
             update_options,
@@ -228,6 +220,13 @@ fn rocket() -> rocket::Rocket
             delete_queue_as_admin,
             get_queue_as_admin,
             post_new_admin,
+            change_user_password_as_admin,
+            change_user_name_as_admin,
+            get_user_as_admin,
+            get_user_credit_as_admin,
+            get_user_journal_as_admin,
+            get_all_users,
+            change_user_locked,
         ])
         .attach(cors())
 }

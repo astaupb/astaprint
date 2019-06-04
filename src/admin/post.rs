@@ -23,7 +23,13 @@ use admin::{
 };
 use chrono::NaiveDate;
 use diesel::prelude::*;
-use mysql::admin::select::select_admin_by_login;
+use mysql::{
+    admin::select::select_admin_by_login,
+    user::update::{
+        update_hash_and_salt,
+        update_user_name,
+    },
+};
 use rocket::{
     http::Status,
     response::status::Custom,
@@ -69,3 +75,38 @@ pub fn post_new_admin(
 
     Ok(Custom(Status::new(204, "Success - No Content"), ()))
 }
+
+#[put("/users/<id>/password", data = "<body>")]
+pub fn change_user_password_as_admin(
+    admin: AdminGuard,
+    id: u32,
+    body: Json<String>,
+) -> QueryResult<Status>
+{
+    let password = body.into_inner();
+
+    let (hash, salt) = PasswordHash::create(&password);
+
+    update_hash_and_salt(id, hash, salt, &admin.connection)?;
+
+    info!("{} changed password of user {}", admin.id, id);
+
+    Ok(Status::new(204, "No Content"))
+}
+
+#[put("/users/<id>/name", data = "<body>")]
+pub fn change_user_name_as_admin(
+    admin: AdminGuard,
+    id: u32,
+    body: Json<String>,
+) -> QueryResult<Status>
+{
+    let name = body.into_inner();
+
+    update_user_name(id, &name, &admin.connection)?;
+
+    info!("{} changed name of user {} ", admin.id, id);
+
+    Ok(Status::new(205, "Reset Content"))
+}
+
