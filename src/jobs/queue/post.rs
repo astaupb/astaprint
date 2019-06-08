@@ -37,12 +37,13 @@ use redis::{
     store::Store,
 };
 
-#[post("/queue?<filename>&<keep>", data = "<data>", format = "application/pdf")]
+#[post("/queue?<filename>&<keep>&<password>", data = "<data>", format = "application/pdf")]
 pub fn upload_job<'a>(
     user: UserGuard,
     data: PdfBody,
     filename: Option<String>,
     keep: Option<bool>,
+    password: Option<String>,
     taskqueue: State<TaskQueueClient<DispatcherTask, ()>>,
     store: State<Store>,
 ) -> Result<Accepted<Json<String>>, BadRequest<&'a str>>

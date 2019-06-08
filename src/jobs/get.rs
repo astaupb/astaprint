@@ -34,7 +34,7 @@ pub fn fetch_job(
 ) -> QueryResult<Option<Json<Job>>>
 {
     let job: Option<(u32, Vec<u8>, Vec<u8>, NaiveDateTime)> =
-        select_job_of_user(id, user.id, &user.connection)?;
+        select_job_of_user(user.id, id, &user.connection)?;
 
     Ok(job.map(|x| Json(Job::from(x))))
 }

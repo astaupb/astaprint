@@ -38,7 +38,10 @@ use std::{
     time,
 };
 
-use pdf::subprocesses::trim_pdf;
+use pdf::{
+    process::trim_pages,
+    tmp::TmpFile,
+};
 
 use lpr::LprConnection;
 
@@ -162,7 +165,11 @@ pub fn work(
                 let mut data = job_row.pdf;
                 // preprocess pagerange
                 if job.options.range != "" {
-                    data = trim_pdf(data, &job.options.range);
+                    let path = &TmpFile::create(&data[..]).expect("creating tmp file");
+
+                    trim_pages(path, &job.options.range).expect("trimming pages");
+
+                    data = TmpFile::remove(path).expect("removing tmp file");
                 }
 
                 let buf: Vec<u8> = job.translate_for_printer(&task.uid[..], task.user_id, data);

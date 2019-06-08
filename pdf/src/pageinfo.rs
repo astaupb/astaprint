@@ -23,7 +23,7 @@ pub enum PageSize
     A3,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum PageOrientation
 {
     Portrait,
@@ -82,40 +82,43 @@ impl PageInfo
             orientation,
         }
     }
+}
 
-    pub fn from_multiple(pageinfo: Vec<PageInfo>) -> PageInfo
+#[derive(Debug)]
+pub struct PageSummary
+{
+    pub size: Is<PageSize>,
+    pub pages: Vec<PageOrientation>,
+}
+
+impl PageSummary
+{
+    pub fn from_info(pageinfo: Vec<PageInfo>) -> PageSummary
     {
+        let pages = pageinfo.iter().map(|info| info.orientation).collect();
+
         if pageinfo.iter().all(|info| info.size == Is::Valid(PageSize::A4)) {
-            return PageInfo {
+            return PageSummary {
                 size: Is::Valid(PageSize::A4),
-                orientation: pageinfo[0].orientation.clone(),
+                pages,
             }
         }
 
         if pageinfo.iter().all(|info| info.size == Is::Valid(PageSize::A3)) {
-            return PageInfo {
+            return PageSummary {
                 size: Is::Valid(PageSize::A3),
-                orientation: pageinfo[0].orientation.clone(),
+                pages,
             }
         }
 
-        let mut a4_count = 0;
-
-        pageinfo
+        let a4_count = pageinfo
             .iter()
             .filter(|info| {
                 info.size == Is::Valid(PageSize::A4) || info.size == Is::Almost(PageSize::A4)
             })
-            .for_each(|_info| a4_count += 1);
+            .count();
 
-        let mut portrait_count = 0;
-
-        pageinfo
-            .iter()
-            .filter(|info| info.orientation == PageOrientation::Portrait)
-            .for_each(|_info| portrait_count += 1);
-
-        PageInfo {
+        PageSummary {
             size: Is::Almost(
                 if pageinfo.len() - a4_count > a4_count {
                     PageSize::A3
@@ -124,12 +127,30 @@ impl PageInfo
                     PageSize::A4
                 },
             ),
-            orientation: if pageinfo.len() - portrait_count > portrait_count {
-                PageOrientation::Landscape
-            }
-            else {
-                PageOrientation::Portrait
-            },
+            pages,
         }
+    }
+
+    pub fn orientation(&self) -> Is<PageOrientation>
+    {
+        if self.pages.iter().all(|page| page == &PageOrientation::Portrait) {
+            return Is::Valid(PageOrientation::Portrait);
+        }
+
+        if self.pages.iter().all(|page| page == &PageOrientation::Landscape) {
+            return Is::Valid(PageOrientation::Landscape);
+        }
+
+        let portrait_count = self.pages.iter()
+            .filter(|page| *page == &PageOrientation::Landscape)
+            .count();
+
+        Is::Almost(
+            if self.pages.len() - portrait_count > portrait_count {
+                PageOrientation::Landscape
+            } else {
+                PageOrientation::Portrait
+            }
+        )
     }
 }

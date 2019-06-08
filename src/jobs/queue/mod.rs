@@ -22,7 +22,7 @@ pub mod post;
 
 pub mod data;
 
-use pdf::sanitize;
+use pdf::sanitize_pdf;
 
 use mysql::{
     jobs::insert::insert_into_jobs,
@@ -81,7 +81,7 @@ pub fn dispatch(
         return
     };
 
-    let result = sanitize(data);
+    let result = sanitize_pdf(data);
 
     let connection = if let Ok(connection) = state.mysql_pool.get() {
         connection

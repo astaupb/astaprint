@@ -258,6 +258,17 @@ impl Job
             );
         }
 
+        /*
+        if self.options.bypass {
+            header.append(&mut
+                b"\x40\x50\x4a\x4c\x20\x53\x45\x54\
+                  \x20\x54\x52\x41\x59\x3d\x42\x59\
+                  \x50\x41\x53\x53\r\n".to_vec(),
+              );
+        }
+        */
+
+
         // set defaults for sanity
         header.append(&mut
                   b"\x40\x50\x4a\x4c\x20\x53\x45\x54\

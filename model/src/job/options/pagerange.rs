@@ -72,6 +72,13 @@ impl PageRange
 {
     pub fn pagecount(&self) -> usize { self.pages.iter().filter(|page| **page).count() }
 
+    pub fn from_list(pages: Vec<bool>) -> PageRange
+    {
+        PageRange {
+            pages, ranges: Vec::new(),
+        }
+    }
+
     pub fn new(
         range: &str,
         pagecount: usize,

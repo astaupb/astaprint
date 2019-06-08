@@ -26,11 +26,12 @@ use cairo::{
     ImageSurface,
 };
 
-use crate::pageinfo::PageInfo;
+use crate::pageinfo::{
+    PageInfo, PageSummary,
+};
 
 #[derive(Debug)]
-
-pub struct PDFDocument
+pub struct DocumentInfo
 {
     pub title: Option<String>,
     pages: Vec<PopplerPage>,
@@ -39,14 +40,13 @@ pub struct PDFDocument
     version: String,
 }
 
-impl PDFDocument
+impl DocumentInfo
 {
     pub fn new(
-        data: &[u8],
-        password: &str,
-    ) -> PDFDocument
+        path: &str,
+    ) -> DocumentInfo
     {
-        let data = PopplerDocument::new_from_data(data, password)
+        let data = PopplerDocument::new_from_file(path, "")
             .expect("PopplerDoucment from data");
 
         let title = data.get_title();
@@ -64,7 +64,7 @@ impl PDFDocument
         let version = data.get_pdf_version_string()
             .expect("valid PDF version string");
 
-        PDFDocument {
+        DocumentInfo {
             title,
             pages,
             pagesizes,
@@ -77,12 +77,10 @@ impl PDFDocument
 
     pub fn pagesizes(&self) -> Vec<(f64, f64)> { self.pagesizes.clone() }
 
-    fn get_full_pageinfo(&self) -> Vec<PageInfo>
+    pub fn get_page_summary(&self) -> PageSummary
     {
-        self.pagesizes.iter().map(|sizes| PageInfo::from_points(sizes.0, sizes.1)).collect()
+        PageSummary::from_info(self.pagesizes.iter().map(|sizes| PageInfo::from_points(sizes.0, sizes.1)).collect())
     }
-
-    pub fn get_pageinfo(&self) -> PageInfo { PageInfo::from_multiple(self.get_full_pageinfo()) }
 
     pub fn get_minor_version(&self) -> u32
     {

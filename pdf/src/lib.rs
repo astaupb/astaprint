@@ -20,24 +20,32 @@ extern crate log;
 
 pub mod document;
 pub mod pageinfo;
-pub mod subprocesses;
+pub mod process;
 pub mod tmp;
 
 use crate::{
-    document::PDFDocument,
+    document::DocumentInfo,
     pageinfo::{
-        Is::Valid,
+        Is::{
+            Valid,
+            Almost,
+        },
         PageSize,
+        PageOrientation,
     },
-    subprocesses::{
-        compatibility_convert,
-        ghostscript_colored_pagecount,
-        pdfjam,
+    tmp::TmpFile,
+    process::{
+        colored_pagecount,
+        rotate_pages,
+        force_pdf_version,
+        force_page_size,
     },
 };
 
+use model::job::options::pagerange::PageRange;
+
 #[derive(Debug, Clone)]
-pub struct DispatchResult
+pub struct SanitizeResult
 {
     pub pdf: Vec<u8>,
     pub preview_0: Vec<u8>,
@@ -50,26 +58,55 @@ pub struct DispatchResult
     pub colored: u32,
 }
 
-
-pub fn sanitize(mut pdf: Vec<u8>) -> DispatchResult
+pub fn sanitize_pdf(data: Vec<u8>) -> SanitizeResult
 {
-    let mut pdf_document = PDFDocument::new(&pdf[..], "");
+    let path = &TmpFile::create(&data[..])
+        .expect("creating tmp file");
 
-    let title = pdf_document.title.clone().unwrap_or_else(|| String::from(""));
+    let mut info = DocumentInfo::new(path);
 
-    let pagecount = pdf_document.pagecount();
+    let title = info.title.clone().unwrap_or_else(|| String::from(""));
 
-    let mut pageinfo = pdf_document.get_pageinfo();
+    let pagecount = info.pagecount();
 
-    info!("{:?}: {:?}", pageinfo, pdf_document.pagesizes());
-    if pageinfo.size != Valid(PageSize::A3) && pageinfo.size != Valid(PageSize::A4) {
+    let mut pageinfo = info.get_page_summary();
 
-        pdf = pdfjam(pdf, &pageinfo).expect("jamming pdf to valid format");
+    debug!("{:?}: {:?}", pageinfo, info.pagesizes());
 
-        pdf_document = PDFDocument::new(&pdf[..], "");
+    let orientation = pageinfo.orientation();
 
-        pageinfo = pdf_document.get_pageinfo();
-        info!("pdfjam {:?}: {:?}", pageinfo, pdf_document.pagesizes());
+    if orientation != Valid(PageOrientation::Landscape)
+        && orientation != Valid(PageOrientation::Portrait)
+    {
+        let pages = PageRange::from_list(
+            pageinfo.pages.iter().map(|page| {
+                if orientation == Almost(PageOrientation::Landscape) {
+                    page == &PageOrientation::Portrait
+                } else {
+                    page == &PageOrientation::Landscape
+                }
+            }).collect()
+        );
+
+        let mut range = format!("{}", pages);
+        range.pop(); //remove trailing comma
+        debug!("{:?}, rotating: {}", orientation, range);
+
+        rotate_pages(path, orientation == Almost(PageOrientation::Landscape), &range)
+            .expect("rotating pages");
+
+        info = DocumentInfo::new(path);
+    }
+
+    if pageinfo.size != Valid(PageSize::A3)
+        && pageinfo.size != Valid(PageSize::A4)
+    {
+        force_page_size(path, &pageinfo).expect("jamming pdf to valid format");
+
+        info = DocumentInfo::new(path);
+
+        pageinfo = info.get_page_summary();
+        debug!("pdfjam {:?}: {:?}", pageinfo, info.pagesizes());
     }
 
     let a3 = match pageinfo.size {
@@ -77,26 +114,30 @@ pub fn sanitize(mut pdf: Vec<u8>) -> DispatchResult
         Valid(PageSize::A4) => false,
         _ => panic!("pdfjam does not work"),
     };
-    let version = pdf_document.get_minor_version();
+    let version = info.get_minor_version();
 
-    info!("PDF minor version: {}", version);
+    debug!("PDF minor version: {}", version);
 
     if version > 4 {
-        info!("starting compatibility convert");
-        pdf = compatibility_convert(pdf, a3)
+        debug!("version 1.{} > 1.4, forcing 1.4", version);
+        force_pdf_version(path)
             .expect("converting pdf");
-        info!("compatibility convert done");
+
+        info = DocumentInfo::new(path);
+
+        assert!(info.get_minor_version() < 5);
     }
 
-    let colored = ghostscript_colored_pagecount(&pdf[..], pdf_document.pagecount()).expect("running ghostscript");
+    let colored = colored_pagecount(path, info.pagecount()).expect("running ghostscript");
 
-    let preview_0 = pdf_document.render_preview(0).unwrap();
-    let preview_1 = pdf_document.render_preview(1);
-    let preview_2 = pdf_document.render_preview(2);
-    let preview_3 = pdf_document.render_preview(3);
+    let preview_0 = info.render_preview(0).unwrap();
+    let preview_1 = info.render_preview(1);
+    let preview_2 = info.render_preview(2);
+    let preview_3 = info.render_preview(3);
 
-    DispatchResult {
-        pdf,
+    SanitizeResult {
+        pdf: TmpFile::remove(path)
+            .expect("removing tmpfile"),
         preview_0,
         preview_1,
         preview_2,
