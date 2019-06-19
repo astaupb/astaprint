@@ -86,7 +86,12 @@ impl DocumentInfo
     {
         let split: Vec<&str> = self.version.split('.').collect();
 
-        split[1].parse::<u32>().expect("parsing minor version")
+        if split.len() > 1 {
+            split[1].parse::<u32>().expect("parsing minor version")
+        } else {
+            error!("unable to parse: {:?}", split);
+            5
+        }
     }
 
     pub fn render_preview(

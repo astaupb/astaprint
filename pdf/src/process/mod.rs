@@ -133,6 +133,8 @@ pub fn force_pdf_version(path: &str) -> io::Result<()>
     qpdf_force_version(path, out)?
         .wait()?;
 
+    remove_file(path)?;
+
     rename(out, path)?;
 
     Ok(())
@@ -145,6 +147,8 @@ pub fn trim_pages(path: &str, pagerange: &str) -> io::Result<()>
 
     qpdf_pages(path, out, pagerange)?
         .wait()?;
+
+    remove_file(path)?;
 
     rename(out, path)?;
     

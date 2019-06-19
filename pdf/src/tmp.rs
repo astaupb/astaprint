@@ -44,6 +44,8 @@ impl TmpFile
 
         file.write_all(&data[..])?;
 
+        file.sync_all()?;
+
         Ok(path)
     }
 
@@ -54,6 +56,8 @@ impl TmpFile
         let mut buf: Vec<u8> = Vec::new();
 
         file.read_to_end(&mut buf)?;
+
+        file.sync_all()?;
 
         remove_file(path)?;
 

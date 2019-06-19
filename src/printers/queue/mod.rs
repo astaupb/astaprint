@@ -157,10 +157,17 @@ pub fn work(
 
                 let counter = match counter(&state.ip) {
                     Ok(counter) => counter,
-                    Err(_) => break,
+                    Err(_) => {
+                        to_print.push_front(job_id);
+                        break;
+                    },
                 };
 
                 accounting.start(job.clone(), counter);
+
+                if accounting.not_enough_credit() {
+                    break;
+                }
 
                 let mut data = job_row.pdf;
                 // preprocess pagerange
