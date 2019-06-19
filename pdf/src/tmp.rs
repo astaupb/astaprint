@@ -63,4 +63,17 @@ impl TmpFile
 
         Ok(buf)
     }
+
+    pub fn read(path: &str) -> io::Result<Vec<u8>>
+    {
+        let mut file = File::open(path)?;
+
+        let mut buf: Vec<u8> = Vec::new();
+
+        file.read_to_end(&mut buf)?;
+
+        file.sync_all()?;
+
+        Ok(buf)
+    }
 }

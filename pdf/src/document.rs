@@ -26,8 +26,11 @@ use cairo::{
     ImageSurface,
 };
 
-use crate::pageinfo::{
-    PageInfo, PageSummary,
+use crate::{
+    pageinfo::{
+        PageInfo, PageSummary,
+    },
+    tmp::TmpFile,
 };
 
 #[derive(Debug)]
@@ -46,7 +49,10 @@ impl DocumentInfo
         path: &str,
     ) -> DocumentInfo
     {
-        let data = PopplerDocument::new_from_file(path, "")
+        let path = &TmpFile::read(path)
+            .expect("creating tmp file");
+
+        let data = PopplerDocument::new_from_data(path, "")
             .expect("PopplerDoucment from data");
 
         let title = data.get_title();
