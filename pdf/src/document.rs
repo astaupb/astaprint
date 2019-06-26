@@ -37,6 +37,8 @@ use crate::{
 pub struct DocumentInfo
 {
     pub title: Option<String>,
+    data: Vec<u8>,
+    document: PopplerDocument,
     pages: Vec<PopplerPage>,
     pagesizes: Vec<(f64, f64)>,
     pagecount: usize,
@@ -49,29 +51,31 @@ impl DocumentInfo
         path: &str,
     ) -> DocumentInfo
     {
-        let path = &TmpFile::read(path)
+        let data = TmpFile::read(path)
             .expect("creating tmp file");
 
-        let data = PopplerDocument::new_from_data(path, "")
+        let document = PopplerDocument::new_from_data(&data[..], "")
             .expect("PopplerDoucment from data");
 
-        let title = data.get_title();
+        let title = document.get_title();
 
-        let pagecount = data.get_n_pages();
+        let pagecount = document.get_n_pages();
 
         let mut pages: Vec<PopplerPage> = Vec::with_capacity(pagecount);
 
         for i in 0 .. pagecount {
-            pages.push(data.get_page(i).expect("getting page from poppler document"));
+            pages.push(document.get_page(i).expect("getting page from poppler document"));
         }
 
         let pagesizes = pages.iter().map(PopplerPage::get_size).collect();
 
-        let version = data.get_pdf_version_string()
+        let version = document.get_pdf_version_string()
             .expect("valid PDF version string");
 
         DocumentInfo {
             title,
+            data,
+            document,
             pages,
             pagesizes,
             pagecount,
