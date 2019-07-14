@@ -54,6 +54,11 @@ use mysql::user::{
     User,
 };
 
+use std::net::{
+    IpAddr,
+    Ipv4Addr,
+};
+
 pub struct LoginGuard
 {
     pub token: String,
@@ -66,16 +71,14 @@ impl<'a, 'r> FromRequest<'a, 'r> for LoginGuard
 
     fn from_request(request: &'a Request<'r>) -> request::Outcome<LoginGuard, ()>
     {
-        let header = request.headers();
+        let headers = request.headers();
 
-        let remote = request.remote().expect("reading remote address");
-
-        let user_agent: Vec<_> = header.get("user-agent").collect();
+        let user_agent: Vec<_> = headers.get("user-agent").collect();
 
         if user_agent.is_empty() {
             return Outcome::Failure((Status::BadRequest, ()))
         }
-        let header: Vec<_> = header.get("authorization").collect();
+        let header: Vec<_> = headers.get("authorization").collect();
 
         if header.is_empty() {
             return Outcome::Failure((Status::BadRequest, ()))
@@ -150,9 +153,20 @@ impl<'a, 'r> FromRequest<'a, 'r> for LoginGuard
             String::from(user_agent[0])
         };
 
+        let header: Vec<_> = headers.get("x-real-ip").collect();
+
+        let ip: IpAddr = if header.is_empty() {
+            "::1"
+        }
+        else {
+            header[0]
+        }
+        .parse()
+        .unwrap_or(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)));
+
         let mmdb_reader = request.guard::<State<maxminddb::Reader<Vec<u8>>>>()?;
 
-        let city: String = match mmdb_reader.lookup::<geoip2::City>(remote.ip()) {
+        let city: String = match mmdb_reader.lookup::<geoip2::City>(ip) {
             Ok(city) => {
                 city.city
                     .expect("getting city entry from city record")
@@ -168,7 +182,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for LoginGuard
         match insert_into_user_tokens(
             user.id,
             &user_agent,
-            &format!("{}", remote.ip()),
+            &format!("{}", ip),
             &city,
             hash,
             &connection,
