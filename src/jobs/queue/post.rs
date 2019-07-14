@@ -27,6 +27,8 @@ use rocket::{
 
 use rocket_contrib::json::Json;
 
+use poppler::PopplerDocument;
+
 use model::task::dispatcher::DispatcherTask;
 
 use jobs::queue::data::PdfBody;
@@ -36,6 +38,7 @@ use redis::{
     queue::TaskQueueClient,
     store::Store,
 };
+
 
 #[post("/queue?<filename>&<keep>&<password>", data = "<data>", format = "application/pdf")]
 pub fn upload_job<'a>(
@@ -48,7 +51,14 @@ pub fn upload_job<'a>(
     store: State<Store>,
 ) -> Result<Accepted<Json<String>>, BadRequest<&'a str>>
 {
-    let uid = store.set(data.bytes).expect("saving file in store");
+    debug!("password: {:?}", password);
+    let bytes = data.bytes;
+
+    if let Err(_) = PopplerDocument::new_from_data(&bytes[..], "") {
+        return Err(BadRequest(Some("invalid pdf file")));
+    }
+
+    let uid = store.set(bytes).expect("saving file in store");
 
     let hex_uid = hex::encode(&uid[..]);
 
