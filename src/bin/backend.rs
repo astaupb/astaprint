@@ -153,7 +153,7 @@ fn rocket() -> rocket::Rocket
         worker_queues
             .insert(device_id, TaskQueueClient::new(&format!("worker::{}", device_id), pool));
     }
-    let mmdb_reader = maxminddb::Reader::open_readfile("GeoLite2-City_20181127/GeoLite2-City.mmdb")
+    let mmdb_reader = maxminddb::Reader::open_readfile("GeoLite2-City.mmdb")
         .expect("opening maxminddb reader");
 
     let redis_pool = get_redis_pool(5, Redis::Lock);
