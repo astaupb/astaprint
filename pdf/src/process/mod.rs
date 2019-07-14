@@ -35,6 +35,7 @@ use crate::{
         qpdf_pages,
         qpdf_force_version,
     },
+    tmp::TmpFile,
 };
 
 use std::{
@@ -54,6 +55,18 @@ pub enum DecryptionError
 impl From<io::Error> for DecryptionError
 {
     fn from(error: io::Error) -> DecryptionError { DecryptionError::IoError(error) }
+}
+
+pub fn decrypt_pdf_from_data(
+    data: Vec<u8>,
+    password: &str,
+) -> Result<Vec<u8>, DecryptionError>
+{
+    let path = TmpFile::create(&data[..])?;
+
+    decrypt_pdf(&path, password)?;
+
+    Ok(TmpFile::remove(&path)?)
 }
 
 pub fn decrypt_pdf(
