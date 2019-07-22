@@ -26,7 +26,7 @@ use mysql::user::delete::*;
 #[delete("/")]
 pub fn delete_all_tokens(user: UserGuard) -> QueryResult<Status>
 {
-    let deleted = delete_all_tokens_of_user(user.id, &user.connection)?;
+    let deleted = delete_all_tokens_of_user_except_one(user.id, user.token_id, &user.connection)?;
     info!("{} deleted {} tokens", user.id, deleted);
 
     Ok(Status::new(205, "Reset Content"))
