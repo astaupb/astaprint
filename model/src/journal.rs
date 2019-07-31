@@ -11,6 +11,7 @@ pub struct JournalResponse
     pub without_receipt: bool,
     pub description: String,
     pub timestamp: String,
+    pub created: i64,
 }
 
 impl<'a> From<&'a Journal> for JournalResponse
@@ -23,6 +24,7 @@ impl<'a> From<&'a Journal> for JournalResponse
             without_receipt: true,
             description: journal.description.clone(),
             timestamp: format!("{}", journal.created),
+            created: journal.created.timestamp(),
         }
     }
 }
@@ -35,8 +37,8 @@ pub struct JournalTokenResponse
     content: String,
     used: bool,
     used_by: Option<u32>,
-    created: String,
-    updated: String,
+    created: i64,
+    updated: i64,
 }
 
 impl<'a> From<&'a JournalToken> for JournalTokenResponse
@@ -49,8 +51,8 @@ impl<'a> From<&'a JournalToken> for JournalTokenResponse
             content: token.content.clone(),
             used: token.used,
             used_by: token.used_by,
-            created: format!("{}", token.created),
-            updated: format!("{}", token.updated),
+            created: token.created.timestamp(),
+            updated: token.updated.timestamp(),
         }
     }
 }
