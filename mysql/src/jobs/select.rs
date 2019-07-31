@@ -10,10 +10,10 @@ pub fn select_jobs(connection: &MysqlConnection) -> QueryResult<Vec<Job>>
     jobs::table.select(jobs::all_columns).load(connection)
 }
 
-pub fn select_jobs_essentials(connection: &MysqlConnection) -> QueryResult<Vec<(u32, Vec<u8>, Vec<u8>, NaiveDateTime)>>
+pub fn select_jobs_essentials(connection: &MysqlConnection) -> QueryResult<Vec<(u32, Vec<u8>, Vec<u8>, NaiveDateTime, NaiveDateTime)>>
 {
     jobs::table
-        .select((jobs::id, jobs::info, jobs::options, jobs::updated))
+        .select((jobs::id, jobs::info, jobs::options, jobs::created, jobs::updated))
         .load(connection)
 }
 
@@ -35,10 +35,10 @@ pub fn select_full_job_of_user(user_id: u32, id: u32, connection: &MysqlConnecti
 pub fn select_job(
     job_id: u32,
     connection: &MysqlConnection,
-) -> QueryResult<Option<(u32, Vec<u8>, Vec<u8>, NaiveDateTime)>>
+) -> QueryResult<Option<(u32, Vec<u8>, Vec<u8>, NaiveDateTime, NaiveDateTime)>>
 {
     jobs::table
-        .select((jobs::id, jobs::info, jobs::options, jobs::created))
+        .select((jobs::id, jobs::info, jobs::options, jobs::created, jobs::updated))
         .filter(jobs::id.eq(job_id))
         .first(connection)
         .optional()
@@ -47,10 +47,10 @@ pub fn select_job(
 pub fn select_all_jobs_of_user(
     user_id: u32,
     connection: &MysqlConnection,
-) -> QueryResult<Vec<(u32, Vec<u8>, Vec<u8>, NaiveDateTime)>>
+) -> QueryResult<Vec<(u32, Vec<u8>, Vec<u8>, NaiveDateTime, NaiveDateTime)>>
 {
     jobs::table
-        .select((jobs::id, jobs::info, jobs::options, jobs::created))
+        .select((jobs::id, jobs::info, jobs::options, jobs::created, jobs::updated))
         .filter(jobs::user_id.eq(user_id))
         .load(connection)
 }
@@ -59,10 +59,10 @@ pub fn select_job_of_user(
     user_id: u32,
     job_id: u32,
     connection: &MysqlConnection,
-) -> QueryResult<Option<(u32, Vec<u8>, Vec<u8>, NaiveDateTime)>>
+) -> QueryResult<Option<(u32, Vec<u8>, Vec<u8>, NaiveDateTime, NaiveDateTime)>>
 {
     jobs::table
-        .select((jobs::id, jobs::info, jobs::options, jobs::created))
+        .select((jobs::id, jobs::info, jobs::options, jobs::created, jobs::updated))
         .filter(jobs::id.eq(job_id))
         .filter(jobs::user_id.eq(user_id))
         .first(connection)

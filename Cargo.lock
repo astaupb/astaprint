@@ -36,7 +36,6 @@ dependencies = [
  "chrono 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "diesel 1.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "hex 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "legacy 0.1.0",
  "log 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "logger 0.1.0",
  "lpr 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -470,21 +469,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 name = "lazycell"
 version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-
-[[package]]
-name = "legacy"
-version = "0.1.0"
-dependencies = [
- "chrono 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
- "diesel 1.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "hex 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "log 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
- "model 0.1.0",
- "mysql 0.1.0",
- "r2d2_redis 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "redis 0.1.0",
- "roxmltree 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
-]
 
 [[package]]
 name = "libc"
@@ -1042,14 +1026,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "roxmltree"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "xmlparser 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
 name = "rustc_version"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1480,11 +1456,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "xmlparser"
-version = "0.9.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-
-[[package]]
 name = "yansi"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1599,7 +1570,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum rocket_contrib 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)" = "5af691b5f5c06c3a30213217696681d3d3bdc2f10428fa3ce6bbaeab156b6409"
 "checksum rocket_cors 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "d8adde8b1ed231f4a0288085605d869baa02503310a4f80c07ed53fde24dce1b"
 "checksum rocket_http 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)" = "abec045da00893bd4eef6084307a4bec0742278a7635a6a8b943da023202a5f7"
-"checksum roxmltree 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)" = "53b0200cbfa8b3f6cfd6076592717d697a1ddc57cb2a8fbfd3d133c06011b579"
 "checksum rustc_version 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)" = "138e3e0acb6c9fb258b19b67cb8abd63c00679d2851805ea151465464fe9030a"
 "checksum ryu 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)" = "b96a9549dc8d48f2c283938303c4b5a77aa29bfbc5b54b084fb1630408899a8f"
 "checksum safemem 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "8dca453248a96cb0749e36ccdfe2b0b4e54a61bfef89fb97ec621eb8e0a93dd9"
@@ -1656,6 +1626,5 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum winapi-x86_64-pc-windows-gnu 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
 "checksum winutil 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "7daf138b6b14196e3830a588acf1e86966c694d3e8fb026fb105b8b5dca07e6e"
 "checksum ws2_32-sys 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "d59cefebd0c892fa2dd6de581e937301d8552cb44489cdff035c6187cb63fa5e"
-"checksum xmlparser 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)" = "ecec95f00fb0ff019153e64ea520f87d1409769db3e8f4db3ea588638a3e1cee"
 "checksum yansi 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "d60c3b48c9cdec42fb06b3b84b5b087405e1fa1c644a1af3930e4dfafe93de48"
 "checksum yansi 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)" = "9fc79f4a1e39857fc00c3f662cbf2651c771f00e9c15fe2abc341806bd46bd71"

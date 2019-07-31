@@ -153,6 +153,7 @@ pub fn work(
                     job_row.info.clone(),
                     job_row.options.clone(),
                     job_row.created,
+                    job_row.updated,
                 ));
 
                 let counter = match counter(&state.ip) {

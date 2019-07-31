@@ -33,7 +33,7 @@ pub fn fetch_job(
     id: u32,
 ) -> QueryResult<Option<Json<Job>>>
 {
-    let job: Option<(u32, Vec<u8>, Vec<u8>, NaiveDateTime)> =
+    let job: Option<(u32, Vec<u8>, Vec<u8>, NaiveDateTime, NaiveDateTime)> =
         select_job_of_user(user.id, id, &user.connection)?;
 
     Ok(job.map(|x| Json(Job::from(x))))
@@ -42,7 +42,7 @@ pub fn fetch_job(
 #[get("/")]
 pub fn jobs(user: UserGuard) -> QueryResult<Json<Vec<Job>>>
 {
-    let jobs: Vec<(u32, Vec<u8>, Vec<u8>, NaiveDateTime)> =
+    let jobs: Vec<(u32, Vec<u8>, Vec<u8>, NaiveDateTime, NaiveDateTime)> =
         select_all_jobs_of_user(user.id, &user.connection)?;
 
     Ok(Json(jobs.iter().map(|x| Job::from(x.clone())).collect()))

@@ -21,11 +21,13 @@ pub struct Job
     pub info: JobInfo,
     pub options: JobOptions,
     pub timestamp: i64,
+    pub created: i64,
+    pub updated: i64,
 }
 
-impl From<(u32, Vec<u8>, Vec<u8>, NaiveDateTime)> for Job
+impl From<(u32, Vec<u8>, Vec<u8>, NaiveDateTime, NaiveDateTime)> for Job
 {
-    fn from(row: (u32, Vec<u8>, Vec<u8>, NaiveDateTime)) -> Job
+    fn from(row: (u32, Vec<u8>, Vec<u8>, NaiveDateTime, NaiveDateTime)) -> Job
     {
         let info = bincode::deserialize(&row.1[..]).expect("deserializing JobInfo");
         let options = bincode::deserialize(&row.2[..]).expect("deserializing JobOptions");
@@ -33,13 +35,15 @@ impl From<(u32, Vec<u8>, Vec<u8>, NaiveDateTime)> for Job
             id: row.0,
             info, options,
             timestamp: row.3.timestamp(),
+            created: row.3.timestamp(),
+            updated: row.4.timestamp(),
         }
     }
 }
 
-impl<'a> From<(u32, &'a [u8], &'a [u8], NaiveDateTime)> for Job
+impl<'a> From<(u32, &'a [u8], &'a [u8], NaiveDateTime, NaiveDateTime)> for Job
 {
-    fn from((id, info, options, created): (u32, &'a [u8], &'a [u8], NaiveDateTime)) -> Job
+    fn from((id, info, options, created, updated): (u32, &'a [u8], &'a [u8], NaiveDateTime, NaiveDateTime)) -> Job
     {
         let info = bincode::deserialize(info).expect("deserializing JobInfo");
         let options = bincode::deserialize(options).expect("deserializing JobOptions");
@@ -47,6 +51,8 @@ impl<'a> From<(u32, &'a [u8], &'a [u8], NaiveDateTime)> for Job
             id,
             info, options,
             timestamp: created.timestamp(),
+            created: created.timestamp(),
+            updated: updated.timestamp(),
         }
     }
 }
