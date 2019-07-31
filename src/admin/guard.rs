@@ -43,7 +43,12 @@ use sodium::GenericHash;
 
 use crate::user::key::split_x_api_key;
 
-use mysql::admin::select::*;
+use mysql::admin::{
+    select::*,
+    update::*,
+};
+
+use user::login::parse_header;
 
 pub struct AdminGuard
 {
@@ -92,6 +97,12 @@ impl<'a, 'r> FromRequest<'a, 'r> for AdminGuard
 
             match select_admin_token_id_by_hash(admin_id, hash, &connection) {
                 Ok(token_id) => {
+                    // update token so we can track the last usage time
+                    let (user_agent, ip, location) = parse_header(request)?;
+
+                    update_admin_token(token_id, user_agent, ip, location, &connection)
+                        .expect("updating admin token");
+
                     Outcome::Success(AdminGuard {
                         id: admin_id,
                         token_id,

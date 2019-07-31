@@ -59,6 +59,48 @@ use std::net::{
     Ipv4Addr,
 };
 
+pub fn parse_header(request: &Request) -> request::Outcome<(String, String, String), ()>
+{
+    let headers = request.headers();
+
+    let user_agent: Vec<_> = headers.get("user-agent").collect();
+
+    let user_agent = if user_agent[0].len() > 128 {
+        String::from(&user_agent[0][.. 128])
+    }
+    else {
+        String::from(user_agent[0])
+    };
+
+    let header: Vec<_> = headers.get("x-real-ip").collect();
+
+    let ip: IpAddr = if header.is_empty() {
+        "::1"
+    }
+    else {
+        header[0]
+    }
+    .parse()
+    .unwrap_or(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)));
+
+    let mmdb_reader = request.guard::<State<maxminddb::Reader<Vec<u8>>>>()?;
+
+    let location: String = match mmdb_reader.lookup::<geoip2::City>(ip) {
+        Ok(city) => {
+            city.city
+                .expect("getting city entry from city record")
+                .names
+                .expect("getting names from city entry")
+                .get("en")
+                .expect("getting english entry from names_map")
+                .to_string()
+        },
+        Err(_) => String::from("unknown"),
+    };
+
+    Outcome::Success((user_agent, format!("{}", ip), location))
+}
+
 pub struct LoginGuard
 {
     pub token: String,
@@ -73,11 +115,6 @@ impl<'a, 'r> FromRequest<'a, 'r> for LoginGuard
     {
         let headers = request.headers();
 
-        let user_agent: Vec<_> = headers.get("user-agent").collect();
-
-        if user_agent.is_empty() {
-            return Outcome::Failure((Status::BadRequest, ()))
-        }
         let header: Vec<_> = headers.get("authorization").collect();
 
         if header.is_empty() {
@@ -145,45 +182,14 @@ impl<'a, 'r> FromRequest<'a, 'r> for LoginGuard
         // encode for client
         let x_api_key = base64::encode_config(&x_api_key[..], base64::URL_SAFE);
 
+        let (user_agent, ip, location) = parse_header(request)?;
+
         // sanitize too large user agents
-        let user_agent = if user_agent[0].len() > 128 {
-            String::from(&user_agent[0][.. 128])
-        }
-        else {
-            String::from(user_agent[0])
-        };
-
-        let header: Vec<_> = headers.get("x-real-ip").collect();
-
-        let ip: IpAddr = if header.is_empty() {
-            "::1"
-        }
-        else {
-            header[0]
-        }
-        .parse()
-        .unwrap_or(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)));
-
-        let mmdb_reader = request.guard::<State<maxminddb::Reader<Vec<u8>>>>()?;
-
-        let city: String = match mmdb_reader.lookup::<geoip2::City>(ip) {
-            Ok(city) => {
-                city.city
-                    .expect("getting city entry from city record")
-                    .names
-                    .expect("getting names from city entry")
-                    .get("en")
-                    .expect("getting english entry from names_map")
-                    .to_string()
-            },
-            Err(_) => String::from("unknown"),
-        };
-
         match insert_into_user_tokens(
             user.id,
             &user_agent,
-            &format!("{}", ip),
-            &city,
+            &ip,
+            &location,
             hash,
             &connection,
         ) {

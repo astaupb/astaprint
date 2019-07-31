@@ -24,6 +24,7 @@ table! {
         location -> Varchar,
         hash -> Binary,
         created -> Timestamp,
+        updated -> Timestamp,
     }
 }
 
@@ -123,6 +124,7 @@ table! {
         location -> Varchar,
         hash -> Binary,
         created -> Timestamp,
+        updated -> Timestamp,
     }
 }
 

@@ -44,3 +44,14 @@ pub fn update_default_job_options(user_id: u32, options: Option<Vec<u8>>, connec
         .set(user::options.eq(options))
         .execute(connection)
 }
+
+pub fn update_user_token(token_id: u32, user_agent: String, ip: String, location: String, connection: &MysqlConnection) -> QueryResult<usize>
+{
+    update(user_tokens::table.filter(user_tokens::id.eq(token_id)))
+           .set((
+               user_tokens::user_agent.eq(user_agent),
+               user_tokens::ip.eq(ip),
+               user_tokens::location.eq(location),
+           ))
+           .execute(connection)
+}

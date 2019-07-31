@@ -44,7 +44,12 @@ use sodium::GenericHash;
 
 use crate::user::key::split_x_api_key;
 
-use mysql::user::select::*;
+use mysql::user::{
+    select::*,
+    update::*,
+};
+
+use user::login::parse_header;
 
 pub struct UserGuard
 {
@@ -94,6 +99,12 @@ impl<'a, 'r> FromRequest<'a, 'r> for UserGuard
             let result: QueryResult<u32> = select_user_token_id_by_hash(user_id, hash, &connection);
             match result {
                 Ok(token_id) => {
+                    // update token so we can track the last usage time
+                    let (user_agent, ip, location) = parse_header(request)?;
+
+                    update_user_token(token_id, user_agent, ip, location, &connection)
+                        .expect("updating admin token");
+
                     Outcome::Success(UserGuard {
                         id: user_id,
                         token_id,

@@ -36,4 +36,5 @@ pub struct UserToken
     pub location: String,
     pub hash: Vec<u8>,
     pub created: NaiveDateTime,
+    pub updated: NaiveDateTime,
 }

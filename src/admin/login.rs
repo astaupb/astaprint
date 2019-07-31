@@ -46,13 +46,13 @@ use sodium::{
     PasswordHash,
 };
 
-use maxminddb::geoip2;
-
 use mysql::admin::{
     insert::*,
     select::*,
     Admin,
 };
+
+use user::login::parse_header;
 
 pub struct AdminLoginGuard
 {
@@ -66,8 +66,6 @@ impl<'a, 'r> FromRequest<'a, 'r> for AdminLoginGuard
     fn from_request(request: &'a Request<'r>) -> request::Outcome<AdminLoginGuard, ()>
     {
         let header = request.headers();
-
-        let remote = request.remote().expect("reading remote address");
 
         let user_agent: Vec<_> = header.get("user-agent").collect();
 
@@ -140,31 +138,10 @@ impl<'a, 'r> FromRequest<'a, 'r> for AdminLoginGuard
         // encode for client
         let x_api_key = base64::encode_config(&x_api_key[..], base64::URL_SAFE);
 
-        // sanitize too large user agents
-        let user_agent = if user_agent[0].len() > 128 {
-            String::from(&user_agent[0][.. 128])
-        }
-        else {
-            String::from(user_agent[0])
-        };
-
-        let mmdb_reader = request.guard::<State<maxminddb::Reader<Vec<u8>>>>()?;
-
-        let city: String = match mmdb_reader.lookup::<geoip2::City>(remote.ip()) {
-            Ok(city) => {
-                city.city
-                    .expect("getting city entry from city record")
-                    .names
-                    .expect("getting names from city entry")
-                    .get("en")
-                    .expect("getting english entry from names_map")
-                    .to_string()
-            },
-            Err(_) => String::from("unknown"),
-        };
+        let (user_agent, ip, location) = parse_header(request)?;
 
         match insert_admin_token(
-            (admin.id, user_agent, format!("{}", remote.ip()), city, hash),
+            (admin.id, user_agent, ip, location, hash),
             &connection,
         ) {
             Ok(_) => {

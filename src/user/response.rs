@@ -26,7 +26,8 @@ pub struct UserTokenResponse
     pub user_agent: String,
     pub ip: String,
     pub location: String,
-    pub created: String,
+    pub created: i64,
+    pub updated: i64,
 }
 
 impl<'a> From<&'a UserToken> for UserTokenResponse
@@ -38,7 +39,8 @@ impl<'a> From<&'a UserToken> for UserTokenResponse
             user_agent: row.user_agent.clone(),
             ip: row.ip.clone(),
             location: row.location.clone(),
-            created: format!("{}", row.created),
+            created: row.created.timestamp(),
+            updated: row.updated.timestamp(),
         }
     }
 }

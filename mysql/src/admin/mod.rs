@@ -1,5 +1,7 @@
 pub mod select;
 pub mod insert;
+pub mod update;
+
 use crate::schema::*;
 use chrono::{
     NaiveDate,
@@ -35,4 +37,5 @@ pub struct AdminToken
     pub location: String,
     pub hash: Vec<u8>,
     pub created: NaiveDateTime,
+    pub updated: NaiveDateTime,
 }
