@@ -19,7 +19,10 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use admin::guard::AdminGuard;
 use diesel::prelude::*;
-use model::task::worker::WorkerTask;
+use model::task::worker::{
+    WorkerTask,
+    WorkerCommand,
+};
 use mysql::printers::select::{
     select_printer_by_device_id,
     select_printers,
@@ -42,7 +45,7 @@ pub fn get_printers(admin: AdminGuard) -> QueryResult<Json<Vec<PrinterResponse>>
 pub fn get_single_printer(
     id: u32,
     admin: AdminGuard,
-    queues: State<HashMap<u32, TaskQueueClient<WorkerTask, ()>>>,
+    queues: State<HashMap<u32, TaskQueueClient<WorkerTask, WorkerCommand>>>,
 ) -> QueryResult<Option<Json<PrinterResponse>>>
 {
     let queue = match queues.get(&id) {
