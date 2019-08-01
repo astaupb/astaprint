@@ -213,3 +213,10 @@ pub fn select_user_options(user_id: u32, connection: &MysqlConnection) -> QueryR
         .filter(user::id.eq(user_id))
         .first(connection)
 }
+
+pub fn select_user_token_ip_and_location_by_id(token_id: u32, connection: &MysqlConnection) -> QueryResult<(String, String)> {
+    user_tokens::table
+        .select((user_tokens::ip, user_tokens::location))
+        .filter(user_tokens::id.eq(token_id))
+        .first(connection)
+}

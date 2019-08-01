@@ -98,7 +98,14 @@ impl<'a, 'r> FromRequest<'a, 'r> for AdminGuard
             match select_admin_token_id_by_hash(admin_id, hash, &connection) {
                 Ok(token_id) => {
                     // update token so we can track the last usage time
-                    let (user_agent, ip, location) = parse_header(request)?;
+                    let (ip, mut location) = select_admin_token_ip_and_location_by_id(token_id, &connection)
+                        .expect("selecting admin token");
+
+                    let (user_agent, ip, new_location) = parse_header(request, Some(ip))?;
+
+                    if let Some(new_location) = new_location {
+                        location = new_location;
+                    }
 
                     update_admin_token(token_id, user_agent, ip, location, &connection)
                         .expect("updating admin token");

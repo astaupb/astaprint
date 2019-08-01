@@ -59,7 +59,7 @@ use std::net::{
     Ipv4Addr,
 };
 
-pub fn parse_header(request: &Request) -> request::Outcome<(String, String, String), ()>
+pub fn parse_header(request: &Request, old_ip: Option<String>) -> request::Outcome<(String, String, Option<String>), ()>
 {
     let headers = request.headers();
 
@@ -83,24 +83,30 @@ pub fn parse_header(request: &Request) -> request::Outcome<(String, String, Stri
     .parse()
     .unwrap_or(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)));
 
-    let mmdb_reader = request.guard::<State<maxminddb::Reader<Vec<u8>>>>()?;
+    let ip_str = format!("{}", ip);
 
-    let location: String = match mmdb_reader.lookup::<geoip2::City>(ip) {
-        Ok(lookup) => {
-            let mut result = String::from("lookup failed");
-            if let Some(entry) = lookup.city {
-                if let Some(names) = entry.names {
-                    if let Some(name) = names.get("en") {
-                        result = name.to_string();
+    let location = if old_ip.is_none() || old_ip.unwrap() != ip_str {
+        let mmdb_reader = request.guard::<State<maxminddb::Reader<Vec<u8>>>>()?;
+
+        let location: String = match mmdb_reader.lookup::<geoip2::City>(ip) {
+            Ok(lookup) => {
+                let mut result = String::from("lookup failed");
+                if let Some(entry) = lookup.city {
+                    if let Some(names) = entry.names {
+                        if let Some(name) = names.get("en") {
+                            result = name.to_string();
+                        }
                     }
                 }
-            }
-            result
-        },
-        Err(_) => String::from("unknown"),
+                result
+            },
+            Err(_) => String::from("unknown"),
+        };
+        Some(location)
+    } else {
+        None
     };
-
-    Outcome::Success((user_agent, format!("{}", ip), location))
+    Outcome::Success((user_agent, ip_str, location))
 }
 
 pub struct LoginGuard
@@ -184,14 +190,14 @@ impl<'a, 'r> FromRequest<'a, 'r> for LoginGuard
         // encode for client
         let x_api_key = base64::encode_config(&x_api_key[..], base64::URL_SAFE);
 
-        let (user_agent, ip, location) = parse_header(request)?;
+        let (user_agent, ip, location) = parse_header(request, None)?;
 
         // sanitize too large user agents
         match insert_into_user_tokens(
             user.id,
             &user_agent,
             &ip,
-            &location,
+            &location.unwrap(), // we have a location here as we passed None to parse_header
             hash,
             &connection,
         ) {

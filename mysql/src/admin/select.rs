@@ -41,3 +41,10 @@ pub fn select_admin_by_login(login: &str, connection: &MysqlConnection)
         .filter(admin::login.eq(Some(login)))
         .first(connection)
 }
+
+pub fn select_admin_token_ip_and_location_by_id(token_id: u32, connection: &MysqlConnection) -> QueryResult<(String, String)> {
+    admin_tokens::table
+        .select((admin_tokens::ip, admin_tokens::location))
+        .filter(admin_tokens::id.eq(token_id))
+        .first(connection)
+}

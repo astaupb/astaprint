@@ -138,10 +138,10 @@ impl<'a, 'r> FromRequest<'a, 'r> for AdminLoginGuard
         // encode for client
         let x_api_key = base64::encode_config(&x_api_key[..], base64::URL_SAFE);
 
-        let (user_agent, ip, location) = parse_header(request)?;
+        let (user_agent, ip, location) = parse_header(request, None)?;
 
         match insert_admin_token(
-            (admin.id, user_agent, ip, location, hash),
+            (admin.id, user_agent, ip, location.unwrap(), hash),
             &connection,
         ) {
             Ok(_) => {
