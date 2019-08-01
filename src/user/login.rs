@@ -86,14 +86,16 @@ pub fn parse_header(request: &Request) -> request::Outcome<(String, String, Stri
     let mmdb_reader = request.guard::<State<maxminddb::Reader<Vec<u8>>>>()?;
 
     let location: String = match mmdb_reader.lookup::<geoip2::City>(ip) {
-        Ok(city) => {
-            city.city
-                .expect("getting city entry from city record")
-                .names
-                .expect("getting names from city entry")
-                .get("en")
-                .expect("getting english entry from names_map")
-                .to_string()
+        Ok(lookup) => {
+            let mut result = String::from("lookup failed");
+            if let Some(entry) = lookup.city {
+                if let Some(names) = entry.names {
+                    if let Some(name) = names.get("en") {
+                        result = name.to_string();
+                    }
+                }
+            }
+            result
         },
         Err(_) => String::from("unknown"),
     };
