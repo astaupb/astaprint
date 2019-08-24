@@ -42,5 +42,8 @@ pub struct DispatcherTask
     pub user_id: u32,
     pub filename: String,
     pub keep: bool,
+    pub color: bool,
+    pub a3: bool,
+    pub duplex: u8,
     pub uid: Vec<u8>,
 }

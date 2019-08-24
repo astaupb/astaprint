@@ -119,6 +119,9 @@ pub fn dispatch(
     };
 
     options.keep = task.keep;
+    options.a3 = task.a3;
+    options.duplex = task.duplex;
+    options.color = task.color;
 
     match insert_into_jobs(
         task.user_id,
