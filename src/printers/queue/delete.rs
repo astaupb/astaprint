@@ -26,7 +26,7 @@ use model::task::worker::{
 
 use rocket::{
     http::Status,
-    response::Redirect,
+    response::status::Custom,
     State,
 };
 
@@ -43,15 +43,15 @@ pub fn delete_queue(
     user: UserGuard,
     device_id: u32,
     queues: State<HashMap<u32, TaskQueueClient<WorkerTask, WorkerCommand>>>,
-) -> Status
+) -> Custom<()>
 {
     let queue = match queues.get(&device_id) {
         Some(queue) => queue,
-        None => return Status::new(404, "Device Not Found"),
+        None => return Custom(Status::new(404, "Device Not Found"), ())
     };
     let processing = queue.get_processing();
     if processing.is_empty() {
-        return Status::new(404, "Task Not Found")
+        return Custom(Status::new(424, "Task Not Found"), ())
     }
     let task = processing[0].clone();
     if task.user_id == user.id {
@@ -60,10 +60,10 @@ pub fn delete_queue(
         let client = CommandClient::from((queue, &hex_uid[..]));
         client.send_command(&WorkerCommand::Cancel).expect("sending cancel command");
 
-        Status::new(205, "Success - Reset Content")
+        Custom(Status::new(205, "Success - Reset Content"), ())
     }
     else {
-        Status::new(401, "Unauthorized")
+        Custom(Status::new(401, "Unauthorized"), ())
     }
 }
 
@@ -72,11 +72,11 @@ pub fn delete_queue_as_admin(
     admin: AdminGuard,
     device_id: u32,
     queues: State<HashMap<u32, TaskQueueClient<WorkerTask, WorkerCommand>>>,
-) -> Status
+) -> Custom<()>
 {
     let queue = match queues.get(&device_id) {
         Some(queue) => queue,
-        None => return Status::new(404, "Device Not Found"),
+        None => return Custom(Status::new(404, "Device Not Found"), ())
     };
     let processing = queue.get_processing();
     if !processing.is_empty() {
@@ -85,9 +85,9 @@ pub fn delete_queue_as_admin(
 
         info!("admin {} cleared queue of printer {}", admin.id, device_id);
 
-        Status::new(205, "Success - Reset Content")
+        Custom(Status::new(205, "Success - Reset Content"), ())
     }
     else {
-        Status::new(404, "Task Not Found")
+        Custom(Status::new(424, "Task Not Found"), ())
     }
 }
