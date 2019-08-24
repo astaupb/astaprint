@@ -222,7 +222,7 @@ pub fn work(
         }
     }
 
-    thread::sleep(time::Duration::from_millis(3000));
+    thread::sleep(time::Duration::from_millis(1000));
 
     for _ in 0 .. 4 {
         accounting.update(counter(&state.ip).ok());
