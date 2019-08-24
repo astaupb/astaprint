@@ -38,16 +38,6 @@ use redis::queue::{
     TaskQueueClient,
 };
 
-#[delete("/<device_id>/queue/<_hex_uid>")]
-pub fn delete_queue_element(
-    _user: UserGuard,
-    device_id: u32,
-    _hex_uid: String,
-) -> Redirect
-{
-    Redirect::to(uri!("/api/v1/printers/", delete_queue: device_id = device_id))
-}
-
 #[delete("/<device_id>/queue")]
 pub fn delete_queue(
     user: UserGuard,
