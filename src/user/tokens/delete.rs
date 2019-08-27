@@ -33,10 +33,7 @@ pub fn delete_all_tokens(user: UserGuard) -> QueryResult<Status>
 }
 
 #[delete("/<token_id>")]
-pub fn delete_single_token(
-    user: UserGuard,
-    token_id: u32,
-) -> QueryResult<Option<Status>>
+pub fn delete_single_token(user: UserGuard, token_id: u32) -> QueryResult<Option<Status>>
 {
     let affected_rows = delete_user_token_by_id(user.id, token_id, &user.connection)?;
     if affected_rows > 0 {

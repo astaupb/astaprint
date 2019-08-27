@@ -50,10 +50,7 @@ pub struct JournalPost
 }
 
 #[post("/", data = "<token>")]
-pub fn post_to_journal_with_token(
-    user: UserGuard,
-    token: Json<String>,
-) -> QueryResult<Custom<()>>
+pub fn post_to_journal_with_token(user: UserGuard, token: Json<String>) -> QueryResult<Custom<()>>
 {
     let token: Option<JournalToken> =
         select_journal_token_by_content(token.into_inner(), &user.connection)
@@ -73,10 +70,7 @@ pub fn post_to_journal_with_token(
 }
 
 #[post("/journal", data = "<body>")]
-pub fn post_to_journal_as_admin(
-    body: Json<JournalPost>,
-    admin: AdminGuard,
-) -> QueryResult<Status>
+pub fn post_to_journal_as_admin(body: Json<JournalPost>, admin: AdminGuard) -> QueryResult<Status>
 {
     update_credit_as_admin(
         body.user_id,
@@ -90,10 +84,7 @@ pub fn post_to_journal_as_admin(
 }
 
 #[post("/journal/tokens?<value>")]
-pub fn post_journal_token_as_admin(
-    value: u32,
-    admin: AdminGuard,
-) -> QueryResult<Json<String>>
+pub fn post_journal_token_as_admin(value: u32, admin: AdminGuard) -> QueryResult<Json<String>>
 {
     let content = base64::encode_config(&random_bytes(12)[..], base64::URL_SAFE);
     insert_into_journal_token(value, content.clone(), false, &admin.connection)?;

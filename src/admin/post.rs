@@ -47,10 +47,7 @@ pub struct NewAdmin
 }
 
 #[post("/", data = "<new>")]
-pub fn post_new_admin(
-    admin: AdminGuard,
-    new: Json<NewAdmin>,
-) -> QueryResult<Custom<()>>
+pub fn post_new_admin(admin: AdminGuard, new: Json<NewAdmin>) -> QueryResult<Custom<()>>
 {
     if select_admin_by_login(&new.login, &admin.connection).is_ok() {
         return Ok(Custom(Status::new(472, "login already taken"), ()))

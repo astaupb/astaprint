@@ -28,11 +28,9 @@ use model::task::worker::{
 
 use rocket::{
     http::Status,
-    response::{
-        status::{
-            Accepted,
-            Custom,
-        },
+    response::status::{
+        Accepted,
+        Custom,
     },
     State,
 };

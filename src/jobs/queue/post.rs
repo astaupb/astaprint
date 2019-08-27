@@ -39,8 +39,11 @@ use redis::{
     store::Store,
 };
 
-
-#[post("/queue?<filename>&<keep>&<a3>&<color>&<duplex>&<password>", data = "<data>", format = "application/pdf")]
+#[post(
+    "/queue?<filename>&<keep>&<a3>&<color>&<duplex>&<password>",
+    data = "<data>",
+    format = "application/pdf"
+)]
 pub fn upload_job<'a>(
     user: UserGuard,
     data: PdfBody,
@@ -58,7 +61,7 @@ pub fn upload_job<'a>(
     let bytes = data.bytes;
 
     if let Err(_) = PopplerDocument::new_from_data(&bytes[..], "") {
-        return Err(BadRequest(Some("invalid pdf file")));
+        return Err(BadRequest(Some("invalid pdf file")))
     }
 
     let uid = store.set(bytes).expect("saving file in store");
@@ -86,11 +89,26 @@ pub fn upload_job<'a>(
         false
     };
 
-    let a3 = if let Some(a3) = a3 { a3 } else { false};
+    let a3 = if let Some(a3) = a3 {
+        a3
+    }
+    else {
+        false
+    };
 
-    let color = if let Some(color) = color { color } else { false};
+    let color = if let Some(color) = color {
+        color
+    }
+    else {
+        false
+    };
 
-    let duplex = if let Some(duplex) = duplex { duplex } else { 0};
+    let duplex = if let Some(duplex) = duplex {
+        duplex
+    }
+    else {
+        0
+    };
 
     let task = DispatcherTask {
         user_id,

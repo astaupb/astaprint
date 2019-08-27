@@ -35,10 +35,7 @@ pub struct TimeOut
 
 impl fmt::Debug for TimeOut
 {
-    fn fmt(
-        &self,
-        f: &mut fmt::Formatter,
-    ) -> fmt::Result
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
     {
         match self.begin.elapsed() {
             Ok(elapsed) => {
@@ -66,10 +63,7 @@ impl TimeOut
 
     pub fn refresh(&mut self) { self.begin = SystemTime::now(); }
 
-    pub fn set_value_in_s(
-        &mut self,
-        timeout_s: u64,
-    )
+    pub fn set_value_in_s(&mut self, timeout_s: u64)
     {
         self.value = Duration::from_secs(timeout_s);
     }

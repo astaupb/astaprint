@@ -153,8 +153,8 @@ fn rocket() -> rocket::Rocket
         worker_queues
             .insert(device_id, TaskQueueClient::new(&format!("worker::{}", device_id), pool));
     }
-    let mmdb_reader = maxminddb::Reader::open_readfile("GeoLite2-City.mmdb")
-        .expect("opening maxminddb reader");
+    let mmdb_reader =
+        maxminddb::Reader::open_readfile("GeoLite2-City.mmdb").expect("opening maxminddb reader");
 
     let redis_pool = get_redis_pool(5, Redis::Lock);
 
@@ -200,11 +200,7 @@ fn rocket() -> rocket::Rocket
             get_single_token,
             delete_single_token,
         ])
-        .mount("/printers", routes![
-            post_to_queue,
-            get_queue,
-            delete_queue
-        ])
+        .mount("/printers", routes![post_to_queue, get_queue, delete_queue])
         .mount("/journal", routes![get_journal_as_user, post_to_journal_with_token, credit])
         .mount("/admin", routes![
             get_printers,

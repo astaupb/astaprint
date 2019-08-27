@@ -28,10 +28,7 @@ use mysql::jobs::select::*;
 use user::guard::UserGuard;
 
 #[get("/<id>")]
-pub fn fetch_job(
-    user: UserGuard,
-    id: u32,
-) -> QueryResult<Option<Json<Job>>>
+pub fn fetch_job(user: UserGuard, id: u32) -> QueryResult<Option<Json<Job>>>
 {
     let job: Option<(u32, Vec<u8>, Vec<u8>, NaiveDateTime, NaiveDateTime)> =
         select_job_of_user(user.id, id, &user.connection)?;
@@ -49,46 +46,31 @@ pub fn jobs(user: UserGuard) -> QueryResult<Json<Vec<Job>>>
 }
 
 #[get("/<id>/pdf")]
-pub fn fetch_pdf(
-    user: UserGuard,
-    id: u32,
-) -> QueryResult<Option<Vec<u8>>>
+pub fn fetch_pdf(user: UserGuard, id: u32) -> QueryResult<Option<Vec<u8>>>
 {
     Ok(select_pdf(id, user.id, &user.connection).expect("selecting pdf"))
 }
 
 #[get("/<id>/preview/0")]
-pub fn fetch_preview_0(
-    user: UserGuard,
-    id: u32,
-) -> QueryResult<Option<Vec<u8>>>
+pub fn fetch_preview_0(user: UserGuard, id: u32) -> QueryResult<Option<Vec<u8>>>
 {
     Ok(select_preview_0(id, user.id, &user.connection).expect("selecting preview 0"))
 }
 
 #[get("/<id>/preview/1")]
-pub fn fetch_preview_1(
-    user: UserGuard,
-    id: u32,
-) -> QueryResult<Option<Vec<u8>>>
+pub fn fetch_preview_1(user: UserGuard, id: u32) -> QueryResult<Option<Vec<u8>>>
 {
     Ok(select_preview_1(id, user.id, &user.connection).expect("selection preview 1"))
 }
 
 #[get("/<id>/preview/2")]
-pub fn fetch_preview_2(
-    user: UserGuard,
-    id: u32,
-) -> QueryResult<Option<Vec<u8>>>
+pub fn fetch_preview_2(user: UserGuard, id: u32) -> QueryResult<Option<Vec<u8>>>
 {
     Ok(select_preview_2(id, user.id, &user.connection).expect("selection preview 2"))
 }
 
 #[get("/<id>/preview/3")]
-pub fn fetch_preview_3(
-    user: UserGuard,
-    id: u32,
-) -> QueryResult<Option<Vec<u8>>>
+pub fn fetch_preview_3(user: UserGuard, id: u32) -> QueryResult<Option<Vec<u8>>>
 {
     Ok(select_preview_3(id, user.id, &user.connection).expect("selection preview 2"))
 }

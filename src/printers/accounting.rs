@@ -92,11 +92,7 @@ impl Accounting
 
     pub fn not_enough_credit(&self) -> bool { self.credit + self.value < i32::from(self.baseprice) }
 
-    pub fn start(
-        &mut self,
-        job: Job,
-        counter: CounterValues,
-    )
+    pub fn start(&mut self, job: Job, counter: CounterValues)
     {
         self.credit();
         self.expected = job.pages_to_print();
@@ -111,10 +107,7 @@ impl Accounting
         self.basecounter = counter;
     }
 
-    pub fn update(
-        &mut self,
-        counter: Option<CounterValues>,
-    ) -> bool
+    pub fn update(&mut self, counter: Option<CounterValues>) -> bool
     {
         if let Some(counter) = counter {
             if counter.total > self.counter.total {

@@ -19,10 +19,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use std::mem::transmute;
 
-pub fn merge_x_api_key(
-    user_id: u32,
-    token: Vec<u8>,
-) -> Result<Vec<u8>, ()>
+pub fn merge_x_api_key(user_id: u32, token: Vec<u8>) -> Result<Vec<u8>, ()>
 {
     if token.len() != 128 {
         warn!("invalid token length: {}", token.len());

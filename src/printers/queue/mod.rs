@@ -160,14 +160,14 @@ pub fn work(
                     Ok(counter) => counter,
                     Err(_) => {
                         to_print.push_front(job_id);
-                        break;
+                        break
                     },
                 };
 
                 accounting.start(job.clone(), counter);
 
                 if accounting.not_enough_credit() {
-                    break;
+                    break
                 }
 
                 let mut data = job_row.pdf;

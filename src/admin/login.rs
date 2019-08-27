@@ -140,10 +140,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for AdminLoginGuard
 
         let (user_agent, ip, location) = parse_header(request, None)?;
 
-        match insert_admin_token(
-            (admin.id, user_agent, ip, location.unwrap(), hash),
-            &connection,
-        ) {
+        match insert_admin_token((admin.id, user_agent, ip, location.unwrap(), hash), &connection) {
             Ok(_) => {
                 info!("{} logged in ", admin.id);
                 Outcome::Success(AdminLoginGuard {

@@ -56,10 +56,7 @@ pub fn fetch_single_option(
 }
 
 #[get("/<id>/options")]
-pub fn fetch_options(
-    user: UserGuard,
-    id: u32,
-) -> QueryResult<Option<Json<JobOptions>>>
+pub fn fetch_options(user: UserGuard, id: u32) -> QueryResult<Option<Json<JobOptions>>>
 {
     let result: Option<Vec<u8>> = select_job_options(id, user.id, &user.connection)?;
 

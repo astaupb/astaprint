@@ -45,10 +45,7 @@ pub struct Admin
 
 impl Admin
 {
-    pub fn insert(
-        self,
-        connection: &MysqlConnection,
-    ) -> QueryResult<usize>
+    pub fn insert(self, connection: &MysqlConnection) -> QueryResult<usize>
     {
         insert_admin(
             (

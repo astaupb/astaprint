@@ -48,7 +48,8 @@ pub fn update_options(
     update: Json<JobOptionsUpdate>,
 ) -> QueryResult<Status>
 {
-    if let Some((id, info, options, _created, _updated)) = select_job_of_user(user.id, id, &user.connection)?
+    if let Some((id, info, options, _created, _updated)) =
+        select_job_of_user(user.id, id, &user.connection)?
     {
         let info: JobInfo = bincode::deserialize(&info[..]).expect("deserializing JobInfo");
         let mut options: JobOptions =

@@ -23,11 +23,7 @@ use rocket::http::Status;
 use rocket_contrib::json::Json;
 
 #[put("/users/<id>/locked", data = "<locked>")]
-pub fn change_user_locked(
-    id: u32,
-    locked: Json<bool>,
-    admin: AdminGuard,
-) -> Status
+pub fn change_user_locked(id: u32, locked: Json<bool>, admin: AdminGuard) -> Status
 {
     let locked = locked.into_inner();
     match update_locked(id, locked, &admin.connection) {

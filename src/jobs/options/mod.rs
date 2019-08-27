@@ -48,18 +48,12 @@ pub struct JobOptionsUpdate
 
 pub trait Update
 {
-    fn merge(
-        &mut self,
-        update: JobOptionsUpdate,
-    );
+    fn merge(&mut self, update: JobOptionsUpdate);
 }
 
 impl Update for JobOptions
 {
-    fn merge(
-        &mut self,
-        update: JobOptionsUpdate,
-    )
+    fn merge(&mut self, update: JobOptionsUpdate)
     {
         if let Some(color) = update.color {
             self.color = color;

@@ -20,8 +20,8 @@
 use admin::guard::AdminGuard;
 use diesel::prelude::*;
 use model::task::worker::{
-    WorkerTask,
     WorkerCommand,
+    WorkerTask,
 };
 use mysql::printers::select::{
     select_printer_by_device_id,

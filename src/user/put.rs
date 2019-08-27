@@ -56,10 +56,7 @@ pub struct PasswordChangeBody
 }
 
 #[put("/password", data = "<body>")]
-pub fn change_password(
-    user: UserGuard,
-    body: Json<PasswordChangeBody>,
-) -> QueryResult<Status>
+pub fn change_password(user: UserGuard, body: Json<PasswordChangeBody>) -> QueryResult<Status>
 {
     let (hash, salt): (Vec<u8>, Vec<u8>) = select_hash_and_salt(user.id, &user.connection)?;
 
@@ -80,10 +77,7 @@ pub fn change_password(
 }
 
 #[put("/name", data = "<new_username>")]
-pub fn change_username(
-    user: UserGuard,
-    new_username: Json<String>,
-) -> QueryResult<Custom<()>>
+pub fn change_username(user: UserGuard, new_username: Json<String>) -> QueryResult<Custom<()>>
 {
     let name = new_username.into_inner();
 
@@ -111,11 +105,7 @@ pub struct Card
 }
 
 #[put("/<user_id>/card", data = "<card>")]
-pub fn change_card(
-    admin: AdminGuard,
-    user_id: u32,
-    card: Json<Card>,
-) -> QueryResult<Status>
+pub fn change_card(admin: AdminGuard, user_id: u32, card: Json<Card>) -> QueryResult<Status>
 {
     let card = card.into_inner();
 

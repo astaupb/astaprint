@@ -28,10 +28,7 @@ use mysql::jobs::select::*;
 use user::guard::UserGuard;
 
 #[get("/<id>/info")]
-pub fn fetch_info(
-    user: UserGuard,
-    id: u32,
-) -> QueryResult<Option<Json<JobInfo>>>
+pub fn fetch_info(user: UserGuard, id: u32) -> QueryResult<Option<Json<JobInfo>>>
 {
     let result: Option<Vec<u8>> = select_job_info(id, user.id, &user.connection)?;
 

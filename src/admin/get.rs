@@ -96,10 +96,7 @@ pub fn get_all_users(
 }
 
 #[get("/users/<id>")]
-pub fn get_user_as_admin(
-    id: u32,
-    admin: AdminGuard,
-) -> QueryResult<Json<UserResponse>>
+pub fn get_user_as_admin(id: u32, admin: AdminGuard) -> QueryResult<Json<UserResponse>>
 {
     Ok(Json(UserResponse::from(&select_user_by_id(id, &admin.connection)?)))
 }
@@ -126,17 +123,14 @@ pub fn get_user_journal_as_admin(
 }
 
 #[get("/users/<id>/credit")]
-pub fn get_user_credit_as_admin(
-    id: u32,
-    admin: AdminGuard,
-) -> QueryResult<Json<i32>>
+pub fn get_user_credit_as_admin(id: u32, admin: AdminGuard) -> QueryResult<Json<i32>>
 {
     Ok(Json(select_user_credit_by_id(id, &admin.connection)?))
 }
 
 #[get("/journal/tokens")]
 pub fn get_journal_tokens_as_admin(
-    admin: AdminGuard
+    admin: AdminGuard,
 ) -> QueryResult<Json<Vec<JournalTokenResponse>>>
 {
     Ok(Json(

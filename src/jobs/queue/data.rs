@@ -45,10 +45,7 @@ impl FromDataSimple for PdfBody
 {
     type Error = String;
 
-    fn from_data(
-        req: &Request,
-        data: Data,
-    ) -> data::Outcome<Self, String>
+    fn from_data(req: &Request, data: Data) -> data::Outcome<Self, String>
     {
         if req.content_type() != Some(&ContentType::new("application", "pdf")) {
             return Outcome::Forward(data)
@@ -83,6 +80,8 @@ impl FromDataSimple for PdfBody
             }
             bytes.extend_from_slice(&chunk[.. bytes_read]);
         }
-        Outcome::Success(PdfBody{bytes})
+        Outcome::Success(PdfBody {
+            bytes,
+        })
     }
 }

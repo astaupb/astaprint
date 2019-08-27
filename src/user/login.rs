@@ -59,7 +59,10 @@ use std::net::{
     Ipv4Addr,
 };
 
-pub fn parse_header(request: &Request, old_ip: Option<String>) -> request::Outcome<(String, String, Option<String>), ()>
+pub fn parse_header(
+    request: &Request,
+    old_ip: Option<String>,
+) -> request::Outcome<(String, String, Option<String>), ()>
 {
     let headers = request.headers();
 
@@ -103,7 +106,8 @@ pub fn parse_header(request: &Request, old_ip: Option<String>) -> request::Outco
             Err(_) => String::from("unknown"),
         };
         Some(location)
-    } else {
+    }
+    else {
         None
     };
     Outcome::Success((user_agent, ip_str, location))

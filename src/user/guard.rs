@@ -100,10 +100,16 @@ impl<'a, 'r> FromRequest<'a, 'r> for UserGuard
             match result {
                 Ok(token_id) => {
                     // update token so we can track the last usage time
-                    let (ip, mut location) = select_user_token_ip_and_location_by_id(token_id, &connection)
-                        .expect("selecting user token");
+                    let (ip, mut location) =
+                        select_user_token_ip_and_location_by_id(token_id, &connection)
+                            .expect("selecting user token");
 
-                    let (user_agent, ip, new_location) = parse_header(request, Some(ip)).succeeded().unwrap_or(("unknown".to_string(), "127.0.0.1".to_string(), Some("unknown".to_string())));
+                    let (user_agent, ip, new_location) =
+                        parse_header(request, Some(ip)).succeeded().unwrap_or((
+                            "unknown".to_string(),
+                            "127.0.0.1".to_string(),
+                            Some("unknown".to_string()),
+                        ));
 
                     if let Some(new_location) = new_location {
                         location = new_location;

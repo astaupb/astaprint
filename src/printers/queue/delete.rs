@@ -47,7 +47,7 @@ pub fn delete_queue(
 {
     let queue = match queues.get(&device_id) {
         Some(queue) => queue,
-        None => return Custom(Status::new(404, "Device Not Found"), ())
+        None => return Custom(Status::new(404, "Device Not Found"), ()),
     };
     let processing = queue.get_processing();
     if processing.is_empty() {
@@ -76,7 +76,7 @@ pub fn delete_queue_as_admin(
 {
     let queue = match queues.get(&device_id) {
         Some(queue) => queue,
-        None => return Custom(Status::new(404, "Device Not Found"), ())
+        None => return Custom(Status::new(404, "Device Not Found"), ()),
     };
     let processing = queue.get_processing();
     if !processing.is_empty() {
