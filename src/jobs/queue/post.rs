@@ -82,34 +82,6 @@ pub fn upload_job<'a>(
         String::from("")
     };
 
-    let keep = if let Some(keep) = keep {
-        keep
-    }
-    else {
-        false
-    };
-
-    let a3 = if let Some(a3) = a3 {
-        a3
-    }
-    else {
-        false
-    };
-
-    let color = if let Some(color) = color {
-        color
-    }
-    else {
-        false
-    };
-
-    let duplex = if let Some(duplex) = duplex {
-        duplex
-    }
-    else {
-        0
-    };
-
     let task = DispatcherTask {
         user_id,
         uid,

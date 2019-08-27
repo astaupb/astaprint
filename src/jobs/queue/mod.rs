@@ -47,7 +47,10 @@ pub struct DispatcherTaskResponse
 {
     pub uid: String,
     pub filename: String,
-    pub keep: bool,
+    pub keep: Option<bool>,
+    pub color: Option<bool>,
+    pub a3: Option<bool>,
+    pub duplex: Option<u8>,
 }
 
 impl<'a> From<&'a DispatcherTask> for DispatcherTaskResponse
@@ -58,6 +61,9 @@ impl<'a> From<&'a DispatcherTask> for DispatcherTaskResponse
             uid: hex::encode(&task.uid[..]),
             filename: task.filename.clone(),
             keep: task.keep,
+            color: task.color,
+            a3: task.a3,
+            duplex: task.duplex,
         }
     }
 }
@@ -118,10 +124,18 @@ pub fn dispatch(
         },
     };
 
-    options.keep = task.keep;
-    options.a3 = task.a3;
-    options.duplex = task.duplex;
-    options.color = task.color;
+    if let Some(keep) = task.keep {
+        options.keep = keep;
+    }
+    if let Some(a3) = task.a3 {
+        options.a3 = a3;
+    }
+    if let Some(duplex) = task.duplex {
+        options.duplex = duplex;
+    }
+    if let Some(color) = task.color {
+        options.color = color;
+    }
 
     match insert_into_jobs(
         task.user_id,
