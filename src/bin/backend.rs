@@ -72,7 +72,10 @@ use astaprint::{
     jobs::{
         delete::*,
         get::*,
-        info::get::*,
+        info::{
+            get::*,
+            put::*,
+        },
         options::{
             get::*,
             put::*,
@@ -172,6 +175,7 @@ fn rocket() -> rocket::Rocket
             fetch_options,
             fetch_single_option,
             fetch_info,
+            update_filename,
             get_dispatcher_queue,
             upload_job,
             delete_job,
