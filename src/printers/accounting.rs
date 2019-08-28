@@ -88,7 +88,7 @@ impl Accounting
 
     pub fn value(&self) -> i32 { self.value }
 
-    pub fn pages_left(&self) -> i32 { (self.credit + self.value) / self.baseprice as i32 }
+    pub fn pages_left(&self) -> i32 { (self.credit + self.value) / i32::from(self.baseprice) }
 
     pub fn not_enough_credit(&self) -> bool { self.credit + self.value < i32::from(self.baseprice) }
 
@@ -119,7 +119,7 @@ impl Accounting
 
                 self.value = (-(print_bw * 5 + (print_total - print_bw) * 20))
                     .try_into()
-                    .expect("value fits in i64");;
+                    .expect("value fits in i64");
 
                 if let Ok(connection) = self.mysql_pool.get() {
                     if let Ok(credit) = select_latest_credit_of_user(self.user_id, &connection) {

@@ -25,7 +25,7 @@ use model::task::dispatcher::DispatcherTask;
 
 fn main()
 {
-    let task = DispatcherTask{
+    let task = DispatcherTask {
         user_id: 7,
         filename: "hello".to_string(),
         keep: Some(true),
@@ -36,7 +36,7 @@ fn main()
     };
     println!("{:?}", serialize(&task));
 
-    let task = DispatcherTask{
+    let task = DispatcherTask {
         user_id: 7,
         filename: "hello".to_string(),
         keep: None,
@@ -47,7 +47,7 @@ fn main()
     };
     println!("{:?}", serialize(&task));
 
-    let task = DispatcherTask{
+    let task = DispatcherTask {
         user_id: 7,
         filename: "hello".to_string(),
         keep: Some(true),
@@ -58,7 +58,7 @@ fn main()
     };
     println!("{:?}", serialize(&task));
 
-    let task = DispatcherTask{
+    let task = DispatcherTask {
         user_id: 7,
         filename: "hello".to_string(),
         keep: Some(false),
@@ -68,7 +68,4 @@ fn main()
         uid: vec![1, 2, 3],
     };
     println!("{:?}", serialize(&task));
-
-
-
 }

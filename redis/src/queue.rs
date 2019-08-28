@@ -81,7 +81,7 @@ where
                     .expect("pushing task into incoming queue");
 
                 let _: i32 = redis.expire(&self.processing, 72)
-                    .expect("setting expiration of processing key");;
+                    .expect("setting expiration of processing key");
 
                 self.process(
                     handle,

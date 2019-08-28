@@ -60,7 +60,8 @@ pub fn upload_job<'a>(
     debug!("password: {:?}", password);
     let bytes = data.bytes;
 
-    if let Err(_) = PopplerDocument::new_from_data(&bytes[..], "") {
+    if let Err(e) = PopplerDocument::new_from_data(&bytes[..], "") {
+        info!("Err creating PopplerDocument: {}", e);
         return Err(BadRequest(Some("invalid pdf file")))
     }
 

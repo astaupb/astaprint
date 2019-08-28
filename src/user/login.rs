@@ -84,7 +84,7 @@ pub fn parse_header(
         header[0]
     }
     .parse()
-    .unwrap_or(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)));
+    .unwrap_or_else(|_| IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)));
 
     let ip_str = format!("{}", ip);
 

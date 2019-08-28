@@ -41,15 +41,15 @@ fn snmptool(args: &[&str]) -> io::Result<Child>
     Command::new("./snmptool").args(args).stdout(Stdio::piped()).stderr(Stdio::piped()).spawn()
 }
 
-pub fn wake(ip: &str) { let _wake = snmptool(&[&format!("{}", ip), "wake"]); }
+pub fn wake(ip: &str) { let _wake = snmptool(&[&ip.to_string(), "wake"]); }
 
-pub fn sleep(ip: &str) { let _sleep = snmptool(&[&format!("{}", ip), "sleep"]); }
+pub fn sleep(ip: &str) { let _sleep = snmptool(&[&ip.to_string(), "sleep"]); }
 
-pub fn clear(ip: &str) -> io::Result<()> { let _clear = snmptool(&[&format!("{}", ip), "clear"])?; Ok(()) }
+pub fn clear(ip: &str) -> io::Result<()> { let _clear = snmptool(&[&ip.to_string(), "clear"])?; Ok(()) }
 
 pub fn status(ip: &str) -> Result<StatusValues, SnmpToolError>
 {
-    let output = snmptool(&[&format!("{}", ip), "status"])?.wait_with_output()?;
+    let output = snmptool(&[&ip.to_string(), "status"])?.wait_with_output()?;
     let json = String::from_utf8_lossy(&output.stdout[..]);
     Ok(serde_json::from_str(&json)?)
 }

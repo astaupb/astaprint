@@ -19,8 +19,8 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use diesel::result::QueryResult;
 
-use rocket_contrib::json::Json;
 use rocket::http::Status;
+use rocket_contrib::json::Json;
 
 use model::job::info::JobInfo;
 
@@ -40,13 +40,20 @@ pub fn update_filename(user: UserGuard, id: u32, filename: Json<String>) -> Quer
         let mut info: JobInfo = bincode::deserialize(&value[..]).expect("deserializing JobInfo");
         info.filename = filename.into_inner();
 
-        if update_job_info(id, user.id, bincode::serialize(&info).expect("serializing JobInfo"), &user.connection)? == 1 {
-            Status::new(205, "Reset Content") 
-        } else {
-            Status::new(401, "Bad Request") 
+        if update_job_info(
+            id,
+            user.id,
+            bincode::serialize(&info).expect("serializing JobInfo"),
+            &user.connection,
+        )? == 1
+        {
+            Status::new(205, "Reset Content")
         }
-         
-    } else {
-        Status::new(404, "Job not found") 
+        else {
+            Status::new(401, "Bad Request")
+        }
+    }
+    else {
+        Status::new(404, "Job not found")
     })
 }
