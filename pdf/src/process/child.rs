@@ -28,6 +28,24 @@ pub fn gs_inkcov(path: &str) -> io::Result<Child>
     gs(&["-dSAFER", "-dBATCH", "-dNOPAUSE", "-dNumRenderingThreads=4", "-sDEVICE=inkcov", "-o", "-", path])
 }
 
+pub fn gs_preprocess(path: &str, out: &str, a3: bool) -> io::Result<Child>
+{
+    gs(&[
+        "-dSAFER",
+        "-dBATCH",
+        "-dNOPAUSE",
+        "-dFIXEDMEDIA",
+        "-dUseTrimBox",
+        &format!("-sPAPERSIZE={}", if a3 { "a3" } else { "a4" }),
+        "-sDEVICE=pdfwrite",
+        "-dCompabilityLevel=1.4",
+        "-dPrinted",
+        "-dNumRenderingThreads=4",
+        &format!("-sOutputFile={}", out),
+        &path,
+    ])
+}
+
 pub fn qpdf(arguments: &[&str]) -> io::Result<Child>
 {
     Command::new("qpdf")

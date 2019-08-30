@@ -34,6 +34,7 @@ use crate::{
         qpdf_rotate,
         qpdf_pages,
         qpdf_force_version,
+        gs_preprocess,
     },
     tmp::TmpFile,
 };
@@ -143,14 +144,27 @@ pub fn force_pdf_version(path: &str) -> io::Result<()>
 {
     let out = &format!("{}_out", path);
 
-    qpdf_force_version(path, out)?
-        .wait()?;
+    qpdf_force_version(path, out)?.wait()?;
 
     remove_file(path)?;
 
     rename(out, path)?;
 
     Ok(())
+}
+
+pub fn preprocess(path: &str, a3: bool) -> io::Result<()>
+{
+    let out = &format!("{}_out", path);
+
+    gs_preprocess(path, out, a3)?.wait()?;
+
+    remove_file(path)?;
+
+    rename(out, path)?;
+
+    Ok(())
+
 }
 
 pub fn trim_pages(path: &str, pagerange: &str) -> io::Result<()>
