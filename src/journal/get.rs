@@ -25,9 +25,9 @@ use user::guard::UserGuard;
 
 use model::journal::JournalResponse;
 
-use mysql::journal::select::{
-    select_journal_of_user_with_limit_and_offset,
-    select_journal_with_limit_and_offset,
+use mysql::{
+    select_full_journal,
+    select_full_journal_of_user,
 };
 
 #[get("/?<offset>&<limit>")]
@@ -38,7 +38,7 @@ pub fn get_journal_as_user(
 ) -> QueryResult<Json<Vec<JournalResponse>>>
 {
     Ok(Json(
-        select_journal_of_user_with_limit_and_offset(
+        select_full_journal_of_user(
             user.id,
             limit.unwrap_or(i64::from(u16::max_value()) * 2),
             offset.unwrap_or(0),
@@ -57,7 +57,7 @@ pub fn get_journal_as_admin(
 ) -> QueryResult<Json<Vec<JournalResponse>>>
 {
     Ok(Json(
-        select_journal_with_limit_and_offset(
+        select_full_journal(
             limit.unwrap_or(i64::from(u16::max_value()) * 2),
             offset.unwrap_or(0),
             &admin.connection,

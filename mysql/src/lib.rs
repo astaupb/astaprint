@@ -116,6 +116,51 @@ pub fn update_credit_after_print(user_id: u32, value: i32, job_id: u32, pages: u
     })
 }
 
+use journal::{
+    select::{
+        select_journal_of_user_with_limit_and_offset,
+        select_journal_with_limit_and_offset,
+        select_print_journal_by_id,
+    },
+    PrintJournal,
+    Journal,
+};
+
+pub fn select_full_journal_of_user(user_id: u32, limit: i64, offset: i64, connection: &MysqlConnection) -> QueryResult<Vec<(Journal, Option<PrintJournal>)>>
+{
+    connection.transaction::<_, Error, _>(|| {
+        let journal = select_journal_of_user_with_limit_and_offset(user_id, limit, offset, connection)?;
+        let mut full_journal: Vec<(Journal, Option<PrintJournal>)> = Vec::with_capacity(journal.len());
+
+        for entry in journal {
+            if let Some(print_id) = entry.print_id {
+                full_journal.push((entry, Some(select_print_journal_by_id(print_id, connection)?)));
+            } else {
+                full_journal.push((entry, None));
+            }
+        }
+        Ok(full_journal)
+    })
+}
+
+pub fn select_full_journal(limit: i64, offset: i64, connection: &MysqlConnection) -> QueryResult<Vec<(Journal, Option<PrintJournal>)>>
+{
+    connection.transaction::<_, Error, _>(|| {
+        let journal = select_journal_with_limit_and_offset(limit, offset, connection)?;
+        let mut full_journal: Vec<(Journal, Option<PrintJournal>)> = Vec::with_capacity(journal.len());
+
+        for entry in journal {
+            if let Some(print_id) = entry.print_id {
+                full_journal.push((entry, Some(select_print_journal_by_id(print_id, connection)?)));
+            } else {
+                full_journal.push((entry, None));
+            }
+        }
+        Ok(full_journal)
+    })
+}
+
+
 pub fn create_mysql_pool(
     url: &str,
     max_size: u32,
@@ -162,16 +207,14 @@ mod tests
 
         let printers = select_printers(connection).unwrap();
         println!("{:x?}", printers);
-        let printer_counter = select_printer_counter(connection).unwrap();
-        println!("{:x?}", printer_counter);
 
         let user = select_user(connection).unwrap();
         println!("{:x?}", user);
         let user_tokens = select_user_tokens(connection).unwrap();
         println!("{:x?}", user_tokens);
 
-        let jobs = select_jobs(connection).unwrap();
-        println!("{:x?}", jobs);
+        //let jobs = select_jobs(connection).unwrap();
+        //println!("{:x?}", jobs);
 
         let admin = select_admin(connection).unwrap();
         println!("{:x?}|", admin);
@@ -185,5 +228,12 @@ mod tests
         let pool = create_mysql_pool(&url, 3);
         let connection = &pool.get().unwrap();
         select_everything(connection);
+    }
+
+    fn test_select_print_journal()
+    {
+        let url = env::var("ASTAPRINT_DATABASE_URL").expect("getting url from env");
+        let pool = create_mysql_pool(&url, 3);
+        let connection = &pool.get().unwrap();
     }
 }

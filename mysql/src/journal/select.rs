@@ -45,6 +45,16 @@ pub fn select_journal_of_user_with_limit_and_offset(
         .load(connection)
 }
 
+pub fn select_print_journal_by_id(
+    id: u32,
+    connection: &MysqlConnection,
+) -> QueryResult<PrintJournal>
+{
+    print_journal::table
+        .filter(print_journal::id.eq(id))
+        .first(connection)
+}
+
 pub fn select_latest_credit_of_user(
     user_id: u32,
     connection: &MysqlConnection,

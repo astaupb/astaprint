@@ -1,15 +1,44 @@
+use bincode::deserialize;
 use mysql::journal::{
     Journal,
     JournalToken,
+    PrintJournal,
 };
+
+use crate::job::options::JobOptions;
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct PrintJournalResponse
+{
+    pub pages: u16,
+    pub colored: u16,
+    pub score: i16,
+    pub device_id: u32,
+    pub options: JobOptions,
+}
+
+impl<'a> From<&'a PrintJournal> for PrintJournalResponse
+{
+    fn from(print_journal: &PrintJournal) -> PrintJournalResponse
+    {
+        PrintJournalResponse{
+            pages: print_journal.pages,
+            colored: print_journal.colored,
+            score: print_journal.score,
+            device_id: print_journal.device_id,
+            options: deserialize(&print_journal.options)
+                .expect("deserializing JobOptions"),
+        }
+    }
+}
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct JournalResponse
 {
     pub value: i32,
     pub admin_id: Option<u32>,
-    pub without_receipt: bool,
     pub description: String,
+    pub print: Option<PrintJournalResponse>,
     pub timestamp: String,
     pub created: i64,
 }
@@ -21,10 +50,25 @@ impl<'a> From<&'a Journal> for JournalResponse
         JournalResponse{
             value: journal.value,
             admin_id: journal.admin_id,
-            without_receipt: true,
             description: journal.description.clone(),
+            print: None,
             timestamp: format!("{}", journal.created),
             created: journal.created.timestamp(),
+        }
+    }
+}
+
+impl<'a> From<&'a(Journal, Option<PrintJournal>)> for JournalResponse
+{
+    fn from(journal: &(Journal, Option<PrintJournal>)) -> JournalResponse
+    {
+        JournalResponse{
+            value: journal.0.value,
+            admin_id: journal.0.admin_id,
+            description: journal.0.description.clone(),
+            print: journal.1.as_ref().map(PrintJournalResponse::from),
+            timestamp: format!("{}", journal.0.created),
+            created: journal.0.created.timestamp(),
         }
     }
 }
