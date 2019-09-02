@@ -29,10 +29,8 @@ use model::{
 };
 
 use mysql::{
-    journal::select::{
-        select_journal_of_user_with_limit_and_offset,
-        select_journal_tokens,
-    },
+    journal::select::select_journal_tokens,
+    select_full_journal_of_user,
     user::{
         select::{
             select_user_by_id,
@@ -110,7 +108,7 @@ pub fn get_user_journal_as_admin(
 ) -> QueryResult<Json<Vec<JournalResponse>>>
 {
     Ok(Json(
-        select_journal_of_user_with_limit_and_offset(
+        select_full_journal_of_user(
             id,
             limit.unwrap_or_else(|| i32::max_value().into()),
             offset.unwrap_or(0),
