@@ -153,11 +153,11 @@ pub fn force_pdf_version(path: &str) -> io::Result<()>
     Ok(())
 }
 
-pub fn preprocess(path: &str, a3: bool) -> io::Result<()>
+pub fn preprocess(path: &str) -> io::Result<()>
 {
     let out = &format!("{}_out", path);
 
-    gs_preprocess(path, out, a3)?.wait()?;
+    gs_preprocess(path, out)?.wait()?;
 
     remove_file(path)?;
 

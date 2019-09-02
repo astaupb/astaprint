@@ -136,7 +136,7 @@ pub fn sanitize_pdf(data: Vec<u8>) -> SanitizeResult
         assert!(info.get_minor_version() < 5);
     }
 
-    preprocess(path, a3)
+    preprocess(path)
         .expect("preprocessing pdf");
 
     let colored = colored_pagecount(path, info.pagecount()).expect("running ghostscript");
