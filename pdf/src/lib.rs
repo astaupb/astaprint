@@ -81,7 +81,7 @@ pub fn sanitize_pdf(data: Vec<u8>) -> SanitizeResult
     {
         let pages = PageRange::from_list(
             pageinfo.pages.iter().map(|page| {
-                if orientation == Almost(PageOrientation::Landscape) {
+                if orientation == Almost(PageOrientation::Portrait) {
                     page == &PageOrientation::Portrait
                 } else {
                     page == &PageOrientation::Landscape
