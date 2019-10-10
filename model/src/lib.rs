@@ -24,12 +24,18 @@ mod tests {
         let mut task = DispatcherTask{
             user_id: 18616,
             filename: String::from("abc"),
-            keep: true,
+            keep: Some(true),
+            color: Some(true),
+            a3: Some(true),
+            duplex: Some(0),
             uid: vec![7; 20],
         }; 
         let ser = bincode::serialize(&task).unwrap();
         println!("{:x?}", ser);
-        task.keep = false;
+        task.keep = Some(false);
+        let ser = bincode::serialize(&task).unwrap();
+        println!("{:x?}", ser);
+        task.keep = None;
         let ser = bincode::serialize(&task).unwrap();
         println!("{:x?}", ser);
     }
