@@ -43,6 +43,7 @@ pub struct Accounting
 {
     user_id: u32,
     printer_id: u32,
+    uid: String,
     job: Option<Job>,
     credit: i32,
     value: i32,
@@ -58,6 +59,7 @@ impl Accounting
     pub fn new(
         user_id: u32,
         printer_id: u32,
+        uid: &str,
         counter: CounterValues,
         mysql_pool: Pool<ConnectionManager<MysqlConnection>>,
     ) -> Accounting
@@ -65,6 +67,7 @@ impl Accounting
         Accounting {
             user_id,
             printer_id,
+            uid: String::from(uid),
             credit: 0,
             job: None,
             value: 0,
@@ -128,7 +131,8 @@ impl Accounting
                 }
 
                 info!(
-                    "calculated credit for {}: {} + {} = {}",
+                    "{} calculated credit for {}: {} + {} = {}",
+                    self.uid,
                     self.user_id,
                     self.credit,
                     self.value,
@@ -167,7 +171,7 @@ impl Accounting
             )
             .expect("updating credit");
 
-            info!("new credit for {}: {}", self.user_id, self.credit);
+            info!("{} new credit for {}: {}", self.uid, self.user_id, self.credit);
 
             self.value = 0;
             self.job = None;

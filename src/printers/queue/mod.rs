@@ -92,8 +92,13 @@ pub fn work(
         },
     };
 
-    let mut accounting =
-        Accounting::new(task.user_id, state.device_id, counter_base, state.mysql_pool.clone());
+    let mut accounting = Accounting::new(
+        task.user_id,
+        state.device_id,
+        &hex_uid[.. 8],
+        counter_base,
+        state.mysql_pool.clone(),
+    );
 
     let mut timeout = TimeOut::new(60);
     let mut hungup = false;

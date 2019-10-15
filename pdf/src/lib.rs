@@ -59,7 +59,7 @@ pub struct SanitizeResult
     pub colored: u32,
 }
 
-pub fn sanitize_pdf(data: Vec<u8>) -> SanitizeResult
+pub fn sanitize_pdf<'a>(data: Vec<u8>, uid: &'a str) -> SanitizeResult
 {
     let path = &TmpFile::create(&data[..])
         .expect("creating tmp file");
@@ -72,7 +72,7 @@ pub fn sanitize_pdf(data: Vec<u8>) -> SanitizeResult
 
     let mut pageinfo = info.get_page_summary();
 
-    info!("{:?}: {:?}", pageinfo, info.pagesizes());
+    info!("{} {:?}: {:?}", uid, pageinfo, info.pagesizes());
 
     let orientation = pageinfo.orientation();
 
@@ -91,7 +91,7 @@ pub fn sanitize_pdf(data: Vec<u8>) -> SanitizeResult
 
         let mut range = format!("{}", pages);
         range.pop(); //remove trailing comma
-        info!("{:?}, rotating: {}", orientation, range);
+        info!("{} {:?}, rotating: {}", uid, orientation, range);
 
         rotate_pages(path, orientation == Almost(PageOrientation::Landscape), &range)
             .expect("rotating pages");
@@ -107,27 +107,27 @@ pub fn sanitize_pdf(data: Vec<u8>) -> SanitizeResult
         info = DocumentInfo::new(path);
 
         pageinfo = info.get_page_summary();
-        info!("pdfjam {:?}: {:?}", pageinfo, info.pagesizes());
+        info!("{} pdfjam {:?}: {:?}", uid, pageinfo, info.pagesizes());
     }
 
     let a3 = match pageinfo.size {
         Valid(PageSize::A3) => true,
         Valid(PageSize::A4) => false,
         Almost(PageSize::A3) => {
-            error!("pdfjam does not work");
+            error!("{} pdfjam does not work", uid);
             true
         },
         Almost(PageSize::A4) => {
-            error!("pdfjam does not work");
+            error!("{} pdfjam does not work", uid);
             false
         },
     };
     let version = info.get_minor_version();
 
-    debug!("PDF minor version: {}", version);
+    debug!("{} PDF minor version: {}", uid, version);
 
     if version > 4 {
-        info!("version 1.{} > 1.4, forcing 1.4", version);
+        info!("{} version 1.{} > 1.4, forcing 1.4", uid, version);
         force_pdf_version(path)
             .expect("converting pdf");
 

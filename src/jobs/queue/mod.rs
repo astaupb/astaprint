@@ -74,26 +74,26 @@ pub fn dispatch(
     client: TaskQueueClient<DispatcherTask, ()>,
 )
 {
-    let hex_uid = hex::encode(&task.uid[..]);
+    let uid = &hex::encode(&task.uid[..])[.. 8];
 
-    info!("{} {} started", task.user_id, &hex_uid[.. 8]);
+    info!("{} {} started", uid, task.user_id);
 
     let data = if let Ok(data) = state.redis_store.get(task.uid.clone()) {
         data
     }
     else {
-        error!("getting data from store");
+        error!("{} getting data from store", uid);
         client.finish(&task).expect("removing task from queue");
         return
     };
 
-    let result = sanitize_pdf(data);
+    let result = sanitize_pdf(data, uid);
 
     let connection = if let Ok(connection) = state.mysql_pool.get() {
         connection
     }
     else {
-        error!("getting mysql connection from pool");
+        error!("{} getting mysql connection from pool", uid);
         client.finish(&task).expect("removing task from queue");
         return
     };
@@ -118,7 +118,7 @@ pub fn dispatch(
         Ok(Some(options)) => bincode::deserialize(&options[..]).expect("deserializing JobOptions"),
         Ok(None) => JobOptions::default(),
         Err(e) => {
-            error!("selecting user options: {:?}", e);
+            error!("{} selecting user options: {:?}", uid, e);
             client.finish(&task).expect("removing task from queue");
             return
         },
@@ -151,14 +151,11 @@ pub fn dispatch(
         Ok(_) => {
             info!(
                 "{} finished, pagecount: {}, colored: {}, a3: {}",
-                &hex_uid[.. 8],
-                result.pagecount,
-                result.colored,
-                result.a3
+                uid, result.pagecount, result.colored, result.a3
             );
         },
         Err(e) => {
-            error!("inserting job: {:?}", e);
+            error!("{} inserting job: {:?}", uid, e);
         },
     }
     client.finish(&task).expect("removing task from queue");
