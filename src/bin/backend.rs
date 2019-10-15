@@ -138,7 +138,7 @@ fn rocket() -> rocket::Rocket
     let redis_pool = get_redis_pool(20, Redis::Dispatcher);
 
     let dispatcher_queue: TaskQueueClient<DispatcherTask, ()> =
-        TaskQueueClient::new("dispatcher", redis_pool.clone());
+        TaskQueueClient::new("dispatcher", redis_pool);
 
     let redis_pool = get_redis_pool(20, Redis::Store);
 
