@@ -114,6 +114,7 @@ impl<'a> From<&'a OldJobInfo> for JobInfo
             pagecount: old.pagecount,
             colored: old.colored,
             a3: old.a3,
+            landscape: false,
         }
     }
 }
@@ -134,6 +135,11 @@ fn main()
             &select_job_options_by_id(job_ids[0], &connection).expect("selecting JobOptions"),
         ) {
             println!("options: {:?}", options);
+        }
+        if let Ok(info) = bincode::deserialize::<JobInfo>(
+            &select_job_info_by_id(job_ids[0], &connection).expect("selecting JobInfo"),
+        ) {
+            println!("info: {:?}", info);
         };
     }
     if arg.len() == 2 {
@@ -178,6 +184,19 @@ fn main()
                 }
             }
             println!("user migrated");
+        }
+        else if arg[1] == "info" {
+            for id in job_ids {
+                let info: OldJobInfo = bincode::deserialize(
+                    &select_job_info_by_id(id, &connection).expect("selecting JobInfo"),
+                )
+                .expect("deserializing OldJobInfo");
+
+                let value = bincode::serialize(&JobInfo::from(&info)).expect("serializing JobInfo");
+
+                update_job_info_by_id(id, value, &connection).expect("updating job info");
+            }
+            println!("jobs migrated");
         }
     }
 }

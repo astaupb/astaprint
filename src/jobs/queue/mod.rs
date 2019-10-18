@@ -111,6 +111,7 @@ pub fn dispatch(
         pagecount: result.pagecount,
         colored: result.colored,
         a3: result.a3,
+        landscape: result.landscape,
     })
     .expect("serializing JobInfo");
 

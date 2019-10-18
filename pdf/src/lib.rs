@@ -57,6 +57,7 @@ pub struct SanitizeResult
     pub a3: bool,
     pub pagecount: u32,
     pub colored: u32,
+    pub landscape: bool,
 }
 
 pub fn sanitize_pdf<'a>(data: Vec<u8>, uid: &'a str) -> SanitizeResult
@@ -97,7 +98,22 @@ pub fn sanitize_pdf<'a>(data: Vec<u8>, uid: &'a str) -> SanitizeResult
             .expect("rotating pages");
 
         info = DocumentInfo::new(path);
+
+        pageinfo = info.get_page_summary();
     }
+
+    let landscape = match pageinfo.orientation() {
+        Valid(PageOrientation::Landscape) => true,
+        Valid(PageOrientation::Portrait) => false,
+        Almost(PageOrientation::Landscape) => {
+            error!("{} qpdf rotate does not work", uid);
+            true
+        },
+        Almost(PageOrientation::Portrait) => {
+            error!("{} qpdf rotate does not work", uid);
+            false
+        },
+    };
 
     if pageinfo.size != Valid(PageSize::A3)
         && pageinfo.size != Valid(PageSize::A4)
@@ -122,6 +138,7 @@ pub fn sanitize_pdf<'a>(data: Vec<u8>, uid: &'a str) -> SanitizeResult
             false
         },
     };
+
     let version = info.get_minor_version();
 
     debug!("{} PDF minor version: {}", uid, version);
@@ -157,5 +174,6 @@ pub fn sanitize_pdf<'a>(data: Vec<u8>, uid: &'a str) -> SanitizeResult
         a3,
         pagecount,
         colored,
+        landscape,
     }
 }

@@ -8,6 +8,7 @@ pub struct JobInfo
     pub pagecount: u32,
     pub colored: u32,
     pub a3: bool,
+    pub landscape: bool,
 }
 
 impl JobInfo

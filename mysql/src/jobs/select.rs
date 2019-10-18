@@ -86,13 +86,12 @@ pub fn select_job_info(
 pub fn select_job_info_by_id(
     id: u32,
     connection: &MysqlConnection,
-) -> QueryResult<Option<Vec<u8>>>
+) -> QueryResult<Vec<u8>>
 {
     jobs::table
         .select(jobs::info)
         .filter(jobs::id.eq(id))
         .first(connection)
-        .optional()
 }
 
 pub fn select_job_options(
