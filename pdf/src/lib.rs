@@ -39,7 +39,6 @@ use crate::{
         rotate_pages,
         force_pdf_version,
         force_page_size,
-        preprocess,
     },
 };
 
@@ -152,9 +151,6 @@ pub fn sanitize_pdf<'a>(data: Vec<u8>, uid: &'a str) -> SanitizeResult
 
         assert!(info.get_minor_version() < 5);
     }
-
-    preprocess(path)
-        .expect("preprocessing pdf");
 
     let colored = colored_pagecount(path, info.pagecount()).expect("running ghostscript");
 
