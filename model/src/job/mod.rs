@@ -64,7 +64,7 @@ impl Job
         let mut count = range.pagecount();
 
         count = (count / usize::from(self.options.nup))
-            + match self.info.pagecount % u32::from(self.options.nup) {
+            + match count % usize::from(self.options.nup) {
                 0 => 0,
                 _ => 1,
             };

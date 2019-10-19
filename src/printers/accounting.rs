@@ -131,12 +131,14 @@ impl Accounting
                 }
 
                 info!(
-                    "{} calculated credit for {}: {} + {} = {}",
+                    "{} {} credit: {} + {} = {}, {}/{}",
                     self.uid,
                     self.user_id,
                     self.credit,
                     self.value,
-                    self.credit + self.value
+                    self.credit + self.value,
+                    self.counter.print_total - self.basecounter.print_total,
+                    self.expected,
                 );
 
                 return true
