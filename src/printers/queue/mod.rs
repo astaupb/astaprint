@@ -39,7 +39,10 @@ use std::{
 };
 
 use pdf::{
-    process::trim_pages,
+    process::{
+        pdfnup,
+        trim_pages,
+    },
     tmp::TmpFile,
 };
 
@@ -185,7 +188,18 @@ pub fn work(
                     data = TmpFile::remove(path).expect("removing tmp file");
                 }
 
-                let buf: Vec<u8> = job.translate_for_printer(&task.uid[..], task.user_id, data);
+                // preprocess nup
+                if job.options.nup > 1 {
+                    let path = &TmpFile::create(&data[..]).expect("creating tmp file");
+
+                    pdfnup(path, job.options.nup, job.info.a3, job.info.landscape)
+                        .expect("nupping pdf");
+
+                    data = TmpFile::remove(path).expect("removing tmp file");
+                }
+
+                let buf: Vec<u8> =
+                    job.translate_for_printer(state.ppd.clone(), data);
                 match LprConnection::new(
                     &state.ip, 20000, // socket timeout in ms
                 ) {

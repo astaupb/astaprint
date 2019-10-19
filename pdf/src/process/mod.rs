@@ -90,27 +90,26 @@ pub fn decrypt_pdf(
     }
 }
 
-pub fn pdfnup(path: &str, nup: u8, nuppageorder: u8, a3: bool, landscape: bool) -> io::Result<()>
+pub fn pdfnup(path: &str, nup: u8, a3: bool, landscape: bool) -> io::Result<()>
 {
-    let mut arguments = ["--a4paper", "--nup", "1x1", "--no-landscape", "--reflect", "false", "--checkfiles", "--outfile", path, path];
+    let mut arguments = ["--a4paper", "--nup", "1x1", "--no-landscape", "--checkfiles", "--outfile", path, path];
 
     if a3 {
         arguments[0] = "--a3paper";
     }
 
-    if landscape || nup == 2 {
+    if (landscape && nup == 4) || (!landscape && nup == 2) {
         arguments[3] = "--landscape";
     }
 
-    if nuppageorder > 0 {
-        arguments[5] = "true";
-    }
-
-    arguments[2] = match nup {
-        1 => "1x1",
-        2 => "2x1",
-        4 => "2x2",
-        _ => "1x1",
+    arguments[2] = if nup == 4 {
+        "2x2"
+    } else {
+        if landscape {
+            "1x2"
+        } else {
+            "2x1"
+        }
     };
 
     pdfjam(&arguments)?.wait()?;
