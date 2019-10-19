@@ -9,6 +9,7 @@ extern crate bincode;
 pub mod job;
 pub mod task;
 pub mod journal;
+pub mod ppd;
 
 
 #[cfg(test)]

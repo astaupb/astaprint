@@ -10,6 +10,8 @@ use diesel::{
 
 use r2d2_redis::RedisConnectionManager;
 
+use crate::ppd::PPD;
+
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct WorkerTask
 {
@@ -32,6 +34,7 @@ pub struct WorkerState
 {
     pub device_id: u32,
     pub ip: String,
+    pub ppd: PPD,
     pub mysql_pool: Pool<ConnectionManager<MysqlConnection>>,
     pub redis_pool: Pool<RedisConnectionManager>,
 }

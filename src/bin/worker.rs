@@ -59,17 +59,22 @@ use mysql::{
     },
 };
 
-use model::task::worker::{
-    WorkerCommand,
-    WorkerState,
-    WorkerTask,
+use model::{
+    ppd::PPD,
+    task::worker::{
+        WorkerCommand,
+        WorkerState,
+        WorkerTask,
+    },
 };
+
 extern crate astaprint;
 use astaprint::printers::queue::work;
 
 fn spawn_worker(
     device_id: u32,
     ip: String,
+    ppd: PPD,
     redis_pool: RedisPool<RedisConnectionManager>,
     mysql_pool: MysqlPool<ConnectionManager<MysqlConnection>>,
 ) -> thread::JoinHandle<()>
@@ -81,6 +86,7 @@ fn spawn_worker(
         WorkerState {
             device_id,
             ip,
+            ppd: ppd.clone(),
             mysql_pool,
             redis_pool: redis_pool.clone(),
         },
@@ -116,12 +122,14 @@ fn main()
 
     let connection = mysql_pool.get().expect("getting mysql connection from pool");
 
+    let ppd = PPD::new_from_file("./Ricoh-MP_C4504ex-PDF-Ricoh.ppd").expect("creating PPD");
+
     for id in select_device_ids(&connection).expect("selecting device ids") {
         let redis_pool = get_redis_pool(32, Redis::Worker);
 
         let ip = select_ip_by_device_id(id, &connection).expect("selecting ip by device_id");
 
-        handles.push(spawn_worker(id, ip, redis_pool, mysql_pool.clone()));
+        handles.push(spawn_worker(id, ip, ppd.clone(), redis_pool, mysql_pool.clone()));
     }
 
     for handle in handles {
