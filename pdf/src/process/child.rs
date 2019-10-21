@@ -34,6 +34,7 @@ pub fn gs_preprocess(path: &str, out: &str) -> io::Result<Child>
         "-dSAFER",
         "-dBATCH",
         "-dNOPAUSE",
+        "-dQUIET",
         "-dFitPage",
         "-dColorScreen",
         "-sDEVICE=pdfwrite",
