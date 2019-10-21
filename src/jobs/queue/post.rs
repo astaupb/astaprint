@@ -40,7 +40,7 @@ use redis::{
 };
 
 #[post(
-    "/queue?<filename>&<keep>&<a3>&<color>&<duplex>&<password>",
+    "/queue?<filename>&<keep>&<a3>&<color>&<duplex>&<copies>&<password>",
     data = "<data>",
     format = "application/pdf"
 )]
@@ -52,6 +52,7 @@ pub fn upload_job<'a>(
     a3: Option<bool>,
     color: Option<bool>,
     duplex: Option<u8>,
+    copies: Option<u16>,
     password: Option<String>,
     taskqueue: State<TaskQueueClient<DispatcherTask, ()>>,
     store: State<Store>,
@@ -91,6 +92,7 @@ pub fn upload_job<'a>(
         a3,
         color,
         duplex,
+        copies,
     };
 
     taskqueue.send(&task).expect("sending task to queue");

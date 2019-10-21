@@ -137,6 +137,9 @@ pub fn dispatch(
     if let Some(color) = task.color {
         options.color = color;
     }
+    if let Some(copies) = task.copies {
+        options.copies = copies;
+    }
 
     match insert_into_jobs(
         task.user_id,
