@@ -31,6 +31,7 @@ use printers::{
     queue::get::WorkerTaskResponse,
     response::PrinterResponse,
 };
+use snmp::tool::*;
 use redis::queue::TaskQueueClient;
 use rocket::State;
 use rocket_contrib::json::Json;
@@ -56,9 +57,20 @@ pub fn get_single_printer(
 
     let mut response = PrinterResponse::from(select_printer_by_device_id(id, connection)?);
 
+    let ip = &response.ip;
+
     let processing = queue.get_processing();
     if !processing.is_empty() {
         response.queue = Some(WorkerTaskResponse::from(&processing[0]));
     }
+
+    if let Ok(counter) = counter(ip) {
+        response.counter = Some(counter);
+    }
+
+    if let Ok(status) = status(ip) {
+        response.status = Some(status);
+    }
+
     Ok(Some(Json(response)))
 }

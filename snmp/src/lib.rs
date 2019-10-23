@@ -31,12 +31,13 @@ pub struct StatusValues
 {
     pub scan: i64,
     pub copy: i64,
-    pub toner: i64,
+    pub toner_c: i64,
+    pub toner_m: i64,
+    pub toner_y: i64,
+    pub toner_k: i64,
     pub tray_1: i64,
     pub tray_2: i64,
     pub tray_3: i64,
-    pub tray_4: i64,
-    pub tray_5: i64,
 }
 
 impl Default for StatusValues
@@ -46,12 +47,13 @@ impl Default for StatusValues
         StatusValues{
             scan: -1,
             copy: -1,
-            toner: -1,
+            toner_c: -1,
+            toner_m: -1,
+            toner_y: -1,
+            toner_k: -1,
             tray_1: -1,
             tray_2: -1,
             tray_3: -1,
-            tray_4: -1,
-            tray_5: -1,
         } 
     }
 }
