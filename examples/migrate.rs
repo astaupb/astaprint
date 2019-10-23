@@ -50,6 +50,7 @@ pub struct OldJobOptions
     pub duplex: u8,
     pub copies: u16,
     pub collate: bool,
+    pub bypass: bool,
     pub keep: bool,
     pub a3: bool,
     pub nup: u8,
@@ -66,12 +67,13 @@ impl<'a> From<&'a OldJobOptions> for JobOptions
             duplex: old.duplex,
             copies: old.copies,
             collate: old.collate,
-            bypass: false,
+            bypass: old.bypass,
             keep: old.keep,
             a3: old.a3,
             nup: old.nup,
             nuppageorder: old.nuppageorder,
             range: old.range.clone(),
+            displayname: String::new(),
         }
     }
 }
@@ -85,6 +87,7 @@ impl Default for OldJobOptions
             duplex: 0,
             copies: 1,
             collate: false,
+            bypass: false,
             keep: false,
             a3: false,
             nup: 1,

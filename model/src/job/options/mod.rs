@@ -13,6 +13,7 @@ pub struct JobOptions
     pub nup: u8,
     pub nuppageorder: u8,
     pub range: String,
+    pub displayname: String,
 }
 
 impl JobOptions
@@ -38,6 +39,7 @@ impl Default for JobOptions
             nup: 1,
             nuppageorder: 0,
             range: String::from(""),
+            displayname: String::from(""),
         }
     }
 }
