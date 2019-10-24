@@ -8,6 +8,7 @@ extern crate threadpool;
 pub mod lock;
 pub mod queue;
 pub mod store;
+pub mod share;
 
 use r2d2_redis::{
     r2d2::Pool,
