@@ -34,6 +34,8 @@ use model::task::dispatcher::DispatcherTask;
 use jobs::queue::data::PdfBody;
 use user::guard::UserGuard;
 
+use pdf::process::decrypt_pdf_from_data;
+
 use redis::{
     queue::TaskQueueClient,
     store::Store,
@@ -58,8 +60,15 @@ pub fn upload_job<'a>(
     store: State<Store>,
 ) -> Result<Accepted<Json<String>>, BadRequest<&'a str>>
 {
-    debug!("password: {:?}", password);
-    let bytes = data.bytes;
+    let mut bytes = data.bytes;
+
+    if let Some(password) = password {
+        bytes = if let Ok(bytes) = decrypt_pdf_from_data(bytes, &password) {
+            bytes
+        } else {
+            return Err(BadRequest(Some("wrong password")));
+        }
+    }
 
     if let Err(e) = PopplerDocument::new_from_data(&bytes[..], "") {
         info!("Err creating PopplerDocument: {}", e);
