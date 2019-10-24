@@ -31,3 +31,4 @@ pub mod tmp;
 
 pub mod delete;
 pub mod get;
+pub mod post;

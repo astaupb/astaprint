@@ -23,6 +23,13 @@ use chrono::NaiveDateTime;
 
 use rocket_contrib::json::Json;
 
+use rocket::{
+    State,
+    http::Status,
+};
+
+use redis::share::Share;
+
 use model::job::Job;
 use mysql::jobs::select::*;
 use user::guard::UserGuard;
@@ -73,4 +80,14 @@ pub fn fetch_preview_2(user: UserGuard, id: u32) -> QueryResult<Option<Vec<u8>>>
 pub fn fetch_preview_3(user: UserGuard, id: u32) -> QueryResult<Option<Vec<u8>>>
 {
     Ok(select_preview_3(id, user.id, &user.connection).expect("selection preview 2"))
+}
+
+#[get("/<id>/sharecode")]
+pub fn get_sharecode(_user: UserGuard, id: u32, share: State<Share>) -> Result<Json<String>, Status>
+{
+    if let Ok(key) = share.set(id) {
+        Ok(Json(key))
+    } else {
+        Err(Status::new(500, "Internal Server Error"))
+    }
 }

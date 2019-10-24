@@ -44,6 +44,7 @@ use redis::{
     get_redis_pool,
     queue::TaskQueueClient,
     store::Store,
+    share::Share,
     Redis,
 };
 
@@ -72,6 +73,7 @@ use astaprint::{
     jobs::{
         delete::*,
         get::*,
+        post::*,
         info::{
             get::*,
             put::*,
@@ -144,6 +146,10 @@ fn rocket() -> rocket::Rocket
 
     let redis_store = Store::from(redis_pool);
 
+    let redis_pool = get_redis_pool(4, Redis::Store);
+
+    let redis_share = Share::from(redis_pool);
+
     let mut worker_queues: HashMap<u32, TaskQueueClient<WorkerTask, WorkerCommand>> =
         HashMap::new();
 
@@ -165,6 +171,7 @@ fn rocket() -> rocket::Rocket
         .manage(mysql_pool)
         .manage(redis_pool)
         .manage(redis_store)
+        .manage(redis_share)
         .manage(mmdb_reader)
         .manage(dispatcher_queue)
         .manage(worker_queues)
@@ -185,6 +192,8 @@ fn rocket() -> rocket::Rocket
             fetch_preview_1,
             fetch_preview_2,
             fetch_preview_3,
+            get_sharecode,
+            post_sharecode,
         ])
         .mount("/user", routes![
             get_user_info,

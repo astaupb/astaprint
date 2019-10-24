@@ -83,6 +83,8 @@ impl Share
 
         connection.set(key.clone(), data)?;
 
+        connection.expire(key.clone(), 60)?;
+
         Ok(base64::encode_config(&key[..], base64::URL_SAFE))
     }
 
