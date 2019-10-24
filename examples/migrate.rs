@@ -22,6 +22,10 @@ extern crate serde_derive;
 extern crate mysql;
 use mysql::{
     create_mysql_pool,
+    journal::{
+        select::*,
+        update::*,
+    },
     jobs::{
         select::*,
         update::*,
@@ -147,6 +151,7 @@ fn main()
     }
     if arg.len() == 2 {
         if arg[1] == "options" {
+            let mut count = 0;
             for id in job_ids {
                 let options: OldJobOptions = bincode::deserialize(
                     &select_job_options_by_id(id, &connection).expect("selecting JobOptions"),
@@ -157,13 +162,17 @@ fn main()
                     .expect("serializing JobOptions");
 
                 update_job_options_by_id(id, value, &connection).expect("updating job options");
+                count += 1;
+                if count % 100 == 0 {
+                    println!("job {} migrated", id);
+                    count = 0;
+                }
             }
             println!("jobs migrated");
 
             // update user default options
             let user_ids = select_user_id(&connection).expect("selecting user ids");
 
-            let mut count = 0;
             for id in user_ids {
                 let options: OldJobOptions = if let Some(value) =
                     select_user_options(id, &connection).expect("selecting JobOptions")
@@ -187,6 +196,23 @@ fn main()
                 }
             }
             println!("user migrated");
+            //update options in print_journal
+            let print_journal = select_print_journal(&connection).expect("selecting print_journal");
+            for entry in print_journal {
+                let options = bincode::deserialize::<OldJobOptions>(&entry.options).expect("deserializing JobOptions");
+                update_print_journal_options_by_id(
+                    entry.id,
+                    bincode::serialize(&JobOptions::from(&options)).expect("deserialzing JobOptions"),
+                    &connection
+                ).expect("updating JobOptions");
+
+                count += 1;
+                if count % 100 == 0 {
+                    println!("journal_entry {} migrated", id);
+                    count = 0;
+                }
+            }
+            println!("options in journal migrated");
         }
         else if arg[1] == "info" {
             for id in job_ids {
