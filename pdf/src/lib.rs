@@ -73,7 +73,7 @@ pub fn sanitize_pdf<'a>(data: Vec<u8>, uid: &'a str) -> SanitizeResult
 
     let mut pageinfo = info.get_page_summary();
 
-    info!("{} {:?}: {:?}", uid, pageinfo, info.pagesizes());
+    debug!("{} {:?}: {:?}", uid, pageinfo, info.pagesizes());
 
     let orientation = pageinfo.orientation();
 
@@ -92,7 +92,7 @@ pub fn sanitize_pdf<'a>(data: Vec<u8>, uid: &'a str) -> SanitizeResult
 
         let mut range = format!("{}", pages);
         range.pop(); //remove trailing comma
-        info!("{} {:?}, rotating: {}", uid, orientation, range);
+        debug!("{} {:?}, rotating: {}", uid, orientation, range);
 
         rotate_pages(path, orientation == Almost(PageOrientation::Landscape), &range)
             .expect("rotating pages");
@@ -123,7 +123,7 @@ pub fn sanitize_pdf<'a>(data: Vec<u8>, uid: &'a str) -> SanitizeResult
         info = DocumentInfo::new(path);
 
         pageinfo = info.get_page_summary();
-        info!("{} pdfjam {:?}: {:?}", uid, pageinfo, info.pagesizes());
+        debug!("{} pdfjam {:?}: {:?}", uid, pageinfo, info.pagesizes());
     }
 
     let a3 = match pageinfo.size {
@@ -144,7 +144,7 @@ pub fn sanitize_pdf<'a>(data: Vec<u8>, uid: &'a str) -> SanitizeResult
     debug!("{} PDF minor version: {}", uid, version);
 
     if version > 4 {
-        info!("{} version 1.{} > 1.4, forcing 1.4", uid, version);
+        debug!("{} version 1.{} > 1.4, forcing 1.4", uid, version);
         force_pdf_version(path)
             .expect("converting pdf");
 

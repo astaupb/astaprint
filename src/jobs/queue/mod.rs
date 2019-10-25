@@ -154,8 +154,12 @@ pub fn dispatch(
     ) {
         Ok(_) => {
             info!(
-                "{} finished, pagecount: {}, colored: {}, a3: {}",
-                uid, result.pagecount, result.colored, result.a3
+                "{} finished, pagecount: {}/{}{}{}",
+                uid,
+                result.colored,
+                result.pagecount,
+                if result.a3 {", a3"} else {""},
+                if result.landscape {", landscape"} else {""},
             );
         },
         Err(e) => {
