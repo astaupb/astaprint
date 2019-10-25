@@ -32,6 +32,16 @@ pub fn select_full_job_of_user(user_id: u32, id: u32, connection: &MysqlConnecti
         .optional()
 }
 
+pub fn select_job_id_of_user(user_id: u32, id: u32, connection: &MysqlConnection) -> QueryResult<Option<u32>>
+{
+    jobs::table
+        .select(jobs::id)
+        .filter(jobs::id.eq(id))
+        .filter(jobs::user_id.eq(user_id))
+        .first(connection)
+        .optional()
+}
+
 pub fn select_full_job_by_id(id: u32, connection: &MysqlConnection) -> QueryResult<Job>
 {
     jobs::table

@@ -83,11 +83,15 @@ pub fn fetch_preview_3(user: UserGuard, id: u32) -> QueryResult<Option<Vec<u8>>>
 }
 
 #[get("/<id>/sharecode")]
-pub fn get_sharecode(_user: UserGuard, id: u32, share: State<Share>) -> Result<Json<String>, Status>
+pub fn get_sharecode(user: UserGuard, id: u32, share: State<Share>) -> QueryResult<Result<Json<String>, Status>>
 {
-    if let Ok(key) = share.set(id) {
-        Ok(Json(key))
+    if let Some(id) = select_job_id_of_user(user.id, id, &user.connection)? {
+        if let Ok(key) = share.set(id) {
+            Ok(Ok(Json(key)))
+        } else {
+            Ok(Err(Status::new(500, "Internal Server Error")))
+        }
     } else {
-        Err(Status::new(500, "Internal Server Error"))
+        Ok(Err(Status::new(403, "Forbidden")))
     }
 }
