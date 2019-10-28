@@ -186,6 +186,7 @@ fn rocket() -> rocket::Rocket
             get_dispatcher_queue,
             upload_job,
             delete_job,
+            delete_all_jobs,
             fetch_job,
             fetch_pdf,
             fetch_preview_0,
