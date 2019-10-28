@@ -65,8 +65,9 @@ pub fn upload_job<'a>(
     if let Some(password) = password {
         bytes = if let Ok(bytes) = decrypt_pdf_from_data(bytes, &password) {
             bytes
-        } else {
-            return Err(BadRequest(Some("wrong password")));
+        }
+        else {
+            return Err(BadRequest(Some("wrong password")))
         }
     }
 

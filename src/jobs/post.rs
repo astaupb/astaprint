@@ -23,20 +23,24 @@ use diesel::QueryResult;
 use rocket_contrib::json::Json;
 
 use rocket::{
-    State,
     http::Status,
+    State,
 };
 
 use redis::share::Share;
 
 use mysql::jobs::{
-    select::*,
     insert::*,
+    select::*,
 };
 use user::guard::UserGuard;
 
 #[post("/sharecode", data = "<code>")]
-pub fn post_sharecode(user: UserGuard, code: Json<String>, share: State<Share>) -> QueryResult<Status>
+pub fn post_sharecode(
+    user: UserGuard,
+    code: Json<String>,
+    share: State<Share>,
+) -> QueryResult<Status>
 {
     if let Ok(id) = share.get(code.into_inner()) {
         if let Ok(job) = select_full_job_by_id(id, &user.connection) {
@@ -53,10 +57,12 @@ pub fn post_sharecode(user: UserGuard, code: Json<String>, share: State<Share>) 
             )?;
 
             Ok(Status::new(200, "OK"))
-        } else {
-            Ok(Status::new(404, "Job not found")) 
         }
-    } else {
+        else {
+            Ok(Status::new(404, "Job not found"))
+        }
+    }
+    else {
         Ok(Status::new(404, "Sharecode not found"))
     }
 }

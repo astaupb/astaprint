@@ -158,8 +158,18 @@ pub fn dispatch(
                 uid,
                 result.colored,
                 result.pagecount,
-                if result.a3 {", a3"} else {""},
-                if result.landscape {", landscape"} else {""},
+                if result.a3 {
+                    ", a3"
+                }
+                else {
+                    ""
+                },
+                if result.landscape {
+                    ", landscape"
+                }
+                else {
+                    ""
+                },
             );
         },
         Err(e) => {

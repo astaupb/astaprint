@@ -22,11 +22,11 @@ extern crate serde_derive;
 extern crate mysql;
 use mysql::{
     create_mysql_pool,
-    journal::{
+    jobs::{
         select::*,
         update::*,
     },
-    jobs::{
+    journal::{
         select::*,
         update::*,
     },
@@ -196,15 +196,18 @@ fn main()
                 }
             }
             println!("user migrated");
-            //update options in print_journal
+            // update options in print_journal
             let print_journal = select_print_journal(&connection).expect("selecting print_journal");
             for entry in print_journal {
-                let options = bincode::deserialize::<OldJobOptions>(&entry.options).expect("deserializing JobOptions");
+                let options = bincode::deserialize::<OldJobOptions>(&entry.options)
+                    .expect("deserializing JobOptions");
                 update_print_journal_options_by_id(
                     entry.id,
-                    bincode::serialize(&JobOptions::from(&options)).expect("deserialzing JobOptions"),
-                    &connection
-                ).expect("updating JobOptions");
+                    bincode::serialize(&JobOptions::from(&options))
+                        .expect("deserialzing JobOptions"),
+                    &connection,
+                )
+                .expect("updating JobOptions");
 
                 count += 1;
                 if count % 100 == 0 {

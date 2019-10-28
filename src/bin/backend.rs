@@ -43,8 +43,8 @@ use rocket_cors::{
 use redis::{
     get_redis_pool,
     queue::TaskQueueClient,
-    store::Store,
     share::Share,
+    store::Store,
     Redis,
 };
 
@@ -73,7 +73,6 @@ use astaprint::{
     jobs::{
         delete::*,
         get::*,
-        post::*,
         info::{
             get::*,
             put::*,
@@ -82,6 +81,7 @@ use astaprint::{
             get::*,
             put::*,
         },
+        post::*,
         queue::{
             get::*,
             post::*,

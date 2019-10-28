@@ -31,10 +31,10 @@ use printers::{
     queue::get::WorkerTaskResponse,
     response::PrinterResponse,
 };
-use snmp::tool::*;
 use redis::queue::TaskQueueClient;
 use rocket::State;
 use rocket_contrib::json::Json;
+use snmp::tool::*;
 use std::collections::HashMap;
 #[get("/printers")]
 pub fn get_printers(admin: AdminGuard) -> QueryResult<Json<Vec<PrinterResponse>>>

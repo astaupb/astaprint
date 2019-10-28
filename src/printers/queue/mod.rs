@@ -198,8 +198,7 @@ pub fn work(
                     data = TmpFile::remove(path).expect("removing tmp file");
                 }
 
-                let buf: Vec<u8> =
-                    job.translate_for_printer(state.ppd.clone(), data);
+                let buf: Vec<u8> = job.translate_for_printer(state.ppd.clone(), data);
                 match LprConnection::new(
                     &state.ip, 20000, // socket timeout in ms
                 ) {
