@@ -44,6 +44,7 @@ pub struct JobOptionsUpdate
     pub nup: Option<u8>,
     pub nuppageorder: Option<u8>,
     pub range: Option<String>,
+    pub displayname: Option<String>,
 }
 
 pub trait Update
@@ -101,6 +102,10 @@ impl Update for JobOptions
 
         if let Some(range) = update.range {
             self.range = range;
+        }
+
+        if let Some(displayname) = update.displayname {
+            self.displayname = displayname;
         }
     }
 }
