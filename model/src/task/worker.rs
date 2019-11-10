@@ -40,9 +40,9 @@ pub struct WorkerState
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]
-pub enum WorkerCommand
+pub enum WorkerCommand<T>
 {
-    Print(u32),
+    Print((u32, T)),
     Cancel,
     Hungup,
     HeartBeat,

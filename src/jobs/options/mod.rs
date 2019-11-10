@@ -31,7 +31,7 @@ pub enum Value
     B(bool),
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct JobOptionsUpdate
 {
     pub color: Option<bool>,

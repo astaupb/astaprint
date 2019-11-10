@@ -36,6 +36,8 @@ use rocket::State;
 use rocket_contrib::json::Json;
 use snmp::tool::*;
 use std::collections::HashMap;
+use jobs::options::JobOptionsUpdate;
+
 #[get("/printers")]
 pub fn get_printers(admin: AdminGuard) -> QueryResult<Json<Vec<PrinterResponse>>>
 {
@@ -46,7 +48,7 @@ pub fn get_printers(admin: AdminGuard) -> QueryResult<Json<Vec<PrinterResponse>>
 pub fn get_single_printer(
     id: u32,
     admin: AdminGuard,
-    queues: State<HashMap<u32, TaskQueueClient<WorkerTask, WorkerCommand>>>,
+    queues: State<HashMap<u32, TaskQueueClient<WorkerTask, WorkerCommand<Option<JobOptionsUpdate>>>>>,
 ) -> QueryResult<Option<Json<PrinterResponse>>>
 {
     let queue = match queues.get(&id) {

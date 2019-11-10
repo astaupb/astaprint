@@ -38,11 +38,13 @@ use redis::queue::{
     TaskQueueClient,
 };
 
+use jobs::options::JobOptionsUpdate;
+
 #[delete("/<device_id>/queue")]
 pub fn delete_queue(
     user: UserGuard,
     device_id: u32,
-    queues: State<HashMap<u32, TaskQueueClient<WorkerTask, WorkerCommand>>>,
+    queues: State<HashMap<u32, TaskQueueClient<WorkerTask, WorkerCommand<Option<JobOptionsUpdate>>>>>,
 ) -> Custom<()>
 {
     let queue = match queues.get(&device_id) {
@@ -58,7 +60,7 @@ pub fn delete_queue(
         let hex_uid = hex::encode(&task.uid[..]);
         debug!("sending cancel to {}", &hex_uid[.. 8]);
         let client = CommandClient::from((queue, &hex_uid[..]));
-        client.send_command(&WorkerCommand::Cancel).expect("sending cancel command");
+        client.send_command(&WorkerCommand::<Option<JobOptionsUpdate>>::Cancel).expect("sending cancel command");
 
         Custom(Status::new(205, "Success - Reset Content"), ())
     }
@@ -71,7 +73,7 @@ pub fn delete_queue(
 pub fn delete_queue_as_admin(
     admin: AdminGuard,
     device_id: u32,
-    queues: State<HashMap<u32, TaskQueueClient<WorkerTask, WorkerCommand>>>,
+    queues: State<HashMap<u32, TaskQueueClient<WorkerTask, WorkerCommand<Option<JobOptionsUpdate>>>>>,
 ) -> Custom<()>
 {
     let queue = match queues.get(&device_id) {
@@ -81,7 +83,7 @@ pub fn delete_queue_as_admin(
     let processing = queue.get_processing();
     if !processing.is_empty() {
         let client = CommandClient::from((queue, &hex::encode(&processing[0].uid[..])[..]));
-        client.send_command(&WorkerCommand::Cancel).expect("sending cancel command");
+        client.send_command(&WorkerCommand::<Option<JobOptionsUpdate>>::Cancel).expect("sending cancel command");
 
         info!("admin {} cleared queue of printer {}", admin.id, device_id);
 

@@ -65,10 +65,14 @@ use redis::queue::{
 
 use snmp::tool::*;
 
+use jobs::options::{
+    JobOptionsUpdate, Update,
+};
+
 pub fn work(
     task: WorkerTask,
     state: WorkerState,
-    client: TaskQueueClient<WorkerTask, WorkerCommand>,
+    client: TaskQueueClient<WorkerTask, WorkerCommand<Option<JobOptionsUpdate>>>,
 )
 {
     wake(&state.ip);
@@ -106,7 +110,7 @@ pub fn work(
     let mut timeout = TimeOut::new(60);
     let mut hungup = false;
 
-    let mut to_print: VecDeque<u32> = VecDeque::new();
+    let mut to_print: VecDeque<(u32, Option<JobOptionsUpdate>)> = VecDeque::new();
     let mut printing: Option<(u32, bool)> = None;
 
     let command_receiver = command_client.get_command_receiver();
@@ -123,9 +127,9 @@ pub fn work(
                     debug!("{} hungup", &hex_uid[.. 8]);
                     hungup = true;
                 },
-                WorkerCommand::Print(job_id) => {
-                    to_print.push_back(job_id);
-                    info!("{} printing {}", &hex_uid[.. 8], job_id);
+                WorkerCommand::Print(job) => {
+                    info!("{} printing {}", &hex_uid[.. 8], job.0);
+                    to_print.push_back(job);
                     debug!("{:?}", to_print);
                 },
             }
@@ -152,7 +156,7 @@ pub fn work(
                 }
             }
         }
-        else if let Some(job_id) = to_print.pop_front() {
+        else if let Some((job_id, job_options)) = to_print.pop_front() {
             if let Some(job_row) =
                 select_full_job_of_user(task.user_id, job_id, &connection).expect("selecting job")
             {
@@ -164,10 +168,14 @@ pub fn work(
                     job_row.updated,
                 ));
 
+                if let Some(options) = job_options.clone() {
+                    job.options.merge(options);
+                }
+
                 let counter = match counter(&state.ip) {
                     Ok(counter) => counter,
                     Err(_) => {
-                        to_print.push_front(job_id);
+                        to_print.push_front((job_id, job_options));
                         break
                     },
                 };
@@ -227,7 +235,7 @@ pub fn work(
         }
 
         if timeout.check() {
-            info!("{} timeout", &hex_uid[.. 8]);
+            info!("{} timeout while printing {:?}", &hex_uid[.. 8], printing);
             break
         }
     }

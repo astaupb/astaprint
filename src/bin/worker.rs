@@ -69,7 +69,10 @@ use model::{
 };
 
 extern crate astaprint;
-use astaprint::printers::queue::work;
+use astaprint::{
+    printers::queue::work,
+    jobs::options::JobOptionsUpdate,
+};
 
 fn spawn_worker(
     device_id: u32,
@@ -81,7 +84,7 @@ fn spawn_worker(
 {
     let name = format!("worker::{}", device_id);
 
-    let taskqueue: TaskQueue<WorkerTask, WorkerState, WorkerCommand> = TaskQueue::new(
+    let taskqueue: TaskQueue<WorkerTask, WorkerState, WorkerCommand<Option<JobOptionsUpdate>>> = TaskQueue::new(
         &name,
         WorkerState {
             device_id,

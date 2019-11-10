@@ -86,6 +86,7 @@ use astaprint::{
             get::*,
             post::*,
         },
+        options::JobOptionsUpdate,
     },
     journal::{
         credit::*,
@@ -150,7 +151,7 @@ fn rocket() -> rocket::Rocket
 
     let redis_share = Share::from(redis_pool);
 
-    let mut worker_queues: HashMap<u32, TaskQueueClient<WorkerTask, WorkerCommand>> =
+    let mut worker_queues: HashMap<u32, TaskQueueClient<WorkerTask, WorkerCommand<Option<JobOptionsUpdate>>>> =
         HashMap::new();
 
     let connection = mysql_pool.get().expect("getting mysql connection from pool");

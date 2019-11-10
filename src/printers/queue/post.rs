@@ -46,19 +46,15 @@ use redis::queue::{
 
 use sodium::random_bytes;
 
-#[post("/<device_id>/queue?<id>")]
-pub fn post_to_queue(
+use jobs::options::JobOptionsUpdate;
+
+pub fn post_to_queue_handler(
     user: UserGuard,
-    device_id: u32,
     id: Option<u32>,
-    queues: State<HashMap<u32, TaskQueueClient<WorkerTask, WorkerCommand>>>,
+    options: Option<JobOptionsUpdate>,
+    queue: TaskQueueClient<WorkerTask, WorkerCommand<Option<JobOptionsUpdate>>>,
 ) -> QueryResult<Result<Accepted<Json<String>>, Custom<()>>>
 {
-    let queue = match queues.get(&device_id) {
-        Some(queue) => queue,
-        None => return Ok(Err(Custom(Status::new(404, "Task Not Found"), ()))),
-    };
-
     let mut hungup = false;
     let processing = queue.get_processing();
     let hex_uid = if !processing.is_empty() && processing[0].user_id == user.id {
@@ -84,20 +80,36 @@ pub fn post_to_queue(
         hex_uid
     };
 
-    let queue = CommandClient::from((queue, &hex_uid[..]));
+    let queue = CommandClient::from((&queue, &hex_uid[..]));
     if let Some(id) = id {
         info!("print job {} command", id);
 
-        queue.send_command(&WorkerCommand::Print(id)).expect("sending print command to worker");
+        queue.send_command(&WorkerCommand::<Option<JobOptionsUpdate>>::Print((id, options))).expect("sending print command to worker");
 
         // send hungup for not locking printer after print job
         if hungup {
-            queue.send_command(&WorkerCommand::Hungup).expect("sending hungup command to worker");
+            queue.send_command(&WorkerCommand::<Option<JobOptionsUpdate>>::Hungup).expect("sending hungup command to worker");
         }
     }
     else if !hungup {
-        queue.send_command(&WorkerCommand::HeartBeat).expect("sending heartbeat command to worker");
+        queue.send_command(&WorkerCommand::<Option<JobOptionsUpdate>>::HeartBeat).expect("sending heartbeat command to worker");
     }
 
     Ok(Ok(Accepted(Some(Json(hex_uid)))))
+}
+
+#[post("/<device_id>/queue?<id>", data = "<options>")]
+pub fn post_to_queue(
+    user: UserGuard,
+    device_id: u32,
+    id: Option<u32>,
+    options: Option<Json<JobOptionsUpdate>>,
+    queues: State<HashMap<u32, TaskQueueClient<WorkerTask, WorkerCommand<Option<JobOptionsUpdate>>>>>,
+) -> QueryResult<Result<Accepted<Json<String>>, Custom<()>>>
+{
+    let queue = match queues.get(&device_id) {
+        Some(queue) => queue,
+        None => return Ok(Err(Custom(Status::new(404, "Task Not Found"), ()))),
+    };
+    return post_to_queue_handler(user, id, options.map(|o| o.into_inner()), queue.clone());
 }
