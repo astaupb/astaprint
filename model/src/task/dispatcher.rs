@@ -41,6 +41,7 @@ pub struct DispatcherTask
 {
     pub user_id: u32,
     pub filename: String,
+    pub image: bool,
     pub keep: Option<bool>,
     pub color: Option<bool>,
     pub a3: Option<bool>,
