@@ -107,7 +107,7 @@ pub fn work(
         state.mysql_pool.clone(),
     );
 
-    let mut timeout = TimeOut::new(60);
+    let mut timeout = TimeOut::new(90);
     let mut hungup = false;
 
     let mut to_print: VecDeque<(u32, Option<JobOptionsUpdate>)> = VecDeque::new();
