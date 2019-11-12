@@ -40,6 +40,21 @@ pub struct StatusValues
     pub tray_3: i64,
 }
 
+impl StatusValues
+{
+    pub fn ok(&self) -> bool
+    {
+        self.scan == 0
+            && self.copy == 0
+            && self.toner_c > 0
+            && self.toner_m > 0
+            && self.toner_y > 0
+            && self.toner_k > 0
+            && self.tray_1 > 0 || self.tray_3 > 0 // A4
+            && self.tray_2 > 0 // A3
+    }
+}
+
 impl Default for StatusValues
 {
     fn default() -> StatusValues

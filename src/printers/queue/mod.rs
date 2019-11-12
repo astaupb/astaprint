@@ -236,6 +236,13 @@ pub fn work(
 
         if timeout.check() {
             info!("{} timeout while printing {:?}", &hex_uid[.. 8], printing);
+            if printing.is_some() {
+                if let Ok(status) = status(&state.ip) {
+                    if !status.ok() {
+                        // reinsert into dispatcher with image option?
+                    }
+                }
+            }
             break
         }
     }
