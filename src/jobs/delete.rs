@@ -21,7 +21,11 @@ use diesel::result::QueryResult;
 
 use rocket::http::Status;
 
-use mysql::jobs::delete::*;
+use mysql::jobs::{
+    delete::*,
+    select::*,
+};
+
 use user::guard::UserGuard;
 
 #[delete("/<id>")]
@@ -40,7 +44,10 @@ pub fn delete_job(user: UserGuard, id: u32) -> QueryResult<Option<Status>>
 #[delete("/")]
 pub fn delete_all_jobs(user: UserGuard) -> QueryResult<Status>
 {
-    let _deleted = delete_all_jobs_of_user(user.id, &user.connection)?;
+    let ids = select_job_ids_of_user(user.id, &user.connection)?;
+    for id in ids {
+        let _deleted = delete_job_of_user_by_id(user.id, id, &user.connection)?;
+    }
 
     Ok(Status::new(205, "Reset Content"))
 }

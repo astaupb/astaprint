@@ -22,6 +22,11 @@ pub fn select_job_ids(connection: &MysqlConnection) -> QueryResult<Vec<u32>>
     jobs::table.select(jobs::id).load(connection)
 }
 
+pub fn select_job_ids_of_user(user_id: u32, connection: &MysqlConnection) -> QueryResult<Vec<u32>>
+{
+    jobs::table.select(jobs::id).filter(jobs::user_id.eq(user_id)).load(connection)
+}
+
 pub fn select_full_job_of_user(user_id: u32, id: u32, connection: &MysqlConnection) -> QueryResult<Option<Job>>
 {
     jobs::table
