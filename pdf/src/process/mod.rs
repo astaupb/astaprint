@@ -34,12 +34,16 @@ use crate::{
         qpdf_rotate,
         qpdf_pages,
         qpdf_force_version,
+        qpdf_merge,
         gs_preprocess,
+        gs_jpeg,
+        img2pdf,
     },
     tmp::TmpFile,
 };
 
 use std::{
+    process::Child,
     fs::{
         rename, remove_file,
     },
@@ -166,9 +170,37 @@ pub fn preprocess(path: &str) -> io::Result<()>
 
 }
 
+pub fn image_preprocess(path: &str, pagecount: usize) -> io::Result<()>
+{
+    gs_jpeg(path)?;
+    let mut childs: Vec<Child> = Vec::new();
+    let mut images: Vec<String> = Vec::new();
+    let mut out_paths: Vec<String> = Vec::new();
+    for i in 1..pagecount+1 {
+        let image = format!("{}{:03}", path, i);
+        let out = format!("{}.out", image);
+        out_paths.push(out.clone());
+        images.push(image.clone());
+        childs.push(img2pdf(&image, &out)?);
+    }
+    for mut child in childs {
+        child.wait()?;
+    }
+
+    qpdf_merge(&out_paths, path)?.wait()?;
+
+    for out_path in out_paths {
+        remove_file(&out_path)?;
+    }
+    for image in images {
+        remove_file(&image)?;
+    }
+    Ok(())
+}
+
+
 pub fn trim_pages(path: &str, pagerange: &str) -> io::Result<()>
 {
-
     let out = &format!("{}_out", path);
 
     qpdf_pages(path, out, pagerange)?
