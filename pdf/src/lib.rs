@@ -40,6 +40,7 @@ use crate::{
         force_pdf_version,
         force_page_size,
         preprocess,
+        image_preprocess,
     },
 };
 
@@ -60,7 +61,7 @@ pub struct SanitizeResult
     pub landscape: bool,
 }
 
-pub fn sanitize_pdf<'a>(data: Vec<u8>, uid: &'a str) -> SanitizeResult
+pub fn sanitize_pdf<'a>(data: Vec<u8>, uid: &'a str, image: bool) -> SanitizeResult
 {
     let path = &TmpFile::create(&data[..])
         .expect("creating tmp file");
@@ -153,8 +154,13 @@ pub fn sanitize_pdf<'a>(data: Vec<u8>, uid: &'a str) -> SanitizeResult
         assert!(info.get_minor_version() < 5);
     }
 
-    preprocess(path)
-        .expect("preprocessing pdf");
+    if image {
+        image_preprocess(path, pagecount)
+            .expect("preprocessing pdf");
+    } else {
+        preprocess(path)
+            .expect("preprocessing pdf");
+    }
 
     let colored = colored_pagecount(path, info.pagecount()).expect("running ghostscript");
 

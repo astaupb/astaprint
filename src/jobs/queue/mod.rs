@@ -87,7 +87,7 @@ pub fn dispatch(
         return
     };
 
-    let result = sanitize_pdf(data, uid);
+    let result = sanitize_pdf(data, uid, task.image);
 
     let connection = if let Ok(connection) = state.mysql_pool.get() {
         connection
