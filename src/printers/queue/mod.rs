@@ -66,7 +66,8 @@ use redis::queue::{
 use snmp::tool::*;
 
 use jobs::options::{
-    JobOptionsUpdate, Update,
+    JobOptionsUpdate,
+    Update,
 };
 
 pub fn work(

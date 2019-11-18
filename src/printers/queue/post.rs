@@ -84,15 +84,21 @@ pub fn post_to_queue_handler(
     if let Some(id) = id {
         info!("print job {} command", id);
 
-        queue.send_command(&WorkerCommand::<Option<JobOptionsUpdate>>::Print((id, options))).expect("sending print command to worker");
+        queue
+            .send_command(&WorkerCommand::<Option<JobOptionsUpdate>>::Print((id, options)))
+            .expect("sending print command to worker");
 
         // send hungup for not locking printer after print job
         if hungup {
-            queue.send_command(&WorkerCommand::<Option<JobOptionsUpdate>>::Hungup).expect("sending hungup command to worker");
+            queue
+                .send_command(&WorkerCommand::<Option<JobOptionsUpdate>>::Hungup)
+                .expect("sending hungup command to worker");
         }
     }
     else if !hungup {
-        queue.send_command(&WorkerCommand::<Option<JobOptionsUpdate>>::HeartBeat).expect("sending heartbeat command to worker");
+        queue
+            .send_command(&WorkerCommand::<Option<JobOptionsUpdate>>::HeartBeat)
+            .expect("sending heartbeat command to worker");
     }
 
     Ok(Ok(Accepted(Some(Json(hex_uid)))))
@@ -104,12 +110,14 @@ pub fn post_to_queue(
     device_id: u32,
     id: Option<u32>,
     options: Option<Json<JobOptionsUpdate>>,
-    queues: State<HashMap<u32, TaskQueueClient<WorkerTask, WorkerCommand<Option<JobOptionsUpdate>>>>>,
+    queues: State<
+        HashMap<u32, TaskQueueClient<WorkerTask, WorkerCommand<Option<JobOptionsUpdate>>>>,
+    >,
 ) -> QueryResult<Result<Accepted<Json<String>>, Custom<()>>>
 {
     let queue = match queues.get(&device_id) {
         Some(queue) => queue,
         None => return Ok(Err(Custom(Status::new(404, "Task Not Found"), ()))),
     };
-    return post_to_queue_handler(user, id, options.map(|o| o.into_inner()), queue.clone());
+    return post_to_queue_handler(user, id, options.map(|o| o.into_inner()), queue.clone())
 }

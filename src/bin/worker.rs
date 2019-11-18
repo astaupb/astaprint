@@ -70,8 +70,8 @@ use model::{
 
 extern crate astaprint;
 use astaprint::{
-    printers::queue::work,
     jobs::options::JobOptionsUpdate,
+    printers::queue::work,
 };
 
 fn spawn_worker(
@@ -84,17 +84,18 @@ fn spawn_worker(
 {
     let name = format!("worker::{}", device_id);
 
-    let taskqueue: TaskQueue<WorkerTask, WorkerState, WorkerCommand<Option<JobOptionsUpdate>>> = TaskQueue::new(
-        &name,
-        WorkerState {
-            device_id,
-            ip,
-            ppd: ppd.clone(),
-            mysql_pool,
-            redis_pool: redis_pool.clone(),
-        },
-        redis_pool,
-    );
+    let taskqueue: TaskQueue<WorkerTask, WorkerState, WorkerCommand<Option<JobOptionsUpdate>>> =
+        TaskQueue::new(
+            &name,
+            WorkerState {
+                device_id,
+                ip,
+                ppd: ppd.clone(),
+                mysql_pool,
+                redis_pool: redis_pool.clone(),
+            },
+            redis_pool,
+        );
 
     thread::spawn(move || {
         info!("{} listening", device_id);
