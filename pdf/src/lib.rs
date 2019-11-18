@@ -61,7 +61,7 @@ pub struct SanitizeResult
     pub landscape: bool,
 }
 
-pub fn sanitize_pdf<'a>(data: Vec<u8>, uid: &'a str, image: bool) -> SanitizeResult
+pub fn sanitize_pdf<'a>(data: Vec<u8>, uid: &'a str, do_preprocess: u8) -> SanitizeResult
 {
     let path = &TmpFile::create(&data[..])
         .expect("creating tmp file");
@@ -154,12 +154,14 @@ pub fn sanitize_pdf<'a>(data: Vec<u8>, uid: &'a str, image: bool) -> SanitizeRes
         assert!(info.get_minor_version() < 5);
     }
 
-    if image {
-        image_preprocess(path, pagecount)
-            .expect("preprocessing pdf");
-    } else {
-        preprocess(path)
-            .expect("preprocessing pdf");
+    match do_preprocess {
+        1 =>
+            preprocess(path)
+                .expect("preprocessing pdf"),
+        2 =>
+            image_preprocess(path, pagecount)
+                .expect("image_preprocessing pdf"),
+        _ => (),
     }
 
     let colored = colored_pagecount(path, info.pagecount()).expect("running ghostscript");

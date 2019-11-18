@@ -42,7 +42,7 @@ use redis::{
 };
 
 #[post(
-    "/queue?<filename>&<image>&<keep>&<a3>&<color>&<duplex>&<copies>&<password>",
+    "/queue?<filename>&<preprocess>&<keep>&<a3>&<color>&<duplex>&<copies>&<password>",
     data = "<data>",
     format = "application/pdf"
 )]
@@ -50,7 +50,7 @@ pub fn upload_job<'a>(
     user: UserGuard,
     data: PdfBody,
     filename: Option<String>,
-    image: Option<bool>,
+    preprocess: Option<u8>,
     keep: Option<bool>,
     a3: Option<bool>,
     color: Option<bool>,
@@ -95,13 +95,13 @@ pub fn upload_job<'a>(
         String::from("")
     };
 
-    let image = image.unwrap_or(false);
+    let preprocess = preprocess.unwrap_or(1);
 
     let task = DispatcherTask {
         user_id,
         uid,
         filename,
-        image,
+        preprocess,
         keep,
         a3,
         color,
