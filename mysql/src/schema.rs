@@ -81,8 +81,22 @@ table! {
         has_a3 -> Bool,
         coin_operated -> Bool,
         description -> Varchar,
+        watch_toner -> Bool,
+        watch_tray1 -> Bool,
+        watch_tray2 -> Bool,
+        watch_tray3 -> Bool,
+        watch_interval -> Unsigned<Integer>,
+        last_watched -> Timestamp,
         created -> Timestamp,
         updated -> Timestamp,
+    }
+}
+
+table! {
+    printer_watchers (id) {
+        id -> Unsigned<Integer>,
+        name -> Varchar,
+        email -> Varchar,
     }
 }
 

@@ -94,7 +94,10 @@ use astaprint::{
         post::*,
     },
     printers::{
+        delete::*,
         get::*,
+        post::*,
+        put::*,
         queue::{
             delete::*,
             get::*,
@@ -222,6 +225,9 @@ fn rocket() -> rocket::Rocket
         .mount("/admin", routes![
             get_printers,
             get_single_printer,
+            post_printer,
+            put_printer_details,
+            delete_printer,
             post_admin_token,
             get_journal_as_admin,
             get_dispatcher_queue_as_admin,

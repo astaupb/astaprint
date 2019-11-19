@@ -17,11 +17,18 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-pub mod accounting;
-pub mod delete;
-pub mod get;
-pub mod post;
-pub mod put;
-pub mod queue;
-pub mod response;
-pub mod update;
+
+use rocket::http::Status;
+
+use diesel::QueryResult;
+
+use crate::admin::guard::AdminGuard;
+
+use mysql::printers::delete::*;
+
+#[delete("/printers/<id>")]
+pub fn delete_printer(admin: AdminGuard, id: u32) -> QueryResult<Status>
+{
+    delete_printer_by_device_id(id, &admin.connection)?;
+    Ok(Status::new(205, "Reset Content"))
+}

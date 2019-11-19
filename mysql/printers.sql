@@ -27,5 +27,16 @@ CREATE TABLE `printers`(
 	`has_a3` BOOLEAN NOT NULL,
 	`coin_operated` BOOLEAN NOT NULL,
 	`description` VARCHAR(32) NOT NULL,
+        `watch_toner` BOOLEAN NOT NULL,
+        `watch_tray1` BOOLEAN NOT NULL,
+        `watch_tray2` BOOLEAN NOT NULL,
+        `watch_tray3` BOOLEAN NOT NULL,
+        `watch_interval` INT UNSIGNED NOT NULL,
+        `last_watched` TIMESTAMP NOT NULL,
 	`created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	`updated` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP);
+
+CREATE TABLE `printer_watchers`(
+	`id` INT UNSIGNED UNIQUE PRIMARY KEY AUTO_INCREMENT NOT NULL,
+        `name` VARCHAR(42) NOT NULL,
+        `email` VARCHAR(42) UNIQUE NOT NULL);

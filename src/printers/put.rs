@@ -17,11 +17,30 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-pub mod accounting;
-pub mod delete;
-pub mod get;
-pub mod post;
-pub mod put;
-pub mod queue;
-pub mod response;
-pub mod update;
+
+use rocket::http::Status;
+
+use rocket_contrib::json::Json;
+
+use diesel::QueryResult;
+
+use crate::admin::guard::AdminGuard;
+
+use crate::printers::update::PrinterUpdate;
+
+use mysql::printers::{
+    select::*,
+    update::*,
+};
+
+#[put("/printers/<id>", data = "<update>")]
+pub fn put_printer_details(
+    admin: AdminGuard,
+    id: u32,
+    update: Json<PrinterUpdate>,
+) -> QueryResult<Status>
+{
+    let printer = update.into_inner().update(select_printer_by_device_id(id, &admin.connection)?);
+    update_printer(printer, &admin.connection)?;
+    Ok(Status::new(205, "Reset Content"))
+}
