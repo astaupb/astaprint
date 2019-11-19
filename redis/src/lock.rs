@@ -55,7 +55,7 @@ impl Lock
 
     pub fn is_grabbed(&self) -> bool
     {
-        let redis = self.pool.get()
+        let mut redis = self.pool.get()
             .expect("getting redis from pool");
 
         let result: RedisResult<Vec<u8>> = redis.get(&self.name);
@@ -64,7 +64,7 @@ impl Lock
 
     pub fn grab(&mut self)
     {
-        let redis = self.pool.get()
+        let mut redis = self.pool.get()
             .expect("getting redis from pool");
 
         assert!(self.value.is_none());
@@ -89,7 +89,7 @@ impl Lock
 
     pub fn release(&self) -> bool
     {
-        let redis = self.pool.get()
+        let mut redis = self.pool.get()
             .expect("getting redis from pool");
         // check if value is the own to avoid removing a lock created by another client
         let _get: RedisResult<Value> = redis.get(&self.name);

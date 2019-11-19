@@ -75,7 +75,7 @@ where
     pub fn listen(self, handle: fn(T, D, TaskQueueClient<T, C>))
     {
         loop {
-            if let Ok(redis) = self.redis_pool.get() {
+            if let Ok(mut redis) = self.redis_pool.get() {
                 let bincode: Vec<u8> = redis
                     .brpoplpush(&self.incoming, &self.processing, 0)
                     .expect("pushing task into incoming queue");
@@ -139,7 +139,7 @@ where
 
     pub fn refresh_timeout(&self) -> RedisResult<u32>
     {
-        let redis = self.redis_pool.get()
+        let mut redis = self.redis_pool.get()
             .expect("getting connection from pool");
 
         redis.expire(&self.processing, 72)?;
@@ -148,7 +148,7 @@ where
 
     pub fn get_processing(&self) -> Vec<T>
     {
-        let redis = self.redis_pool.get()
+        let mut redis = self.redis_pool.get()
             .expect("getting connection from pool");
 
         let processing: Vec<Vec<u8>> = redis.lrange(&self.processing, 0, -1)
@@ -162,7 +162,7 @@ where
         
     pub fn get_incoming(&self) -> Vec<T>
     {
-        let redis = self.redis_pool.get()
+        let mut redis = self.redis_pool.get()
             .expect("getting connection from pool");
 
         let incoming: Vec<Vec<u8>> = redis.lrange(&self.incoming, 0, -1)
@@ -176,7 +176,7 @@ where
 
     pub fn remove(&self, uid: Vec<u8>) -> RedisResult<u32>
     {
-        let redis = self.redis_pool.get()
+        let mut redis = self.redis_pool.get()
             .expect("getting connection from pool");
 
         redis.lrem(&self.incoming, 0, uid)
@@ -187,7 +187,7 @@ where
         let encoded: Vec<u8> = bincode::serialize(value)
             .expect("serializing value to bincode");
 
-        let redis = self.redis_pool.get()
+        let mut redis = self.redis_pool.get()
             .expect("getting connection from pool");
 
         redis.lrem(&self.processing, 0, encoded)?;
@@ -199,7 +199,7 @@ where
         let encoded: Vec<u8> = bincode::serialize(value)
             .expect("serializing value to bincode");
 
-        let redis = self.redis_pool.get()
+        let mut redis = self.redis_pool.get()
             .expect("getting connection from pool");
 
         redis.lpush(&self.incoming, encoded)?;
@@ -240,7 +240,7 @@ where
         let encoded: Vec<u8> = bincode::serialize(command)
             .expect("serializing command to bincode");
         
-        let redis = self.redis_pool.get()
+        let mut redis = self.redis_pool.get()
             .expect("gettig connection from pool");
 
         redis.lpush(&self.queue, encoded)?;
@@ -250,7 +250,7 @@ where
 
     pub fn receive_command(&self) -> RedisResult<Option<C>>
     {
-        let redis = self.redis_pool.get()
+        let mut redis = self.redis_pool.get()
             .expect("getting redis connection from pool");
 
         redis.rpop(&self.queue)
@@ -270,7 +270,7 @@ where
             let redis_pool = self.redis_pool.clone();
             let queue = self.queue.clone();
             thread::spawn(move || {
-                let redis = redis_pool.get()
+                let mut redis = redis_pool.get()
                     .expect("getting connection from pool");
                 loop {
                     match redis.brpop::<&str, Vec<Vec<u8>>>(&queue, 72) {

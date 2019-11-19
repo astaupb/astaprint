@@ -72,7 +72,7 @@ pub fn upload_job<'a>(
         }
     }
 
-    if let Err(e) = PopplerDocument::new_from_data(&bytes[..], "") {
+    if let Err(e) = PopplerDocument::new_from_data(&mut bytes[..], "") {
         info!("Err creating PopplerDocument: {}", e);
         return Err(BadRequest(Some("invalid pdf file")))
     }

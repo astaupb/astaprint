@@ -77,7 +77,7 @@ impl Share
 
     pub fn set(&self, data: u32) -> RedisResult<String>
     {
-        let connection = self.pool.get().expect("getting connection from pool");
+        let mut connection = self.pool.get().expect("getting connection from pool");
 
         let key = random_bytes(42);
 
@@ -92,7 +92,7 @@ impl Share
     {
         let key = base64::decode_config(&key[..], base64::URL_SAFE)?;
 
-        let connection = self.pool.get().expect("getting connection from pool");
+        let mut connection = self.pool.get().expect("getting connection from pool");
 
         let value: u32 = connection.get(key.clone())?;
 

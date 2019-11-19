@@ -51,10 +51,10 @@ impl DocumentInfo
         path: &str,
     ) -> DocumentInfo
     {
-        let data = TmpFile::read(path)
+        let mut data = TmpFile::read(path)
             .expect("creating tmp file");
 
-        let document = PopplerDocument::new_from_data(&data[..], "")
+        let document = PopplerDocument::new_from_data(&mut data[..], "")
             .expect("PopplerDoucment from data");
 
         let title = document.get_title();

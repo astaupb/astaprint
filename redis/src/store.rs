@@ -53,7 +53,7 @@ impl Store
 
     pub fn set(&self, data: Vec<u8>) -> RedisResult<Vec<u8>>
     {
-        let connection = self.pool.get().expect("getting connection from pool");
+        let mut connection = self.pool.get().expect("getting connection from pool");
 
         let key = random_bytes(20);
 
@@ -64,7 +64,7 @@ impl Store
 
     pub fn get(&self, key: Vec<u8>) -> RedisResult<Vec<u8>>
     {
-        let connection = self.pool.get().expect("getting connection from pool");
+        let mut connection = self.pool.get().expect("getting connection from pool");
 
         let value: Vec<u8> = connection.get(key.clone())?;
 

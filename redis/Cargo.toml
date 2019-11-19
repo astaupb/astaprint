@@ -6,10 +6,10 @@ edition = "2018"
 
 [dependencies]
 log = "0.4"
-hex = "0.3"
-base64 = "0.10"
-r2d2_redis = "0.9"
-bincode = "1.1"
+hex = "0.4"
+base64 = "0.11"
+r2d2_redis = "0.12"
+bincode = "1.2"
 serde = "1.0"
 threadpool = "1.7"
 sodium = {path = "../sodium"}
