@@ -119,11 +119,11 @@ impl DocumentInfo
         let surface = ImageSurface::create(Format::ARgb32, w as i32, h as i32)
             .expect("creating cairo image surface for preview rendering");
 
-        let mut context = Context::new(&surface);
+        let context = Context::new(&surface);
 
         context.save();
 
-        page.render(&mut context);
+        page.render(&context);
 
         context.restore();
 

@@ -119,5 +119,5 @@ pub fn post_to_queue(
         Some(queue) => queue,
         None => return Ok(Err(Custom(Status::new(404, "Task Not Found"), ()))),
     };
-    return post_to_queue_handler(user, id, options.map(|o| o.into_inner()), queue.clone())
+    post_to_queue_handler(user, id, options.map(|o| o.into_inner()), queue.clone())
 }

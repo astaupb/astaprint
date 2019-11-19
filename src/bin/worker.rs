@@ -90,7 +90,7 @@ fn spawn_worker(
             WorkerState {
                 device_id,
                 ip,
-                ppd: ppd.clone(),
+                ppd,
                 mysql_pool,
                 redis_pool: redis_pool.clone(),
             },

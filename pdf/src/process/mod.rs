@@ -108,12 +108,10 @@ pub fn pdfnup(path: &str, nup: u8, a3: bool, landscape: bool) -> io::Result<()>
 
     arguments[2] = if nup == 4 {
         "2x2"
+    } else if landscape {
+        "1x2"
     } else {
-        if landscape {
-            "1x2"
-        } else {
-            "2x1"
-        }
+        "2x1"
     };
 
     pdfjam(&arguments)?.wait()?;
@@ -176,7 +174,7 @@ pub fn image_preprocess(path: &str, pagecount: u32) -> io::Result<()>
     let mut childs: Vec<Child> = Vec::new();
     let mut images: Vec<String> = Vec::new();
     let mut out_paths: Vec<String> = Vec::new();
-    for i in 1..pagecount+1 {
+    for i in 1..=pagecount {
         let image = format!("{}{:03}", path, i);
         let out = format!("{}.out", image);
         out_paths.push(out.clone());

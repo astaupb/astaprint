@@ -61,7 +61,7 @@ pub struct SanitizeResult
     pub landscape: bool,
 }
 
-pub fn sanitize_pdf<'a>(data: Vec<u8>, uid: &'a str, do_preprocess: u8) -> SanitizeResult
+pub fn sanitize_pdf(data: Vec<u8>, uid: &str, do_preprocess: u8) -> SanitizeResult
 {
     let path = &TmpFile::create(&data[..])
         .expect("creating tmp file");
