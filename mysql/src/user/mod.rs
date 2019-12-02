@@ -21,6 +21,7 @@ pub struct User
     pub card: Option<u64>,
     pub pin: Option<u32>,
     pub locked: bool,
+    pub email: Option<String>,
     pub created: NaiveDateTime,
     pub updated: NaiveDateTime,
 }

@@ -36,6 +36,7 @@ pub struct UserInfo
     credit: i32,
     card: Option<u64>,
     pin: Option<u32>,
+    email: Option<String>,
     tokens: usize,
     token_id: u32,
 }
@@ -48,7 +49,7 @@ pub fn get_user_info(user: UserGuard) -> QueryResult<Json<UserInfo>>
 
     let tokens = tokens.len();
 
-    let info: (String, i32, Option<u64>, Option<u32>) =
+    let info: (String, i32, Option<u64>, Option<u32>, Option<String>) =
         select_user_info_by_id(user.id, &user.connection)?;
 
     Ok(Json(UserInfo {
@@ -57,6 +58,7 @@ pub fn get_user_info(user: UserGuard) -> QueryResult<Json<UserInfo>>
         credit: info.1,
         card: info.2,
         pin: info.3,
+        email: info.4,
         tokens,
         token_id: user.token_id,
     }))

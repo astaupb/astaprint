@@ -124,6 +124,7 @@ table! {
         card -> Nullable<Unsigned<Bigint>>,
         pin -> Nullable<Unsigned<Integer>>,
         locked -> Bool,
+        email -> Nullable<Varchar>,
         created -> Timestamp,
         updated -> Timestamp,
     }

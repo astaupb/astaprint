@@ -53,6 +53,7 @@ pub struct UserResponse
     pub card: Option<u64>,
     pub pin: Option<u32>,
     pub locked: bool,
+    pub email: Option<String>,
     pub created: i64,
     pub updated: i64,
 }
@@ -72,6 +73,7 @@ impl<'a> From<&'a User> for UserResponse
             card: user.card,
             pin: user.pin,
             locked: user.locked,
+            email: user.email.clone(),
             created: user.created.timestamp(),
             updated: user.updated.timestamp(),
         }

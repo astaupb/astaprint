@@ -114,6 +114,26 @@ pub fn change_card(admin: AdminGuard, user_id: u32, card: Json<Card>) -> QueryRe
     Ok(Status::new(205, "Reset Content"))
 }
 
+#[put("/email?<email>")]
+pub fn change_email(user: UserGuard, email: String) -> QueryResult<Status>
+{
+    update_user_email(user.id, Some(email), &user.connection)?;
+
+    Ok(Status::new(205, "Reset Content"))
+}
+
+#[put("/<user_id>/email?<email>")]
+pub fn change_user_email_as_admin(
+    admin: AdminGuard,
+    user_id: u32,
+    email: String,
+) -> QueryResult<Status>
+{
+    update_user_email(user_id, Some(email), &admin.connection)?;
+
+    Ok(Status::new(205, "Reset Content"))
+}
+
 #[put("/options", data = "<update>")]
 pub fn update_user_default_options(
     user: UserGuard,

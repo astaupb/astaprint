@@ -31,6 +31,13 @@ pub fn update_locked(user_id: u32, locked: bool, connection: &MysqlConnection) -
         .execute(connection)
 }
 
+pub fn update_user_email(user_id: u32, email: Option<String>, connection: &MysqlConnection) -> QueryResult<usize>
+{
+    update(user::table.filter(user::id.eq(user_id)))
+        .set(user::email.eq(email))
+        .execute(connection)
+}
+
 pub fn update_user_credit(user_id: u32, credit: i32, connection: &MysqlConnection) -> QueryResult<usize>
 {
     update(user::table.filter(user::id.eq(user_id)))

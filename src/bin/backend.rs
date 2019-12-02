@@ -212,6 +212,7 @@ fn rocket() -> rocket::Rocket
             change_password,
             fetch_username,
             change_username,
+            change_email,
             register_as_new_user,
         ])
         .mount("/user/tokens", routes![
@@ -239,6 +240,7 @@ fn rocket() -> rocket::Rocket
             post_new_admin,
             change_user_password_as_admin,
             change_user_name_as_admin,
+            change_user_email_as_admin,
             get_user_as_admin,
             get_user_credit_as_admin,
             get_user_journal_as_admin,
