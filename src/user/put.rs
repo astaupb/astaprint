@@ -28,8 +28,6 @@ use sodium::PasswordHash;
 
 use crate::user::guard::UserGuard;
 
-use crate::admin::guard::AdminGuard;
-
 use crate::jobs::options::{
     JobOptionsUpdate,
     Update,
@@ -97,39 +95,10 @@ pub fn change_username(user: UserGuard, new_username: Json<String>) -> QueryResu
 
     Ok(Custom(Status::new(205, "Reset Content"), ()))
 }
-#[derive(Deserialize, Debug, Clone)]
-pub struct Card
-{
-    sn: Option<u64>,
-    pin: Option<u32>,
-}
-
-#[put("/<user_id>/card", data = "<card>")]
-pub fn change_card(admin: AdminGuard, user_id: u32, card: Json<Card>) -> QueryResult<Status>
-{
-    let card = card.into_inner();
-
-    update_user_card_and_pin(user_id, card.sn, card.pin, &admin.connection)?;
-
-    Ok(Status::new(205, "Reset Content"))
-}
-
 #[put("/email?<email>")]
 pub fn change_email(user: UserGuard, email: String) -> QueryResult<Status>
 {
     update_user_email(user.id, Some(email), &user.connection)?;
-
-    Ok(Status::new(205, "Reset Content"))
-}
-
-#[put("/<user_id>/email?<email>")]
-pub fn change_user_email_as_admin(
-    admin: AdminGuard,
-    user_id: u32,
-    email: String,
-) -> QueryResult<Status>
-{
-    update_user_email(user_id, Some(email), &admin.connection)?;
 
     Ok(Status::new(205, "Reset Content"))
 }

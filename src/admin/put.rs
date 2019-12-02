@@ -18,9 +18,10 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use admin::guard::AdminGuard;
-use mysql::user::update::update_locked;
+use mysql::user::update::*;
 use rocket::http::Status;
 use rocket_contrib::json::Json;
+use diesel::QueryResult;
 
 #[put("/users/<id>/locked", data = "<locked>")]
 pub fn change_user_locked(id: u32, locked: Json<bool>, admin: AdminGuard) -> Status
@@ -36,4 +37,33 @@ pub fn change_user_locked(id: u32, locked: Json<bool>, admin: AdminGuard) -> Sta
             Status::new(500, "Internal Server Error")
         },
     }
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct Card
+{
+    sn: Option<u64>,
+    pin: Option<u32>,
+}
+
+#[put("/users/<id>/card", data = "<card>")]
+pub fn change_user_card(admin: AdminGuard, id: u32, card: Json<Card>) -> QueryResult<Status>
+{
+    let card = card.into_inner();
+
+    update_user_card_and_pin(id, card.sn, card.pin, &admin.connection)?;
+
+    Ok(Status::new(205, "Reset Content"))
+}
+
+#[put("/users/<id>/email?<email>")]
+pub fn change_user_email_as_admin(
+    admin: AdminGuard,
+    id: u32,
+    email: String,
+) -> QueryResult<Status>
+{
+    update_user_email(id, Some(email), &admin.connection)?;
+
+    Ok(Status::new(205, "Reset Content"))
 }

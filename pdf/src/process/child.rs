@@ -76,6 +76,8 @@ pub fn qpdf(arguments: &[&str]) -> io::Result<Child>
 {
     Command::new("qpdf")
         .args(arguments)
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
         .spawn()
 }
 

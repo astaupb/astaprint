@@ -203,17 +203,17 @@ fn rocket() -> rocket::Rocket
             post_sharecode,
         ])
         .mount("/user", routes![
+            login,
+            logout,
+            register_as_new_user,
             get_user_info,
             get_user_default_options,
             update_user_default_options,
-            login,
-            logout,
             credit_redirect,
             change_password,
             fetch_username,
             change_username,
             change_email,
-            register_as_new_user,
         ])
         .mount("/user/tokens", routes![
             get_all_tokens,
@@ -238,13 +238,13 @@ fn rocket() -> rocket::Rocket
             delete_queue_as_admin,
             get_queue_as_admin,
             post_new_admin,
-            change_user_password_as_admin,
-            change_user_name_as_admin,
-            change_user_email_as_admin,
             get_user_as_admin,
             get_user_credit_as_admin,
             get_user_journal_as_admin,
             get_all_users,
+            change_user_password_as_admin,
+            change_user_name_as_admin,
+            change_user_email_as_admin,
             change_user_locked,
         ])
         .attach(cors())
