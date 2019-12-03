@@ -198,6 +198,14 @@ pub fn select_user_by_name_optional(
         .optional()
 }
 
+pub fn select_user_email_by_id(user_id: u32, connection: &MysqlConnection) -> QueryResult<Option<String>>
+{
+    user::table
+        .select(user::email)
+        .filter(user::id.eq(user_id))
+        .first(connection)
+}
+
 pub fn select_user_info_by_id(user_id: u32, connection: &MysqlConnection) -> QueryResult<(String, i32, Option<u64>, Option<u32>, Option<String>)>
 {
     user::table

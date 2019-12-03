@@ -242,6 +242,7 @@ fn rocket() -> rocket::Rocket
             get_user_credit_as_admin,
             get_user_journal_as_admin,
             get_all_users,
+            reset_user_password_as_admin,
             change_user_password_as_admin,
             change_user_name_as_admin,
             change_user_email_as_admin,

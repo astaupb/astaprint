@@ -20,6 +20,7 @@
 pub mod guard;
 pub mod login;
 pub mod tokens;
+pub mod email;
 
 pub mod get;
 pub mod post;

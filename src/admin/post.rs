@@ -20,14 +20,18 @@
 use admin::{
     guard::AdminGuard,
     Admin,
+    email::send_password_reset_email,
 };
 use chrono::NaiveDate;
 use diesel::prelude::*;
 use mysql::{
     admin::select::select_admin_by_login,
-    user::update::{
-        update_hash_and_salt,
-        update_user_name,
+    user::{
+        update::{
+            update_hash_and_salt,
+            update_user_name,
+        },
+        select::select_user_email_by_id,
     },
 };
 use rocket::{
@@ -35,7 +39,10 @@ use rocket::{
     response::status::Custom,
 };
 use rocket_contrib::json::Json;
-use sodium::PasswordHash;
+use sodium::{
+    PasswordHash, random_bytes
+};
+use base64::encode;
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct NewAdmin
@@ -89,6 +96,29 @@ pub fn change_user_password_as_admin(
     info!("{} changed password of user {}", admin.id, id);
 
     Ok(Status::new(204, "No Content"))
+}
+
+#[post("/users/<id>/password")]
+pub fn reset_user_password_as_admin(
+    admin: AdminGuard,
+    id: u32,
+) -> QueryResult<Status>
+{
+    if let Some(email) = select_user_email_by_id(id, &admin.connection)? {
+
+        let password = encode(&random_bytes(6));
+        if let Ok(_) = send_password_reset_email(&email, &password) {
+
+            let (hash, salt) = PasswordHash::create(&password);
+            update_hash_and_salt(id, hash, salt, &admin.connection)?;
+
+            Ok(Status::new(204, "No Content"))
+        } else {
+            Ok(Status::new(500, "Unable to deliver email"))
+        }
+    } else {
+        Ok(Status::new(400, "User has no email"))
+    }
 }
 
 #[put("/users/<id>/name", data = "<body>")]
