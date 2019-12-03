@@ -36,6 +36,7 @@ use crate::jobs::options::{
 use model::job::options::JobOptions;
 
 use mysql::user::{
+    delete::*,
     select::*,
     update::*,
 };
@@ -62,6 +63,8 @@ pub fn change_password(user: UserGuard, body: Json<PasswordChangeBody>) -> Query
         let (hash, salt) = PasswordHash::create(&body.password.new);
 
         update_hash_and_salt(user.id, hash, salt, &user.connection)?;
+
+        delete_all_tokens_of_user(user.id, &connection)?;
 
         info!("{} changed password", user.id);
 

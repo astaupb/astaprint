@@ -94,6 +94,8 @@ pub fn change_user_password_as_admin(
 
     update_hash_and_salt(id, hash, salt, &admin.connection)?;
 
+    delete_all_tokens_of_user(user.id, &connection)?;
+
     info!("{} changed password of user {}", admin.id, id);
 
     Ok(Status::new(204, "No Content"))
@@ -107,6 +109,8 @@ pub fn reset_user_password_as_admin(admin: AdminGuard, id: u32) -> QueryResult<S
         if let Ok(_) = send_password_reset_email(&email, &password) {
             let (hash, salt) = PasswordHash::create(&password);
             update_hash_and_salt(id, hash, salt, &admin.connection)?;
+
+            delete_all_tokens_of_user(user.id, &connection)?;
 
             Ok(Status::new(204, "No Content"))
         }
