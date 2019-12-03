@@ -18,20 +18,21 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use admin::{
+    email::send_password_reset_email,
     guard::AdminGuard,
     Admin,
-    email::send_password_reset_email,
 };
+use base64::encode;
 use chrono::NaiveDate;
 use diesel::prelude::*;
 use mysql::{
     admin::select::select_admin_by_login,
     user::{
+        select::select_user_email_by_id,
         update::{
             update_hash_and_salt,
             update_user_name,
         },
-        select::select_user_email_by_id,
     },
 };
 use rocket::{
@@ -40,9 +41,9 @@ use rocket::{
 };
 use rocket_contrib::json::Json;
 use sodium::{
-    PasswordHash, random_bytes
+    random_bytes,
+    PasswordHash,
 };
-use base64::encode;
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct NewAdmin
@@ -99,24 +100,21 @@ pub fn change_user_password_as_admin(
 }
 
 #[post("/users/<id>/password")]
-pub fn reset_user_password_as_admin(
-    admin: AdminGuard,
-    id: u32,
-) -> QueryResult<Status>
+pub fn reset_user_password_as_admin(admin: AdminGuard, id: u32) -> QueryResult<Status>
 {
     if let Some(email) = select_user_email_by_id(id, &admin.connection)? {
-
         let password = encode(&random_bytes(6));
         if let Ok(_) = send_password_reset_email(&email, &password) {
-
             let (hash, salt) = PasswordHash::create(&password);
             update_hash_and_salt(id, hash, salt, &admin.connection)?;
 
             Ok(Status::new(204, "No Content"))
-        } else {
+        }
+        else {
             Ok(Status::new(500, "Unable to deliver email"))
         }
-    } else {
+    }
+    else {
         Ok(Status::new(400, "User has no email"))
     }
 }

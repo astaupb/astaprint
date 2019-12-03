@@ -18,10 +18,10 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use admin::guard::AdminGuard;
+use diesel::QueryResult;
 use mysql::user::update::*;
 use rocket::http::Status;
 use rocket_contrib::json::Json;
-use diesel::QueryResult;
 
 #[put("/users/<id>/locked", data = "<locked>")]
 pub fn change_user_locked(id: u32, locked: Json<bool>, admin: AdminGuard) -> Status
@@ -57,11 +57,8 @@ pub fn change_user_card(admin: AdminGuard, id: u32, card: Json<Card>) -> QueryRe
 }
 
 #[put("/users/<id>/email?<email>")]
-pub fn change_user_email_as_admin(
-    admin: AdminGuard,
-    id: u32,
-    email: String,
-) -> QueryResult<Status>
+pub fn change_user_email_as_admin(admin: AdminGuard, id: u32, email: String)
+-> QueryResult<Status>
 {
     update_user_email(id, Some(email), &admin.connection)?;
 
