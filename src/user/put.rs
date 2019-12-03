@@ -64,7 +64,7 @@ pub fn change_password(user: UserGuard, body: Json<PasswordChangeBody>) -> Query
 
         update_hash_and_salt(user.id, hash, salt, &user.connection)?;
 
-        delete_all_tokens_of_user(user.id, &connection)?;
+        delete_all_tokens_of_user(user.id, &user.connection)?;
 
         info!("{} changed password", user.id);
 

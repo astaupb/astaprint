@@ -28,6 +28,7 @@ use diesel::prelude::*;
 use mysql::{
     admin::select::select_admin_by_login,
     user::{
+        delete::delete_all_tokens_of_user,
         select::select_user_email_by_id,
         update::{
             update_hash_and_salt,
@@ -94,7 +95,7 @@ pub fn change_user_password_as_admin(
 
     update_hash_and_salt(id, hash, salt, &admin.connection)?;
 
-    delete_all_tokens_of_user(user.id, &connection)?;
+    delete_all_tokens_of_user(id, &admin.connection)?;
 
     info!("{} changed password of user {}", admin.id, id);
 
@@ -110,7 +111,7 @@ pub fn reset_user_password_as_admin(admin: AdminGuard, id: u32) -> QueryResult<S
             let (hash, salt) = PasswordHash::create(&password);
             update_hash_and_salt(id, hash, salt, &admin.connection)?;
 
-            delete_all_tokens_of_user(user.id, &connection)?;
+            delete_all_tokens_of_user(id, &admin.connection)?;
 
             Ok(Status::new(204, "No Content"))
         }
