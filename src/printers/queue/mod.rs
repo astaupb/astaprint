@@ -240,7 +240,10 @@ pub fn work(
             if printing.is_some() {
                 if let Ok(status) = status(&state.ip) {
                     if !status.ok() {
-                        // reinsert into dispatcher with image option?
+                        info!("status not ok: {:?}", status);
+                    }
+                    else {
+                        // reinsert into dispatcher queue with image option?
                     }
                 }
             }
