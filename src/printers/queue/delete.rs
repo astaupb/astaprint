@@ -69,7 +69,7 @@ pub fn delete_queue(
         Custom(Status::new(205, "Success - Reset Content"), ())
     }
     else {
-        Custom(Status::new(401, "Unauthorized"), ())
+        Custom(Status::new(403, "Forbidden"), ())
     }
 }
 
