@@ -62,6 +62,7 @@ pub struct NewUser
 {
     name: String,
     password: String,
+    email: Option<String>,
 }
 
 #[post("/", data = "<user>")]
@@ -75,7 +76,7 @@ pub fn register_as_new_user(
     if user.name.chars().any(|c| !c.is_alphanumeric()) || user.name.bytes().count() > 32 {
         return Ok(Custom(Status::new(471, "Invalid Username"), ()))
     }
-    match add_user(&user.name, &user.password, false, &connection) {
+    match add_user(&user.name, &user.password, user.email.clone(), false, &connection) {
         Ok(_id) => Ok(Custom(Status::new(204, "Success - No Content"), ())),
         Err(UserAddError::UsernameExists) => {
             Ok(Custom(Status::new(470, "username already taken"), ()))

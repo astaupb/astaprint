@@ -28,6 +28,7 @@ pub fn insert_into_user(
     name: &str,
     hash: Vec<u8>,
     salt: Vec<u8>,
+    email: Option<String>,
     card: Option<u64>,
     pin: Option<u32>,
     locked: bool,
@@ -40,6 +41,7 @@ pub fn insert_into_user(
             user::locked.eq(locked),
             user::hash.eq(hash),
             user::salt.eq(salt),
+            user::email.eq(email),
             user::card.eq(card),
             user::pin.eq(pin),
         ))

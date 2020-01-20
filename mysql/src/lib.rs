@@ -40,10 +40,10 @@ use user::{
     select::select_user_id_by_name,
 };
 
-pub fn insert_user(name: &str, hash: Vec<u8>, salt: Vec<u8>, locked: bool, connection: &MysqlConnection) -> QueryResult<u32>
+pub fn insert_user(name: &str, hash: Vec<u8>, salt: Vec<u8>, email: Option<String>, locked: bool, connection: &MysqlConnection) -> QueryResult<u32>
 {
     connection.transaction::<_, Error, _>(|| {
-        let _affected_rows = insert_into_user(name, hash, salt, None, None, locked, connection)?; 
+        let _affected_rows = insert_into_user(name, hash, salt, email, None, None, locked, connection)?;
 
         assert_eq!(_affected_rows, 1);
 

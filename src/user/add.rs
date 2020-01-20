@@ -44,6 +44,7 @@ impl From<Error> for UserAddError
 pub fn add_user(
     name: &str,
     password: &str,
+    email: Option<String>,
     locked: bool,
     connection: &MysqlConnection,
 ) -> Result<u32, UserAddError>
@@ -56,5 +57,5 @@ pub fn add_user(
 
     let (hash, salt) = PasswordHash::create(password);
 
-    Ok(insert_user(name, hash, salt, locked, connection)?)
+    Ok(insert_user(name, hash, salt, email, locked, connection)?)
 }
