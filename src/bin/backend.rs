@@ -190,6 +190,7 @@ fn rocket() -> rocket::Rocket
             fetch_info,
             update_filename,
             get_dispatcher_queue,
+            copy_job,
             upload_job,
             delete_job,
             delete_all_jobs,

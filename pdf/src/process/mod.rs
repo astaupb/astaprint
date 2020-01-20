@@ -170,7 +170,7 @@ pub fn preprocess(path: &str) -> io::Result<()>
 
 pub fn image_preprocess(path: &str, pagecount: u32) -> io::Result<()>
 {
-    gs_jpeg(path)?;
+    gs_jpeg(path)?.wait()?;
     let mut childs: Vec<Child> = Vec::new();
     let mut images: Vec<String> = Vec::new();
     let mut out_paths: Vec<String> = Vec::new();

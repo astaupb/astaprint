@@ -53,12 +53,11 @@ pub fn gs_jpeg(path: &str) -> io::Result<Child>
         "-dBATCH",
         "-dNOPAUSE",
         "-dQUIET",
-        "-sDEVICE=jpeg",
+        "-sDEVICE=png16m",
         "-dNumRenderingThreads=4",
         "-o",
         &format!("{}%03d", path),
-        "-r300x300",
-        "-dJPEGQ=90",
+        "-r300",
         &path,
     ])
 }

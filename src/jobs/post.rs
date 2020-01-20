@@ -35,6 +35,80 @@ use mysql::jobs::{
 };
 use user::guard::UserGuard;
 
+use model::{
+    job::{
+        info::JobInfo,
+        options::JobOptions,
+    },
+    task::dispatcher::DispatcherTask,
+};
+
+use redis::{
+    queue::TaskQueueClient,
+    store::Store,
+};
+
+#[post("/<id>?<image>")]
+pub fn copy_job(
+    user: UserGuard,
+    id: u32,
+    taskqueue: State<TaskQueueClient<DispatcherTask, ()>>,
+    store: State<Store>,
+    image: Option<bool>,
+) -> QueryResult<Status>
+{
+    if let Ok(job) = select_full_job_by_id(id, &user.connection) {
+        let image = image.unwrap_or(false);
+        if image {
+            // dispatch again with image option
+            let options: JobOptions =
+                bincode::deserialize(&job.options).expect("deserializing JobOptions");
+
+            let info: JobInfo = bincode::deserialize(&job.info).expect("deserializing JobInfo");
+
+            let uid = store.set(job.pdf).expect("saving file in store");
+
+            let hex_uid = hex::encode(&uid[..]);
+
+            let task = DispatcherTask {
+                user_id: user.id,
+                uid,
+                filename: info.filename,
+                preprocess: 2,
+                keep: Some(options.keep),
+                a3: Some(options.a3),
+                color: Some(options.color),
+                duplex: Some(options.duplex),
+                copies: Some(options.copies),
+            };
+
+            taskqueue.send(&task).expect("sending task to queue");
+
+            info!("{} processing job with uid {} with image option", user.id, hex_uid);
+
+            Ok(Status::new(202, "Started Processing"))
+        }
+        else {
+            insert_into_jobs(
+                user.id,
+                job.info,
+                job.options,
+                job.pdf,
+                job.preview_0,
+                job.preview_1,
+                job.preview_2,
+                job.preview_3,
+                &user.connection,
+            )?;
+
+            Ok(Status::new(200, "OK"))
+        }
+    }
+    else {
+        Ok(Status::new(404, "Job not found"))
+    }
+}
+
 #[post("/sharecode", data = "<code>")]
 pub fn post_sharecode(
     user: UserGuard,
