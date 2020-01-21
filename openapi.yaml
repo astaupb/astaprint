@@ -512,16 +512,39 @@ paths:
           description: Success - No content - Reset view
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-        '470':
-          description: Username taken
         '471':
           description: Disallowed characters / Too long (>32)
+        '472':
+          description: Username taken
       requestBody:
         content:
           application/json:
             example: '"newusername"'
             schema:
               type: string
+
+  '/user/email':
+    put:
+      operationId: updateEmail
+      summary: Update email with JSON
+      tags:
+        - User
+      security:
+        - token: []
+      responses:
+        '205':
+          description: Success - No content - Reset view
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '472':
+          description: Email taken
+      requestBody:
+        content:
+          application/json:
+            example: '"newusername"'
+            schema:
+              type: string
+
 
   '/user/tokens':
     get:
@@ -627,10 +650,10 @@ paths:
       responses:
         '204':
           description: Success - No content
+        '400'
+          description: Wrong Old Password
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-        '471':
-          description: Disallowed characters / Too long (>32)
       requestBody:
         description: JSON with both passwords
         required: true
@@ -661,6 +684,8 @@ paths:
           description: Username taken
         '471':
           description: Disallowed characters / Too long (>32)
+        '472':
+          description: Email taken
       requestBody:
         description: JSON with information on new user
         required: true

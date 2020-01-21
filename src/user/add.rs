@@ -33,12 +33,13 @@ use mysql::{
 pub enum UserAddError
 {
     UsernameExists,
-    InsertError(Error),
+    EmailExists,
+    QueryError(Error),
 }
 
 impl From<Error> for UserAddError
 {
-    fn from(err: Error) -> UserAddError { UserAddError::InsertError(err) }
+    fn from(err: Error) -> UserAddError { UserAddError::QueryError(err) }
 }
 
 pub fn add_user(
@@ -53,6 +54,12 @@ pub fn add_user(
 
     if user_id.is_some() {
         return Err(UserAddError::UsernameExists)
+    }
+
+    let user_id: Option<u32> = select_user_id_by_email_optional(name, connection)?;
+
+    if user_id.is_some() {
+        return Err(UserAddError::EmailExists)
     }
 
     let (hash, salt) = PasswordHash::create(password);

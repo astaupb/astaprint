@@ -81,6 +81,7 @@ pub fn register_as_new_user(
         Err(UserAddError::UsernameExists) => {
             Ok(Custom(Status::new(470, "username already taken"), ()))
         },
-        Err(UserAddError::InsertError(e)) => Err(e),
+        Err(UserAddError::EmailExists) => Ok(Custom(Status::new(472, "email already taken"), ())),
+        Err(UserAddError::QueryError(e)) => Err(e),
     }
 }

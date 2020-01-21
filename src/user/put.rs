@@ -98,12 +98,19 @@ pub fn change_username(user: UserGuard, new_username: Json<String>) -> QueryResu
 
     Ok(Custom(Status::new(205, "Reset Content"), ()))
 }
+
 #[put("/email?<email>")]
-pub fn change_email(user: UserGuard, email: String) -> QueryResult<Status>
+pub fn change_email(user: UserGuard, email: String) -> QueryResult<Custom<()>>
 {
+    let user_id = select_user_id_by_email_optional(&email, &user.connection)?;
+
+    if user_id.is_some() {
+        return Ok(Custom(Status::new(472, "Email Already Taken"), ()))
+    }
+
     update_user_email(user.id, Some(email), &user.connection)?;
 
-    Ok(Status::new(205, "Reset Content"))
+    Ok(Custom(Status::new(205, "Reset Content"), ()))
 }
 
 #[put("/options", data = "<update>")]
