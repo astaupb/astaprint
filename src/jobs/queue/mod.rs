@@ -140,6 +140,9 @@ pub fn dispatch(
     if let Some(copies) = task.copies {
         options.copies = copies;
     }
+    if let Some(displayname) = task.displayname.clone() {
+        options.displayname = displayname;
+    }
 
     match insert_into_jobs(
         task.user_id,

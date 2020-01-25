@@ -95,6 +95,8 @@ pub fn upload_job<'a>(
         String::from("")
     };
 
+    let displayname = Some(filename.clone());
+
     let preprocess = preprocess.unwrap_or(1);
 
     let task = DispatcherTask {
@@ -107,6 +109,7 @@ pub fn upload_job<'a>(
         color,
         duplex,
         copies,
+        displayname,
     };
 
     taskqueue.send(&task).expect("sending task to queue");

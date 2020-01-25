@@ -47,5 +47,6 @@ pub struct DispatcherTask
     pub a3: Option<bool>,
     pub duplex: Option<u8>,
     pub copies: Option<u16>,
+    pub displayname: Option<String>,
     pub uid: Vec<u8>,
 }

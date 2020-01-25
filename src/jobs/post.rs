@@ -80,6 +80,7 @@ pub fn copy_job(
                 color: Some(options.color),
                 duplex: Some(options.duplex),
                 copies: Some(options.copies),
+                displayname: Some(options.displayname),
             };
 
             taskqueue.send(&task).expect("sending task to queue");
