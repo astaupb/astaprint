@@ -24,30 +24,35 @@ use diesel::{
 };
 use crate::schema::*;
 
+#[derive(Debug, Clone)]
+pub struct PrinterInsert {
+    pub hostname: String,
+    pub ip: String,
+    pub community: String,
+    pub mac: String,
+    pub device_id: u32,
+    pub location: String,
+    pub has_a3: bool,
+    pub coin_operated: bool,
+    pub description: String,
+}
+
 pub fn insert_into_printers(
-    hostname: String,
-    ip: String,
-    community: String,
-    mac: String,
-    device_id: u32,
-    location: String,
-    has_a3: bool,
-    coin_operated: bool,
-    description: String,
+    printer: PrinterInsert,
     connection: &MysqlConnection,
 ) -> QueryResult<usize>
 {
     insert_into(printers::table)
         .values((
-           printers::hostname.eq(hostname),
-           printers::ip.eq(ip),
-           printers::community.eq(community),
-           printers::mac.eq(mac),
-           printers::device_id.eq(device_id),
-           printers::location.eq(location),
-           printers::has_a3.eq(has_a3),
-           printers::coin_operated.eq(coin_operated),
-           printers::description.eq(description),
+           printers::hostname.eq(printer.hostname),
+           printers::ip.eq(printer.ip),
+           printers::community.eq(printer.community),
+           printers::mac.eq(printer.mac),
+           printers::device_id.eq(printer.device_id),
+           printers::location.eq(printer.location),
+           printers::has_a3.eq(printer.has_a3),
+           printers::coin_operated.eq(printer.coin_operated),
+           printers::description.eq(printer.description),
         ))
         .execute(connection)
 }

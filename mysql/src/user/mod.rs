@@ -26,6 +26,8 @@ pub struct User
     pub updated: NaiveDateTime,
 }
 
+pub type UserSelect = (String, i32, Option<u64>, Option<u32>, Option<String>);
+
 #[derive(Identifiable, Queryable, Associations, Debug)]
 #[table_name = "user_tokens"]
 pub struct UserToken

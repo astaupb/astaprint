@@ -25,3 +25,19 @@ pub mod put;
 pub mod queue;
 pub mod response;
 pub mod update;
+
+use jobs::options::JobOptionsUpdate;
+
+use model::task::worker::{
+    WorkerCommand,
+    WorkerTask,
+};
+
+use redis::queue::TaskQueueClient;
+use std::collections::{
+    hash_map::RandomState,
+    HashMap,
+};
+
+type PrinterQueue = TaskQueueClient<WorkerTask, WorkerCommand<Option<JobOptionsUpdate>>>;
+type PrinterQueues = HashMap<u32, PrinterQueue, RandomState>;

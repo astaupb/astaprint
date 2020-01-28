@@ -17,22 +17,15 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use std::collections::HashMap;
-
-use model::task::worker::{
-    WorkerCommand,
-    WorkerTask,
-};
+use model::task::worker::WorkerTask;
 
 use rocket::State;
 
 use rocket_contrib::json::Json;
 
 use admin::guard::AdminGuard;
-use jobs::options::JobOptionsUpdate;
+use printers::PrinterQueues;
 use user::guard::UserGuard;
-
-use redis::queue::TaskQueueClient;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct WorkerTaskResponse
@@ -63,9 +56,7 @@ impl<'a> From<&'a WorkerTask> for WorkerTaskResponse
 pub fn get_queue(
     _user: UserGuard,
     device_id: u32,
-    queues: State<
-        HashMap<u32, TaskQueueClient<WorkerTask, WorkerCommand<Option<JobOptionsUpdate>>>>,
-    >,
+    queues: State<PrinterQueues>,
 ) -> Option<Json<WorkerQueueResponse>>
 {
     let queue = match queues.get(&device_id) {
@@ -83,9 +74,7 @@ pub fn get_queue(
 pub fn get_queue_as_admin(
     _admin: AdminGuard,
     device_id: u32,
-    queues: State<
-        HashMap<u32, TaskQueueClient<WorkerTask, WorkerCommand<Option<JobOptionsUpdate>>>>,
-    >,
+    queues: State<PrinterQueues>,
 ) -> Option<Json<Option<WorkerTaskResponse>>>
 {
     let queue = match queues.get(&device_id) {

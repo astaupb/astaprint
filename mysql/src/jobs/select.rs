@@ -4,13 +4,12 @@ use crate::{
 };
 use diesel::prelude::*;
 
-
 pub fn select_jobs(connection: &MysqlConnection) -> QueryResult<Vec<Job>>
 {
     jobs::table.select(jobs::all_columns).load(connection)
 }
 
-pub fn select_jobs_essentials(connection: &MysqlConnection) -> QueryResult<Vec<(u32, Vec<u8>, Vec<u8>, NaiveDateTime, NaiveDateTime)>>
+pub fn select_jobs_essentials(connection: &MysqlConnection) -> QueryResult<Vec<JobSelect>>
 {
     jobs::table
         .select((jobs::id, jobs::info, jobs::options, jobs::created, jobs::updated))
@@ -58,7 +57,7 @@ pub fn select_full_job_by_id(id: u32, connection: &MysqlConnection) -> QueryResu
 pub fn select_job(
     job_id: u32,
     connection: &MysqlConnection,
-) -> QueryResult<Option<(u32, Vec<u8>, Vec<u8>, NaiveDateTime, NaiveDateTime)>>
+) -> QueryResult<Option<JobSelect>>
 {
     jobs::table
         .select((jobs::id, jobs::info, jobs::options, jobs::created, jobs::updated))
@@ -70,7 +69,7 @@ pub fn select_job(
 pub fn select_all_jobs_of_user(
     user_id: u32,
     connection: &MysqlConnection,
-) -> QueryResult<Vec<(u32, Vec<u8>, Vec<u8>, NaiveDateTime, NaiveDateTime)>>
+) -> QueryResult<Vec<JobSelect>>
 {
     jobs::table
         .select((jobs::id, jobs::info, jobs::options, jobs::created, jobs::updated))
@@ -82,7 +81,7 @@ pub fn select_job_of_user(
     user_id: u32,
     job_id: u32,
     connection: &MysqlConnection,
-) -> QueryResult<Option<(u32, Vec<u8>, Vec<u8>, NaiveDateTime, NaiveDateTime)>>
+) -> QueryResult<Option<JobSelect>>
 {
     jobs::table
         .select((jobs::id, jobs::info, jobs::options, jobs::created, jobs::updated))

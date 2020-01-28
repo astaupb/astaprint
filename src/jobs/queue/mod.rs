@@ -25,7 +25,10 @@ pub mod data;
 use pdf::sanitize_pdf;
 
 use mysql::{
-    jobs::insert::insert_into_jobs,
+    jobs::insert::{
+        insert_into_jobs,
+        JobInsert,
+    },
     user::select::select_user_options,
 };
 
@@ -145,14 +148,16 @@ pub fn dispatch(
     }
 
     match insert_into_jobs(
-        task.user_id,
-        info,
-        bincode::serialize(&options).expect("serializing JobOptions"),
-        result.pdf,
-        result.preview_0,
-        result.preview_1,
-        result.preview_2,
-        result.preview_3,
+        JobInsert {
+            user_id: task.user_id,
+            info,
+            options: bincode::serialize(&options).expect("serializing JobOptions"),
+            pdf: result.pdf,
+            preview_0: result.preview_0,
+            preview_1: result.preview_1,
+            preview_2: result.preview_2,
+            preview_3: result.preview_3,
+        },
         &connection,
     ) {
         Ok(_) => {

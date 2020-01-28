@@ -17,8 +17,6 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use std::collections::HashMap;
-
 use diesel::result::QueryResult;
 
 use model::task::worker::{
@@ -39,20 +37,22 @@ use rocket_contrib::json::Json;
 
 use user::guard::UserGuard;
 
-use redis::queue::{
-    CommandClient,
-    TaskQueueClient,
-};
+use redis::queue::CommandClient;
 
 use sodium::random_bytes;
 
 use jobs::options::JobOptionsUpdate;
 
+use printers::{
+    PrinterQueue,
+    PrinterQueues,
+};
+
 pub fn post_to_queue_handler(
     user: UserGuard,
     id: Option<u32>,
     options: Option<JobOptionsUpdate>,
-    queue: TaskQueueClient<WorkerTask, WorkerCommand<Option<JobOptionsUpdate>>>,
+    queue: PrinterQueue,
 ) -> QueryResult<Result<Accepted<Json<String>>, Custom<()>>>
 {
     let mut hungup = false;
@@ -110,9 +110,7 @@ pub fn post_to_queue(
     device_id: u32,
     id: Option<u32>,
     options: Option<Json<JobOptionsUpdate>>,
-    queues: State<
-        HashMap<u32, TaskQueueClient<WorkerTask, WorkerCommand<Option<JobOptionsUpdate>>>>,
-    >,
+    queues: State<PrinterQueues>,
 ) -> QueryResult<Result<Accepted<Json<String>>, Custom<()>>>
 {
     let queue = match queues.get(&device_id) {

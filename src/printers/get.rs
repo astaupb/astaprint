@@ -19,11 +19,6 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use admin::guard::AdminGuard;
 use diesel::prelude::*;
-use jobs::options::JobOptionsUpdate;
-use model::task::worker::{
-    WorkerCommand,
-    WorkerTask,
-};
 use mysql::printers::select::{
     select_printer_by_device_id,
     select_printers,
@@ -31,12 +26,11 @@ use mysql::printers::select::{
 use printers::{
     queue::get::WorkerTaskResponse,
     response::PrinterResponse,
+    PrinterQueues,
 };
-use redis::queue::TaskQueueClient;
 use rocket::State;
 use rocket_contrib::json::Json;
 use snmp::tool::*;
-use std::collections::HashMap;
 
 #[get("/printers")]
 pub fn get_printers(admin: AdminGuard) -> QueryResult<Json<Vec<PrinterResponse>>>
@@ -48,9 +42,7 @@ pub fn get_printers(admin: AdminGuard) -> QueryResult<Json<Vec<PrinterResponse>>
 pub fn get_single_printer(
     id: u32,
     admin: AdminGuard,
-    queues: State<
-        HashMap<u32, TaskQueueClient<WorkerTask, WorkerCommand<Option<JobOptionsUpdate>>>>,
-    >,
+    queues: State<PrinterQueues>,
 ) -> QueryResult<Option<Json<PrinterResponse>>>
 {
     let queue = match queues.get(&id) {

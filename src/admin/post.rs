@@ -107,7 +107,7 @@ pub fn reset_user_password_as_admin(admin: AdminGuard, id: u32) -> QueryResult<S
 {
     if let Some(email) = select_user_email_by_id(id, &admin.connection)? {
         let password = encode(&random_bytes(6));
-        if let Ok(_) = send_password_reset_email(&email, &password) {
+        if send_password_reset_email(&email, &password).is_ok() {
             let (hash, salt) = PasswordHash::create(&password);
             update_hash_and_salt(id, hash, salt, &admin.connection)?;
 

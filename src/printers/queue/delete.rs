@@ -17,12 +17,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use std::collections::HashMap;
-
-use model::task::worker::{
-    WorkerCommand,
-    WorkerTask,
-};
+use model::task::worker::WorkerCommand;
 
 use rocket::{
     http::Status,
@@ -33,21 +28,14 @@ use rocket::{
 use admin::guard::AdminGuard;
 use user::guard::UserGuard;
 
-use redis::queue::{
-    CommandClient,
-    TaskQueueClient,
-};
+use redis::queue::CommandClient;
 
 use jobs::options::JobOptionsUpdate;
 
+use printers::PrinterQueues;
+
 #[delete("/<device_id>/queue")]
-pub fn delete_queue(
-    user: UserGuard,
-    device_id: u32,
-    queues: State<
-        HashMap<u32, TaskQueueClient<WorkerTask, WorkerCommand<Option<JobOptionsUpdate>>>>,
-    >,
-) -> Custom<()>
+pub fn delete_queue(user: UserGuard, device_id: u32, queues: State<PrinterQueues>) -> Custom<()>
 {
     let queue = match queues.get(&device_id) {
         Some(queue) => queue,
@@ -77,9 +65,7 @@ pub fn delete_queue(
 pub fn delete_queue_as_admin(
     admin: AdminGuard,
     device_id: u32,
-    queues: State<
-        HashMap<u32, TaskQueueClient<WorkerTask, WorkerCommand<Option<JobOptionsUpdate>>>>,
-    >,
+    queues: State<PrinterQueues>,
 ) -> Custom<()>
 {
     let queue = match queues.get(&device_id) {

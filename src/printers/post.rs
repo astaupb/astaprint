@@ -42,21 +42,28 @@ pub struct PrinterPost
     pub description: String,
 }
 
+impl From<PrinterPost> for PrinterInsert
+{
+    fn from(post: PrinterPost) -> PrinterInsert
+    {
+        PrinterInsert {
+            hostname: post.hostname,
+            ip: post.ip,
+            community: post.community,
+            mac: post.mac,
+            device_id: post.device_id,
+            location: post.location,
+            has_a3: post.has_a3,
+            coin_operated: post.coin_operated,
+            description: post.description,
+        }
+    }
+}
+
 #[post("/printers", data = "<post>")]
 pub fn post_printer(admin: AdminGuard, post: Json<PrinterPost>) -> QueryResult<Status>
 {
-    insert_into_printers(
-        post.hostname.clone(),
-        post.ip.clone(),
-        post.community.clone(),
-        post.mac.clone(),
-        post.device_id,
-        post.location.clone(),
-        post.has_a3,
-        post.coin_operated,
-        post.description.clone(),
-        &admin.connection,
-    )?;
+    insert_into_printers(PrinterInsert::from(post.into_inner()), &admin.connection)?;
 
     Ok(Status::new(200, "OK"))
 }

@@ -30,6 +30,7 @@ use model::job::Job;
 use mysql::{
     journal::select::select_latest_credit_of_user,
     update_credit_after_print,
+    CreditUpdate,
 };
 
 use snmp::CounterValues;
@@ -161,14 +162,16 @@ impl Accounting
 
             let job = self.job.clone().unwrap();
             self.credit = update_credit_after_print(
-                self.user_id,
-                self.value,
-                job.id,
-                (self.counter.total - self.basecounter.total).try_into().unwrap(),
-                (self.counter.print_total - self.counter.print_bw).try_into().unwrap(),
-                job.score(),
-                self.printer_id,
-                bincode::serialize(&job.options).expect("serializing JobOptions"),
+                CreditUpdate {
+                    user_id: self.user_id,
+                    value: self.value,
+                    job_id: job.id,
+                    pages: (self.counter.total - self.basecounter.total).try_into().unwrap(),
+                    colored: (self.counter.print_total - self.counter.print_bw).try_into().unwrap(),
+                    score: job.score(),
+                    device_id: self.printer_id,
+                    options: bincode::serialize(&job.options).expect("serializing JobOptions"),
+                },
                 &connection,
             )
             .expect("updating credit");

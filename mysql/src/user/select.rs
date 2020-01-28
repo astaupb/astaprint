@@ -217,7 +217,7 @@ pub fn select_user_email_by_id(user_id: u32, connection: &MysqlConnection) -> Qu
         .first(connection)
 }
 
-pub fn select_user_info_by_id(user_id: u32, connection: &MysqlConnection) -> QueryResult<(String, i32, Option<u64>, Option<u32>, Option<String>)>
+pub fn select_user_info_by_id(user_id: u32, connection: &MysqlConnection) -> QueryResult<UserSelect>
 {
     user::table
         .select((user::name, user::credit, user::card, user::pin, user::email))

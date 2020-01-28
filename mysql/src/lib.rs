@@ -36,14 +36,18 @@ pub fn import_credit(user_id: u32, credit: i32, connection: &MysqlConnection) ->
 }
 
 use user::{
-    insert::insert_into_user,
+    insert::{
+        UserInsert,
+        insert_into_user,
+    },
     select::select_user_id_by_name,
 };
 
 pub fn insert_user(name: &str, hash: Vec<u8>, salt: Vec<u8>, email: Option<String>, locked: bool, connection: &MysqlConnection) -> QueryResult<u32>
 {
     connection.transaction::<_, Error, _>(|| {
-        let _affected_rows = insert_into_user(name, hash, salt, email, None, None, locked, connection)?;
+        let _affected_rows = insert_into_user(UserInsert{
+            name, hash, salt, email, card: None, pin: None, locked}, connection)?;
 
         assert_eq!(_affected_rows, 1);
 
@@ -98,19 +102,32 @@ pub fn update_credit_with_unused_token(user_id: u32, token_id: u32, connection: 
 
 use journal::insert::insert_into_print_journal;
 
-pub fn update_credit_after_print(user_id: u32, value: i32, job_id: u32, pages: u16, colored: u16, score: i16, device_id: u32, options: Vec<u8>, connection: &MysqlConnection) -> QueryResult<i32>
+#[derive(Debug, Clone)]
+pub struct CreditUpdate
+{
+    pub user_id: u32,
+    pub value: i32,
+    pub job_id: u32,
+    pub pages: u16,
+    pub colored: u16,
+    pub score: i16,
+    pub device_id: u32,
+    pub options: Vec<u8>,
+}
+
+pub fn update_credit_after_print(update: CreditUpdate, connection: &MysqlConnection) -> QueryResult<i32>
 {
 
     connection.transaction::<_, Error, _>(|| {
-        let _rows_affected = insert_into_print_journal(job_id, pages, colored, score, device_id, options, connection)?;
+        let _rows_affected = insert_into_print_journal(update.job_id, update.pages, update.colored, update.score, update.device_id, update.options, connection)?;
 
         let print_id = select_latest_print_journal_id(connection)?;
 
-        let credit = value + select_latest_credit_of_user(user_id, connection)?;
+        let credit = update.value + select_latest_credit_of_user(update.user_id, connection)?;
 
-        let _rows_affected = insert_into_journal(user_id, credit, value, Some(print_id), None, &format!("{} Seiten", pages), connection)?;
+        let _rows_affected = insert_into_journal(update.user_id, credit, update.value, Some(print_id), None, &format!("{} Seiten", update.pages), connection)?;
 
-        let _rows_affected = update_user_credit(user_id, credit, connection)?;
+        let _rows_affected = update_user_credit(update.user_id, credit, connection)?;
 
         Ok(credit)
     })

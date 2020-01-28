@@ -268,7 +268,7 @@ where
         let (sender, receiver) = mpsc::channel::<C>();
         {
             let redis_pool = self.redis_pool.clone();
-            let queue = self.queue.clone();
+            let queue = self.queue;
             thread::spawn(move || {
                 let mut redis = redis_pool.get()
                     .expect("getting connection from pool");

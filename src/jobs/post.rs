@@ -91,14 +91,16 @@ pub fn copy_job(
         }
         else {
             insert_into_jobs(
-                user.id,
-                job.info,
-                job.options,
-                job.pdf,
-                job.preview_0,
-                job.preview_1,
-                job.preview_2,
-                job.preview_3,
+                JobInsert {
+                    user_id: user.id,
+                    info: job.info,
+                    options: job.options,
+                    pdf: job.pdf,
+                    preview_0: job.preview_0,
+                    preview_1: job.preview_1,
+                    preview_2: job.preview_2,
+                    preview_3: job.preview_3,
+                },
                 &user.connection,
             )?;
 
@@ -120,14 +122,16 @@ pub fn post_sharecode(
     if let Ok(id) = share.get(code.into_inner()) {
         if let Ok(job) = select_full_job_by_id(id, &user.connection) {
             insert_into_jobs(
-                user.id,
-                job.info,
-                job.options,
-                job.pdf,
-                job.preview_0,
-                job.preview_1,
-                job.preview_2,
-                job.preview_3,
+                JobInsert {
+                    user_id: user.id,
+                    info: job.info,
+                    options: job.options,
+                    pdf: job.pdf,
+                    preview_0: job.preview_0,
+                    preview_1: job.preview_1,
+                    preview_2: job.preview_2,
+                    preview_3: job.preview_3,
+                },
                 &user.connection,
             )?;
 

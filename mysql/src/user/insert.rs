@@ -4,6 +4,17 @@ use diesel::{
 };
 use crate::schema::*;
 
+#[derive(Debug, Clone)]
+pub struct UserInsert<'a> {
+    pub name: &'a str,
+    pub hash: Vec<u8>,
+    pub salt: Vec<u8>,
+    pub email: Option<String>,
+    pub card: Option<u64>,
+    pub pin: Option<u32>,
+    pub locked: bool,
+}
+
 pub fn insert_into_user_tokens(
     user_id: u32,
     user_agent: &str,
@@ -25,49 +36,19 @@ pub fn insert_into_user_tokens(
 }
 
 pub fn insert_into_user(
-    name: &str,
-    hash: Vec<u8>,
-    salt: Vec<u8>,
-    email: Option<String>,
-    card: Option<u64>,
-    pin: Option<u32>,
-    locked: bool,
+    user: UserInsert,
     connection: &MysqlConnection,
 ) -> QueryResult<usize>
 {
     insert_into(user::table)
         .values((
-            user::name.eq(name),
-            user::locked.eq(locked),
-            user::hash.eq(hash),
-            user::salt.eq(salt),
-            user::email.eq(email),
-            user::card.eq(card),
-            user::pin.eq(pin),
-        ))
-    .execute(connection)
-}
-
-pub fn insert_into_user_with_id(
-    id: u32,
-    name: &str,
-    hash: Vec<u8>,
-    salt: Vec<u8>,
-    card: Option<u64>,
-    pin: Option<u32>,
-    locked: bool,
-    connection: &MysqlConnection,
-) -> QueryResult<usize>
-{
-    insert_into(user::table)
-        .values((
-            user::id.eq(id),
-            user::name.eq(name),
-            user::locked.eq(locked),
-            user::hash.eq(hash),
-            user::salt.eq(salt),
-            user::card.eq(card),
-            user::pin.eq(pin),
+            user::name.eq(user.name),
+            user::locked.eq(user.locked),
+            user::hash.eq(user.hash),
+            user::salt.eq(user.salt),
+            user::email.eq(user.email),
+            user::card.eq(user.card),
+            user::pin.eq(user.pin),
         ))
     .execute(connection)
 }

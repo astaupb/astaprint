@@ -21,3 +21,5 @@ pub struct Job
     pub created: NaiveDateTime,
     pub updated: NaiveDateTime,
 }
+
+pub type JobSelect = (u32, Vec<u8>, Vec<u8>, NaiveDateTime, NaiveDateTime);
