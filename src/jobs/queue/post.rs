@@ -31,7 +31,11 @@ use poppler::PopplerDocument;
 
 use model::task::dispatcher::DispatcherTask;
 
-use jobs::queue::data::PdfBody;
+use jobs::queue::{
+    data::PdfBody,
+    start_dispatch,
+};
+
 use user::guard::UserGuard;
 
 use pdf::process::decrypt_pdf_from_data;
@@ -77,31 +81,9 @@ pub fn upload_job<'a>(
         return Err(BadRequest(Some("invalid pdf file")))
     }
 
-    let uid = store.set(bytes).expect("saving file in store");
-
-    let hex_uid = hex::encode(&uid[..]);
-
-    let user_id = user.id;
-
-    let filename = if let Some(filename) = filename {
-        if filename.len() < 80 {
-            filename
-        }
-        else {
-            format!("{}...", &filename[.. 79])
-        }
-    }
-    else {
-        String::from("")
-    };
-
-    let displayname = Some(filename.clone());
-
-    let preprocess = preprocess.unwrap_or(1);
-
-    let task = DispatcherTask {
-        user_id,
-        uid,
+    let hex_uid = start_dispatch(
+        user.id,
+        bytes,
         filename,
         preprocess,
         keep,
@@ -109,12 +91,9 @@ pub fn upload_job<'a>(
         color,
         duplex,
         copies,
-        displayname,
-    };
-
-    taskqueue.send(&task).expect("sending task to queue");
-
-    info!("{} uploaded job with uid {}", user.id, hex_uid);
+        store.inner(),
+        taskqueue.inner(),
+    );
 
     Ok(Accepted(Some(Json(hex_uid))))
 }

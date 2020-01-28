@@ -29,7 +29,10 @@ use mysql::{
     user::select::select_user_options,
 };
 
-use redis::queue::TaskQueueClient;
+use redis::{
+    queue::TaskQueueClient,
+    store::Store,
+};
 
 use model::{
     job::{
@@ -66,6 +69,61 @@ impl<'a> From<&'a DispatcherTask> for DispatcherTaskResponse
             duplex: task.duplex,
         }
     }
+}
+
+pub fn start_dispatch(
+    user_id: u32,
+    data: Vec<u8>,
+    filename: Option<String>,
+    preprocess: Option<u8>,
+    keep: Option<bool>,
+    a3: Option<bool>,
+    color: Option<bool>,
+    duplex: Option<u8>,
+    copies: Option<u16>,
+    store: &Store,
+    client: &TaskQueueClient<DispatcherTask, ()>,
+) -> String
+{
+    let uid = store.set(data).expect("saving file in store");
+
+    let hex_uid = hex::encode(&uid[..]);
+
+    let filename = if let Some(filename) = filename {
+        if filename.len() < 80 {
+            filename
+        }
+        else {
+            format!("{}...", &filename[.. 79])
+        }
+    }
+    else {
+        String::from("")
+    };
+
+    let displayname = Some(filename.clone());
+
+    // default to normal preprocessing
+    let preprocess = preprocess.unwrap_or(1);
+
+    let task = DispatcherTask {
+        user_id,
+        uid,
+        filename,
+        preprocess,
+        keep,
+        a3,
+        color,
+        duplex,
+        copies,
+        displayname,
+    };
+
+    client.send(&task).expect("sending task to queue");
+
+    info!("{} start dispatcher of with uid {} on level {}", user_id, hex_uid, preprocess);
+
+    hex_uid
 }
 
 pub fn dispatch(

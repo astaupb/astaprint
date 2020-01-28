@@ -33,7 +33,10 @@ use mysql::jobs::{
     insert::*,
     select::*,
 };
+
 use user::guard::UserGuard;
+
+use jobs::queue::start_dispatch;
 
 use model::{
     job::{
@@ -66,26 +69,19 @@ pub fn copy_job(
 
             let info: JobInfo = bincode::deserialize(&job.info).expect("deserializing JobInfo");
 
-            let uid = store.set(job.pdf).expect("saving file in store");
-
-            let hex_uid = hex::encode(&uid[..]);
-
-            let task = DispatcherTask {
-                user_id: user.id,
-                uid,
-                filename: info.filename,
-                preprocess: 2,
-                keep: Some(options.keep),
-                a3: Some(options.a3),
-                color: Some(options.color),
-                duplex: Some(options.duplex),
-                copies: Some(options.copies),
-                displayname: Some(options.displayname),
-            };
-
-            taskqueue.send(&task).expect("sending task to queue");
-
-            info!("{} processing job with uid {} with image option", user.id, hex_uid);
+            let _hex_uid = start_dispatch(
+                id,
+                job.pdf,
+                Some(info.filename),
+                Some(2),
+                Some(options.keep),
+                Some(options.a3),
+                Some(options.color),
+                Some(options.duplex),
+                Some(options.copies),
+                store.inner(),
+                taskqueue.inner(),
+            );
 
             Ok(Status::new(202, "Started Processing"))
         }
