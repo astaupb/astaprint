@@ -220,7 +220,7 @@ pub fn select_user_email_by_id(user_id: u32, connection: &MysqlConnection) -> Qu
 pub fn select_user_info_by_id(user_id: u32, connection: &MysqlConnection) -> QueryResult<UserSelect>
 {
     user::table
-        .select((user::name, user::credit, user::card, user::pin, user::email))
+        .select((user::name, user::credit, user::card, user::pin, user::email, user::tou_accept))
         .filter(user::id.eq(user_id))
         .first(connection)
 }

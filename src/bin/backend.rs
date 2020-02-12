@@ -215,6 +215,7 @@ fn rocket() -> rocket::Rocket
             fetch_username,
             change_username,
             change_email,
+            change_user_tou_accept,
         ])
         .mount("/user/tokens", routes![
             get_all_tokens,
@@ -248,6 +249,7 @@ fn rocket() -> rocket::Rocket
             change_user_name_as_admin,
             change_user_email_as_admin,
             change_user_locked,
+            clear_tou_accept,
         ])
         .attach(cors())
 }

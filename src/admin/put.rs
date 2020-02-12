@@ -23,6 +23,21 @@ use mysql::user::update::*;
 use rocket::http::Status;
 use rocket_contrib::json::Json;
 
+#[put("/users/tou_accept")]
+pub fn clear_tou_accept(admin: AdminGuard) -> Status
+{
+    match update_tou_accept(false, &admin.connection) {
+        Ok(1) => {
+            info!("tou_accept set to 0");
+            Status::new(204, "Success - No Content")
+        },
+        err => {
+            error!("{:?}", err);
+            Status::new(500, "Internal Server Error")
+        }
+    }
+}
+
 #[put("/users/<id>/locked", data = "<locked>")]
 pub fn change_user_locked(id: u32, locked: Json<bool>, admin: AdminGuard) -> Status
 {

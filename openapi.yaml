@@ -544,7 +544,19 @@ paths:
             example: '"newusername"'
             schema:
               type: string
-
+  '/user/tou_accept':
+    put:
+      operationId: updateTOUAccept
+      summary: Update Terms of Usage accepted flag as user
+      tags:
+        - User
+      security:
+        - token: []
+      responses:
+        '205':
+          description: Success - Reset Content
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
 
   '/user/tokens':
     get:

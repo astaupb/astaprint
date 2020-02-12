@@ -125,6 +125,7 @@ table! {
         pin -> Nullable<Unsigned<Integer>>,
         locked -> Bool,
         email -> Nullable<Varchar>,
+        tou_accept -> Bool,
         created -> Timestamp,
         updated -> Timestamp,
     }

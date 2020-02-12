@@ -38,6 +38,20 @@ pub fn update_user_email(user_id: u32, email: Option<String>, connection: &Mysql
         .execute(connection)
 }
 
+pub fn update_tou_accept_of_user(user_id: u32, tou_accept: bool, connection: &MysqlConnection) -> QueryResult<usize>
+{
+    update(user::table.filter(user::id.eq(user_id)))
+        .set(user::tou_accept.eq(tou_accept))
+        .execute(connection)
+}
+
+pub fn update_tou_accept(tou_accept: bool, connection: &MysqlConnection) -> QueryResult<usize>
+{
+    update(user::table)
+        .set(user::tou_accept.eq(tou_accept))
+        .execute(connection)
+}
+
 pub fn update_user_credit(user_id: u32, credit: i32, connection: &MysqlConnection) -> QueryResult<usize>
 {
     update(user::table.filter(user::id.eq(user_id)))

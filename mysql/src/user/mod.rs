@@ -22,11 +22,12 @@ pub struct User
     pub pin: Option<u32>,
     pub locked: bool,
     pub email: Option<String>,
+    pub tou_accept: bool,
     pub created: NaiveDateTime,
     pub updated: NaiveDateTime,
 }
 
-pub type UserSelect = (String, i32, Option<u64>, Option<u32>, Option<String>);
+pub type UserSelect = (String, i32, Option<u64>, Option<u32>, Option<String>, bool);
 
 #[derive(Identifiable, Queryable, Associations, Debug)]
 #[table_name = "user_tokens"]
