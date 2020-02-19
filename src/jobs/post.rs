@@ -70,7 +70,7 @@ pub fn copy_job(
             let info: JobInfo = bincode::deserialize(&job.info).expect("deserializing JobInfo");
 
             let _hex_uid = start_dispatch(
-                id,
+                user.id,
                 job.pdf,
                 Some(info.filename),
                 Some(2),
