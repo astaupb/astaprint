@@ -148,10 +148,11 @@ paths:
         - token: []
       responses:
         '202':
-          description: Success -
+          description: Success
           content:
-            type: application/json
-
+            application/pdf:
+              schema:
+                type: string
         '401':
           $ref: '#/components/responses/UnauthorizedError'
     put:
@@ -662,7 +663,7 @@ paths:
       responses:
         '204':
           description: Success - No content
-        '400'
+        '400':
           description: Wrong Old Password
         '401':
           $ref: '#/components/responses/UnauthorizedError'
@@ -1159,3 +1160,4 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/QueueItem'
+            
