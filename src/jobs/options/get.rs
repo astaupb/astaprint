@@ -22,38 +22,10 @@ use diesel::result::QueryResult;
 use rocket_contrib::json::Json;
 
 use jobs::{
-    options::Value,
     *,
 };
 
 use user::guard::UserGuard;
-
-#[get("/<id>/options/<option>")]
-pub fn fetch_single_option(
-    user: UserGuard,
-    id: u32,
-    option: String,
-) -> QueryResult<Option<Json<Value>>>
-{
-    let result: Option<Vec<u8>> = select_job_options(id, user.id, &user.connection)?;
-
-    Ok(result.and_then(|serialized| {
-        let options: JobOptions =
-            bincode::deserialize(&serialized[..]).expect("deserializing JobOptions");
-
-        match option.as_ref() {
-            "duplex" => Some(Json(Value::I(u16::from(options.duplex)))),
-            "copies" => Some(Json(Value::I(options.copies))),
-            "collate" => Some(Json(Value::B(options.collate))),
-            "keep" => Some(Json(Value::B(options.keep))),
-            "a3" => Some(Json(Value::B(options.a3))),
-            "range" => Some(Json(Value::S(options.range))),
-            "nup" => Some(Json(Value::I(u16::from(options.nup)))),
-            "nuppageorder" => Some(Json(Value::I(u16::from(options.nuppageorder)))),
-            &_ => None,
-        }
-    }))
-}
 
 #[get("/<id>/options")]
 pub fn fetch_options(user: UserGuard, id: u32) -> QueryResult<Option<Json<JobOptions>>>

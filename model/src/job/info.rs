@@ -1,5 +1,3 @@
-use bincode;
-
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct JobInfo
 {

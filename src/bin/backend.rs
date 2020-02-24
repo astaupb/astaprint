@@ -186,7 +186,6 @@ fn rocket() -> rocket::Rocket
             jobs,
             update_options,
             fetch_options,
-            fetch_single_option,
             fetch_info,
             update_filename,
             get_dispatcher_queue,
