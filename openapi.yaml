@@ -935,10 +935,6 @@ components:
             type: string
     ServerError:
       description: Internal server error
-    NoNetworkAuth:
-      description: You need to authorize yourself to your network (eg. webauth)
-    ServiceUnavailiable:
-      description: The servie is temporary unavaliable
     BadGateway:
       description: The server is up but the service seems to be down
   schemas:
@@ -947,11 +943,13 @@ components:
       properties:
         value:
           type: number
+          format: i32
         timestamp:
           type: string
           description: only needed for legacy clients
         created:
           type: integer
+          format: i64
         description:
           type: string
         print:
@@ -961,13 +959,17 @@ components:
       properties:
         pages:
           type: integer
+          format: u16
         colored:
           type: integer
+          format: u16
         score:
           type: integer
+          format: i16
           description: estimation of saved sheets of paper
         device_id:
           type: integer
+          format: u32
         options:
           $ref: '#/components/schemas/JobOptions'
     JobOptions:
@@ -977,9 +979,11 @@ components:
           type: boolean
         duplex:
           type: integer
+          format: u8
           description: 0/1/2
         copies:
           type: integer
+          format: u16
           description: 1-999
         collate:
           type: boolean
@@ -994,9 +998,11 @@ components:
           description: 'eg 1-4,7,10-13'
         nup:
           type: integer
+          format: u8
           description: 1/2/4
         nuppageorder:
           type: integer
+          format: u8
           description: 0/1/2/3
         displayname:
           type: string
@@ -1011,22 +1017,35 @@ components:
           description: title of pdf file
         pagecount:
           type: integer
+          format: u32
           description: pagecount of original document
         colored:
           type: integer
+          format: u32
           description: number of colored pages
         a3:
           type: boolean
           description: as detected at dispatch
+        landscape:
+          type: boolean
+          description: orientation after dispatching
     Job:
       type: object
       properties:
         id:
           type: integer
+          format: u32
           description: id of job
+        created:
+          type: integer
+          format: i64
+        updated:
+          type: integer
+          format: i64
         timestamp:
           type: integer
-          format: int64
+          format: i64
+          description: only needed by legacy clients
         info:
           $ref: '#/components/schemas/JobInfo'
         options:
@@ -1060,32 +1079,50 @@ components:
           type: string
         credit:
           type: number
+        card:
+          type: integer
+          format: u64
+          nullable: true
+        pin:
+          type: integer
+          format: u32
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        tou_accept:
+          type: boolean
         tokens:
           type: integer
+          format: usize
         token_id:
           type: integer
+          format: u32
     Token:
       type: object
       properties:
         id:
           type: integer
+          format: u32
         user_agent:
           type: string
         ip:
           type: string
         location:
           type: string
+          format: i64
         created:
           type: string
+          format: i64
     Device:
       type: object
       properties:
         device_id:
           type: integer
+          format: u32
         location:
           type: string
         has_a3:
           type: boolean
         coin_operated:
           type: boolean
-
