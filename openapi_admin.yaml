@@ -31,13 +31,22 @@ paths:
       summary: Get list of active login tokens for currently logged in admin user
       security:
         - token: []
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AdminToken'
     post:
       operationId: post_admin_token
       summary: Get new token using username:password auth
       tags:
         - Authorize
       responses:
-        '200':
+        200:
           description: Success
           content:
             application/json:
@@ -55,6 +64,9 @@ paths:
       summary: Delete all currently active logins to remotely log out anyone with access to this account
       security:
         - token: []
+      responses:
+        205:
+          description: Success - reset content
   '/tokens/{id}':
     get:
       operationId: get_single_admin_token
@@ -63,6 +75,20 @@ paths:
       summary: Get information for a single given active login
       security:
         - token: []
+      parameters:
+        - name: id
+          in: path
+          description: id of the admin token
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminToken'
     delete:
       operationId: delete_single_admin_token
       tags:
@@ -70,6 +96,16 @@ paths:
       summary: Delete/deactivate a given login
       security:
         - token: []
+      parameters:
+        - name: id
+          in: path
+          description: id of the admin token
+          required: true
+          schema:
+            type: integer
+      responses:
+        205:
+          description: Success - reset content
   '/printers':
     get:
       operationId: get_printers
@@ -475,6 +511,7 @@ components:
         colored:
           type: integer
           format: u16
+          description: number of pages from pages property that were printed in color
         score:
           type: integer
           format: i16
