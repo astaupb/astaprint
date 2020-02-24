@@ -799,37 +799,6 @@ paths:
               example: 1956
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-  '/journal/{index}':
-    get:
-      operationId: getTransaction
-      summary: Get single transaction from journal
-      security:
-        - token: []
-      tags:
-        - Journal
-      parameters:
-        - name: index
-          in: path
-          required: true
-          schema:
-            type: integer
-          description: Index from latest to oldest starting with 0
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              example:
-                value: -0.2
-                credit: 19.4
-                timestamp: 1536959824
-                description: Printed
-              schema:
-                $ref: '#/components/schemas/Transaction'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '404':
-          description: Resource not found
   '/printers':
     get:
       operationId: getPrinters
@@ -980,8 +949,27 @@ components:
           type: number
         timestamp:
           type: string
+          description: only needed for legacy clients
+        created:
+          type: integer
         description:
           type: string
+        print:
+          $ref: '#/components/schemas/PrintTransaction'
+    PrintTransaction:
+      type: object
+      properties:
+        pages:
+          type: integer
+        colored:
+          type: integer
+        score:
+          type: integer
+          description: estimation of saved sheets of paper
+        device_id:
+          type: integer
+        options:
+          $ref: '#/components/schemas/JobOptions'
     JobOptions:
       type: object
       properties:
@@ -994,6 +982,8 @@ components:
           type: integer
           description: 1-999
         collate:
+          type: boolean
+        bypass:
           type: boolean
         keep:
           type: boolean
@@ -1008,6 +998,8 @@ components:
         nuppageorder:
           type: integer
           description: 0/1/2/3
+        displayname:
+          type: string
     JobInfo:
       type: object
       properties:
