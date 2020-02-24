@@ -75,7 +75,6 @@ use astaprint::{
         get::*,
         info::{
             get::*,
-            put::*,
         },
         options::{
             get::*,
@@ -188,7 +187,6 @@ fn rocket() -> rocket::Rocket
             fetch_options,
             fetch_single_option,
             fetch_info,
-            update_filename,
             get_dispatcher_queue,
             copy_job,
             upload_job,
