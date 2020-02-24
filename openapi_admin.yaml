@@ -47,131 +47,177 @@ paths:
       tags:
         - Printers
       summary: Get list of all printers in the system
+      security:
+        - token: []
     post:
       operationId: post_printer
       tags:
         - Printers
       summary: Add a new printer to the system
-  '/printers/{id}':
+      security:
+        - token: []
+  '/printers/{device_id}':
     get:
       operationId: get_single_printer
       tags:
         - Printers
       summary: Get information on a single printer
+      security:
+        - token: []
     delete:
       operationId: delete_printer
       tags:
         - Printers
       summary: Delete a printer from the system
+      security:
+        - token: []
     put:
       operationId: put_printer_details
       tags:
         - Printers
       summary: Update printer details for an existing printer
+      security:
+        - token: []
   '/printers/{device_id}/queue':
     get:
       operationId: get_queue
       tags:
         - Printers
       summary: Show print queue status of a printer
+      security:
+        - token: []
     delete:
       operationId: delete_queue
       tags:
         - Printers
       summary: Clear the print queue of a given printer
+      security:
+        - token: []
   '/journal':
     get:
       operationId: get_journal
       tags:
         - Journal
       summary: Show the complete (all user) journal
+      security:
+        - token: []
     post:
       operationId: post_to_journal
       tags:
         - Journal
       summary: Manually add a transaction to the journal
+      security:
+        - token: []
   '/journal/tokens':
     get:
       operationId: get_journal_tokens
       tags:
         - Journal
       summary: Show existing generated journal tokens and their status
+      security:
+        - token: []
     post:
       operationId: post_journal_token
       tags:
         - Journal
       summary: Create a new batch of journal tokens with a given value
+      security:
+        - token: []
   '/jobs/queue':
     get:
       operationId: get_dispatcher_queue
       tags:
         - Dispatcher Queue
       summary: Show complete list of currently processing documents in the dispatcher
+      security:
+        - token: []
   '/':
     post:
       operationId: post_new_admin
       tags:
         - Admins
       summary: Add a new admin account
+      security:
+        - token: []
   '/users/{id}':
     get:
       operationId: get_user
       tags:
         - Users
       summary: Get information on a single user
+      security:
+        - token: []
   '/users/{id}/credit':
     get:
       operationId: get_user_credit
       tags:
         - Users
       summary: Get credit of a given user account
+      security:
+        - token: []
   '/users/{id}/journal':
     get:
       operationId: get_user_journal
       tags:
         - Users
       summary: Show transactions for a specific user
+      security:
+        - token: []
   '/users':
     get:
       operationId: get_all_users
       tags:
         - Users
       summary: Get a list of all users
+      security:
+        - token: []
   '/users/{id}/password':
     post:
       operationId: reset_user_password
       tags:
         - Users
       summary: Reset a user`s password and send him a temporary password via mail
+      security:
+        - token: []
     put:
       operationId: change_user_password
       tags:
         - Users
       summary: Change user`s password to a defined one
+      security:
+        - token: []
   '/users/{id}/name':
     put:
       operationId: change_user_name
       tags:
         - Users
       summary: Change username of a user
+      security:
+        - token: []
   '/users/{id}/email':
     put:
       operationId: change_user_email
       tags:
         - Users
       summary: Change or set email of a user
+      security:
+        - token: []
   '/users/{id}/locked':
     put:
       operationId: change_user_locked
       tags:
         - Users
       summary: Define if a an account is locked
+      security:
+        - token: []
   '/users/tou_accept':
     post:
       operationId: clear_tou_accept
       tags:
         - Users
       summary: Reset terms of use acceptance for all users
+      security:
+        - token: []
 servers:
   - url: 'https://astaprint.upb.de/api/v1/admin'
     description: Production server
@@ -200,28 +246,6 @@ components:
     BadGateway:
       description: The server is up but the service seems to be down
   schemas:
-    Transaction:
-      type: object
-      properties:
-        value:
-          type: number
-        timestamp:
-          type: string
-        description:
-          type: string
-    DispatcherTask:
-        type: object
-        properties:
-          uid:
-            type: string
-            description: uid of specific task - hexadecimal encoded
-          user_id:
-            type: integer
-            format: uint32
-    DispatcherQueue:
-        type: array
-        items:
-          $ref: '#/components/schemas/DispatcherTask'
     User:
       type: object
       properties:
@@ -230,32 +254,200 @@ components:
         name:
           type: string
         credit:
-          type: number
-        tokens:
           type: integer
-        token_id:
+        options:
+          $ref: '#/components/schemas/JobOptions'
+        card:
           type: integer
+        pin:
+          type: integer
+        locked:
+          type: boolean
+        email:
+          type: string
+        created:
+          type: integer
+        updated:
+          type: integer
+    JobOptions:
+      type: object
+      properties:
+        color:
+          type: boolean
+        duplex:
+          type: integer
+          format: u8
+          description: 0/1/2
+        copies:
+          type: integer
+          format: u16
+          description: 1-999
+        collate:
+          type: boolean
+        bypass:
+          type: boolean
+        keep:
+          type: boolean
+        a3:
+          type: boolean
+        range:
+          type: string
+          description: 'eg 1-4,7,10-13'
+        nup:
+          type: integer
+          format: u8
+          description: 1/2/4
+        nuppageorder:
+          type: integer
+          format: u8
+          description: 0/1/2/3
+        displayname:
+          type: string
     Printer:
       type: object
       properties:
         id:
           type: integer
-    PrintTask:
+        hostname:
+          type: string
+        ip:
+          type: string
+        community:
+          type: string
+        mac:
+          type: string
+        device_id:
+          type: integer
+        location:
+          type: string
+        has_a3:
+          type: boolean
+        coin_operated:
+          type: boolean
+        description:
+          type: string
+        watch_toner:
+          type: boolean
+        watch_tray1:
+          type: boolean
+        watch_tray2:
+          type: boolean
+        watch_tray3:
+          type: boolean
+        watch_interval:
+          type: integer
+        last_watched:
+          type: integer
+        status:
+          $ref: '#/components/schemas/PrinterStatus'
+        counter:
+          $ref: '#/components/schemas/PrinterCounter'
+        queue:
+          $ref: '#/components/schemas/PrinterQueueTask'
+    PrinterStatus:
       type: object
       properties:
+        scan:
+          type: integer
+        copy:
+          type: integer
+        toner_c:
+          type: integer
+        toner_m:
+          type: integer
+        toner_y:
+          type: integer
+        toner_k:
+          type: integer
+        tray_1:
+          type: integer
+        tray_2:
+          type: integer
+        tray_3:
+          type: integer
+    PrinterCounter:
+      type: object
+      properties:
+        total:
+          type: integer
+        copy_total:
+          type: integer
+        copy_bw:
+          type: integer
+        print_total:
+          type: integer
+        print_bw:
+          type: integer
+    PrinterQueueTask:
+      type: object
+      properties:
+        user_id:
+          type: intefer
         uid:
           type: string
-        filename:
+    Transaction:
+      type: object
+      properties:
+        value:
+          type: integer
+        admin_id:
+          type: integer
+        description:
           type: string
-        keep:
+        print:
+          $ref: '#/components/schemas/PrintTransaction'
+        timestamp:
+          type: string
+        created:
+          type: integer
+    PrintTransaction:
+      type: object
+      properties:
+        pages:
+          type: integer
+          format: u16
+        colored:
+          type: integer
+          format: u16
+        score:
+          type: integer
+          format: i16
+          description: estimation of saved sheets of paper
+        device_id:
+          type: integer
+          format: u32
+        options:
+          $ref: '#/components/schemas/JobOptions'
+    JournalToken:
+      type: object
+      properties:
+        id:
+          type: integer
+        value:
+          type: integer
+        content:
+          type: string
+        used:
           type: boolean
-        color:
-          type: boolean
-        a3:
-          type: boolean
-        duplex:
-          type: boolean
-    PrintQueue:
-      type: array
-      items:
-        $ref: '#/components/schemas/PrintTask'
+        used_by:
+          type: integer
+        created:
+          type: integer
+        updated:
+          type: integer
+    DispatcherTask:
+        type: object
+        properties:
+          uid:
+            type: string
+            description: uid of specific task - hexadecimal encoded
+          filename:
+            type: string
+          keep:
+            type: boolean
+          color:
+            type: boolean
+          a3:
+            type: boolean
+          duplex:
+            type: boolean
