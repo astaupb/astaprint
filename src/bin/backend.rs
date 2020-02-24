@@ -99,7 +99,6 @@ use astaprint::{
         put::*,
         queue::{
             delete::*,
-            get::*,
             post::*,
         },
     },
@@ -221,7 +220,7 @@ fn rocket() -> rocket::Rocket
             get_single_token,
             delete_single_token,
         ])
-        .mount("/printers", routes![post_to_queue, get_queue, delete_queue])
+        .mount("/printers", routes![post_to_queue, delete_queue])
         .mount("/journal", routes![get_journal_as_user, post_to_journal_with_token, credit])
         .mount("/admin", routes![
             get_printers,

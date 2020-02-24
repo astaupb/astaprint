@@ -24,6 +24,7 @@ use snmp::{
     CounterValues,
     StatusValues,
 };
+
 #[derive(Serialize, Debug, Clone)]
 pub struct PrinterResponse
 {

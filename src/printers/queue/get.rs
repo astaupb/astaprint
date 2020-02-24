@@ -52,24 +52,6 @@ impl<'a> From<&'a WorkerTask> for WorkerTaskResponse
     }
 }
 
-#[get("/<device_id>/queue")]
-pub fn get_queue(
-    _user: UserGuard,
-    device_id: u32,
-    queues: State<PrinterQueues>,
-) -> Option<Json<WorkerQueueResponse>>
-{
-    let queue = match queues.get(&device_id) {
-        Some(queue) => queue,
-        None => return None,
-    };
-
-    Some(Json(WorkerQueueResponse {
-        incoming: queue.get_incoming().iter().map(WorkerTaskResponse::from).collect(),
-        processing: queue.get_processing().iter().map(WorkerTaskResponse::from).collect(),
-    }))
-}
-
 #[get("/printers/<device_id>/queue")]
 pub fn get_queue_as_admin(
     _admin: AdminGuard,
@@ -82,10 +64,11 @@ pub fn get_queue_as_admin(
         None => return None,
     };
 
-    let incoming = queue.get_incoming();
+    let processing = queue.get_processing();
+
     Some(Json(
-        if !incoming.is_empty() {
-            Some(WorkerTaskResponse::from(&incoming[1]))
+        if !processing.is_empty() {
+            Some(WorkerTaskResponse::from(&processing[0]))
         }
         else {
             None

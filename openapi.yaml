@@ -17,7 +17,7 @@ tags:
     description: Operations about user
   - name: Jobs
     description: Operations about printjobs
-  - name: Queue
+  - name: Dispatcher
     description: Operations about dispatchqueue
   - name: Printers
     description: Operations about printers
@@ -97,7 +97,7 @@ paths:
       operationId: postJob
       tags:
         - Jobs
-        - Queue
+        - Dispatcher
       summary: Post a new job to the dispatcher queue
       security:
         - token: []
@@ -137,7 +137,7 @@ paths:
       operationId: getJobQueue
       tags:
         - Jobs
-        - Queue
+        - Dispatcher
       summary: Get state of the dispatcher queue
       security:
         - token: []
@@ -874,7 +874,7 @@ paths:
         - in: path
           name: device_id
           schema:
-            type: string
+            type: integer
           description: ID of the printer (usually called Stellplatznummer now)
           required: true
       responses:
@@ -895,44 +895,21 @@ paths:
         '404':
           description: Resource not found
   '/printers/{device_id}/queue':
-    get:
-      operationId: getPrinterQueue
-      summary: Get job queue from printer
-      security:
-        - token: []
-      tags:
-        - Printers
-      parameters:
-        - in: path
-          name: device_id
-          schema:
-            type: integer
-          description: ID of the printer (usually called Stellplatznummer now)
-          required: true
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Queue'
-        '404':
-          description: Resource not found
     post:
       operationId: printJob
-      summary: Move job to device queue aka print something
+      summary: Move job to device queue aka print something or lock the printer for scanning
       tags:
         - Jobs
         - Printers
       security:
         - token: []
       parameters:
-        - name: uid
+        - name: id
           in: query
-          description: UID of the jobfile
-          required: true
+          description: Id of the jobfile
+          required: false
           schema:
-            type: string
+            type: integer
         - name: device_id
           in: path
           description: ID of the printer
@@ -948,39 +925,9 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: Resource not found
-  '/printers/{device_id}/queue/{queue_item}':
-    get:
-      operationId: getPrinterQueueEntry
-      summary: Get single queue entry from printer queue
-      security:
-        - token: []
-      tags:
-        - Printers
-      parameters:
-        - in: path
-          name: device_id
-          schema:
-            type: integer
-          description: ID of the printer (usually called Stellplatznummer now)
-          required: true
-        - in: path
-          name: queue_item
-          schema:
-            type: string
-          description: UID of queue entry
-          required: true
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/QueueItem'
-        '404':
-          description: Resource not found
     delete:
       operationId: deletePrinterQueueEntry
-      summary: Delete queue entry from printer queue
+      summary: Cancel printing or scanlock
       security:
         - token: []
       tags:
@@ -1000,9 +947,13 @@ paths:
           required: true
       responses:
         '205':
-          description: Success - No content - Reset view
+          description: Success - Reset Content
+        '403':
+          description: Forbidden - Printer already locked
         '404':
-          description: Resource not found
+          description: Printer not found
+        '424':
+          description: Task not found
 servers:
   - url: 'https://astaprint.upb.de/api/v1'
     description: Production server
@@ -1103,9 +1054,16 @@ components:
           uid:
             type: string
             description: uid of specific task - hexadecimal encoded
-          user_id:
-            type: integer
-            format: uint32
+          filename:
+            type: string
+          keep:
+            type: boolean
+          color:
+            type: boolean
+          a3:
+            type: boolean
+          duplex:
+            type: boolean
     DispatcherQueue:
         type: array
         items:
@@ -1153,22 +1111,4 @@ components:
           type: boolean
         coin_operated:
           type: boolean
-    QueueItem:
-      type: object
-      properties:
-        uid:
-          type: string
-        filename:
-          type: string
-        keep:
-          type: boolean
-        color:
-          type: boolean
-        a3:
-          type: boolean
-        duplex:
-          type: boolean
-    Queue:
-      type: array
-      items:
-        $ref: '#/components/schemas/QueueItem'
+
