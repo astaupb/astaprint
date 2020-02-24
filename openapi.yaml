@@ -850,17 +850,11 @@ paths:
               example:
                 - device_id: 10174
                   location: ME U.201
-                  enqueued_items: 2
-                  has_color: false
                   has_a3: true
-                  has_ohp_slides: false
                   coin_operated: false
                 - device_id: 11614
                   location: ME U.201
-                  enqueued_items: 0
-                  has_color: true
                   has_a3: true
-                  has_ohp_slides: false
                   coin_operated: false
   '/printers/{device_id}':
     get:
@@ -887,10 +881,7 @@ paths:
               example:
                 device_id: 10174
                 location: ME U.201
-                enqueued_items: 2
-                has_color: false
                 has_a3: true
-                has_ohp_slides: false
                 coin_operated: false
         '404':
           description: Resource not found
@@ -1101,13 +1092,7 @@ components:
           type: integer
         location:
           type: string
-        enqueued_items:
-          type: integer
-        has_color:
-          type: boolean
         has_a3:
-          type: boolean
-        has_ohp_slides:
           type: boolean
         coin_operated:
           type: boolean

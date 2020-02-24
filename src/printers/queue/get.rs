@@ -25,7 +25,6 @@ use rocket_contrib::json::Json;
 
 use admin::guard::AdminGuard;
 use printers::PrinterQueues;
-use user::guard::UserGuard;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct WorkerTaskResponse
