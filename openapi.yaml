@@ -11,14 +11,18 @@ info:
     name: AGPLv3
     url: 'https://www.gnu.org/licenses/agpl-3.0.html'
 tags:
-  - name: Jobs
-    description: Operations about printjobs
+  - name: Authorize
+    description: Operations to start with
   - name: User
     description: Operations about user
-  - name: Journal
-    description: Operations about journal
+  - name: Jobs
+    description: Operations about printjobs
+  - name: Dispatcher
+    description: Operations about dispatchqueue
   - name: Printers
     description: Operations about printers
+  - name: Journal
+    description: Operations about journal
 paths:
   '/jobs':
     get:
@@ -76,12 +80,24 @@ paths:
                     nuppageorder: 0
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+    delete:
+      operationId: deleteJobs
+      tags:
+       - Jobs
+      summary: Delete all jobs
+      security:
+        - token: []
+      responses:
+        '205':
+          description: Success - Reset Content
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
   '/jobs/queue':
     post:
       operationId: postJob
       tags:
         - Jobs
-        - Queue
+        - Dispatcher
       summary: Post a new job to the dispatcher queue
       security:
         - token: []
@@ -121,7 +137,7 @@ paths:
       operationId: getJobQueue
       tags:
         - Jobs
-        - Queue
+        - Dispatcher
       summary: Get state of the dispatcher queue
       security:
         - token: []
@@ -131,34 +147,48 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items: 
-                  $ref: '#/components/schemas/DispatcherTask'
+                $ref: '#/components/schemas/DispatcherQueue'
+              example:
+                - uid: "bq6K-7V5zLC_DLbALwjdtP7"
+                  filename: "filename.pdf"
+                  keep: null
+                  color: true
+                  a3: false
+                  duplex: 1
+                - uid: "t49KSFkbmlFSkXaHcbcNdk8"
+                  filename: "filename.pdf"
+                  keep: true
+                  color: null
+                  a3: null
+                  duplex: 0
         '400':
           description: Bad request (eg. no base64)
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-  '/jobs/queue/options':
+  '/user/options':
     get:
       operationId: getDefaultOptions
       tags:
-        - Jobs
-      summary: Get default options for uploaded job
+        - User
+      summary: Get default options of user
       security:
         - token: []
       responses:
         '202':
-          description: Success -
+          description: Success
           content:
-            type: application/json
-
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/JobOptions'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
     put:
       operationId: setDefaultOptions
       tags:
-        - Jobs
-      summary: Set default options for uploaded job
+        - User
+      summary: Set default options of user
       security:
         - token: []
       responses:
@@ -175,7 +205,7 @@ paths:
           description: Id of the jobfile
           required: true
           schema:
-            type: string
+            type: integer
       tags:
         - Jobs
       summary: Get specified job
@@ -200,7 +230,7 @@ paths:
           description: Id of the jobfile
           required: true
           schema:
-            type: string
+            type: integer
       tags:
         - Jobs
       summary: Delete specified job
@@ -213,6 +243,35 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: Resource not found
+    post:
+      operationId: copyJob
+      parameters:
+        - name: id
+          in: path
+          description: Id of the jobfile
+          required: true
+          schema:
+            type: integer
+        - name: image
+          in: query
+          description: process job as image while copying
+          required: false
+          schema:
+            type: boolean
+      tags:
+        - Jobs
+      summary: Copy specified Job
+      security:
+        - token: []
+      responses:
+        '200':
+          description: Success - OK - Job is copied
+        '202':
+          description: Success - Started Processing - Job is being processed
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Job not found
   '/jobs/{id}/pdf':
     get:
       operationId: getPdf
@@ -299,42 +358,6 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: Resource not found
-  '/jobs/{id}/info/{info_name}':
-    get:
-      operationId: fetchSingleJobInfo
-      parameters:
-        - name: id
-          in: path
-          description: UID of the jobfile
-          required: true
-          schema:
-            type: string
-        - name: info_name
-          in: path
-          description: Name of the specific job info
-          required: true
-          schema:
-            type: string
-      tags:
-        - Jobs
-      summary: Get specified job's specified info only
-      security:
-        - token: []
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema:
-                oneOf:
-                  - type: string
-                  - type: integer
-                  - type: boolean
-              example: '"filename.pdf"'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '404':
-          description: Resource not found
   '/jobs/{id}/options':
     get:
       operationId: fetchJobOptions
@@ -369,7 +392,7 @@ paths:
           description: Id of the jobfile
           required: true
           schema:
-            type: string
+            type: integer
       tags:
         - Jobs
       summary: Update job's whole options to new values
@@ -377,7 +400,7 @@ paths:
         - token: []
       responses:
         '205':
-          description: Success - No content - Reset view
+          description: Success - Reset content
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
@@ -387,78 +410,64 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/JobOptions'
-  '/jobs/{id}/options/{option_name}':
+  '/jobs/<id>/sharecode':
     get:
-      operationId: fetchSingleJobOption
+      operationId: getSharecode
+      summary: Receice code to share a specified job
+      tags:
+        - Jobs
       parameters:
         - name: id
           in: path
           description: Id of the jobfile
           required: true
           schema:
-            type: string
-        - name: option_name
-          in: path
-          description: Name of the specific job option
-          required: true
-          schema:
-            type: string
-      tags:
-        - Jobs
-      summary: Get specified job's specified option only
-      security:
-        - token: []
+            type: integer
       responses:
         '200':
           description: Success
           content:
             application/json:
-              example: '"1-3,5,7-10"'
               schema:
-                oneOf:
-                  - type: string
-                  - type: integer
-                  - type: boolean
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '404':
-          description: Resource not found
-    put:
-      operationId: updateSingleJobOptions
-      parameters:
-        - name: id
-          in: path
-          description: Id of the jobfile
-          required: true
-          schema:
-            type: string
-        - name: option_name
-          in: path
-          description: Name of the specific job option
-          required: true
-          schema:
-            type: string
+                type: string
+                example: '"4bjeceVD1kfz0CQgPdwW2"'
+  '/jobs/sharecode':
+    post:
+      operationId: postSharecode
+      summary: Receive shared job by sharecode
       tags:
         - Jobs
-      summary: Update job's specific options to new values
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
+              example: '"4bjeceVD1kfz0CQgPdwW2"'
+      responses:
+        '200':
+          description: Success
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+  '/user/tou_accept':
+    put:
+      operationId: setTouAccept
+      parameters:
+        - name: tou_accept
+          in: query
+          description: value on which to set the flag
+          required: true
+          schema:
+            type: boolean
+      summary: Set the Terms of Usage accept flag
+      tags:
+        - User
       security:
         - token: []
       responses:
         '205':
-          description: Success - No content - Reset view
+          description: Success - Reset Content
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-        '404':
-          description: Resource not found
-      requestBody:
-        content:
-          application/json:
-            example: 2
-            schema:
-              oneOf:
-                - type: string
-                - type: integer
-                - type: boolean
   '/user':
     get:
       operationId: getUser
@@ -522,7 +531,6 @@ paths:
             example: '"newusername"'
             schema:
               type: string
-
   '/user/email':
     put:
       operationId: updateEmail
@@ -544,20 +552,6 @@ paths:
             example: '"newusername"'
             schema:
               type: string
-  '/user/tou_accept':
-    put:
-      operationId: updateTOUAccept
-      summary: Update Terms of Usage accepted flag as user
-      tags:
-        - User
-      security:
-        - token: []
-      responses:
-        '205':
-          description: Success - Reset Content
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-
   '/user/tokens':
     get:
       operationId: getTokens
@@ -582,6 +576,7 @@ paths:
       summary: 'Get new token using username:password auth'
       tags:
         - User
+        - Authorize
       responses:
         '200':
           description: Success
@@ -652,7 +647,7 @@ paths:
         '404':
           description: Resource not found
   '/user/password':
-    post:
+    put:
       operationId: changePassword
       summary: Change password
       tags:
@@ -662,7 +657,7 @@ paths:
       responses:
         '204':
           description: Success - No content
-        '400'
+        '400':
           description: Wrong Old Password
         '401':
           $ref: '#/components/responses/UnauthorizedError'
@@ -685,10 +680,25 @@ paths:
                       type: string
                     new:
                       type: string
+  '/user/logout':
+    post:
+      operationId: logout
+      summary: Delete the current token to logout
+      tags:
+        - User
+      security:
+        - token: []
+      responses:
+        '205':
+          description: Success - Reset View
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
   '/register':
     post:
       operationId: registerUser
       summary: Register a new user
+      tags:
+        - Authorize
       responses:
         '204':
           description: Success - No content
@@ -771,12 +781,12 @@ paths:
           description: Success - No content
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-  '/journal/credit':
+  '/user/credit':
     get:
       operationId: getCredit
       summary: Get credit as decimal number string
       tags:
-        - Journal
+        - User
       security:
         - token: []
       responses:
@@ -786,7 +796,7 @@ paths:
             application/json:
               schema:
                 type: number
-              example: 19.56
+              example: 1956
         '401':
           $ref: '#/components/responses/UnauthorizedError'
   '/journal/{index}':
@@ -840,54 +850,16 @@ paths:
               example:
                 - device_id: 10174
                   location: ME U.201
-                  enqueued_items: 2
-                  has_color: false
                   has_a3: true
-                  has_ohp_slides: false
                   coin_operated: false
                 - device_id: 11614
                   location: ME U.201
-                  enqueued_items: 0
-                  has_color: true
                   has_a3: true
-                  has_ohp_slides: false
                   coin_operated: false
   '/printers/{device_id}':
     get:
       operationId: getSinglePrinter
       summary: Get status from single printer
-      security:
-        - token: []
-      tags:
-        - Printers
-      parameters:
-        - in: path
-          name: device_id
-          schema:
-            type: string
-          description: ID of the printer (usually called Stellplatznummer now)
-          required: true
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Device'
-              example:
-                device_id: 10174
-                location: ME U.201
-                enqueued_items: 2
-                has_color: false
-                has_a3: true
-                has_ohp_slides: false
-                coin_operated: false
-        '404':
-          description: Resource not found
-  '/printers/{device_id}/queue':
-    get:
-      operationId: getPrinterQueue
-      summary: Get job queue from printer
       security:
         - token: []
       tags:
@@ -905,24 +877,30 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Queue'
+                $ref: '#/components/schemas/Device'
+              example:
+                device_id: 10174
+                location: ME U.201
+                has_a3: true
+                coin_operated: false
         '404':
           description: Resource not found
+  '/printers/{device_id}/queue':
     post:
       operationId: printJob
-      summary: Move job to device queue aka print something
+      summary: Move job to device queue aka print something or lock the printer for scanning
       tags:
         - Jobs
         - Printers
       security:
         - token: []
       parameters:
-        - name: uid
+        - name: id
           in: query
-          description: UID of the jobfile
-          required: true
+          description: Id of the jobfile
+          required: false
           schema:
-            type: string
+            type: integer
         - name: device_id
           in: path
           description: ID of the printer
@@ -938,39 +916,9 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: Resource not found
-  '/printers/{device_id}/queue/{queue_item}':
-    get:
-      operationId: getPrinterQueueEntry
-      summary: Get single queue entry from printer queue
-      security:
-        - token: []
-      tags:
-        - Printers
-      parameters:
-        - in: path
-          name: device_id
-          schema:
-            type: integer
-          description: ID of the printer (usually called Stellplatznummer now)
-          required: true
-        - in: path
-          name: queue_item
-          schema:
-            type: string
-          description: UID of queue entry
-          required: true
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/QueueItem'
-        '404':
-          description: Resource not found
     delete:
       operationId: deletePrinterQueueEntry
-      summary: Delete queue entry from printer queue
+      summary: Cancel printing or scanlock
       security:
         - token: []
       tags:
@@ -990,14 +938,16 @@ paths:
           required: true
       responses:
         '205':
-          description: Success - No content - Reset view
+          description: Success - Reset Content
+        '403':
+          description: Forbidden - Printer already locked
         '404':
-          description: Resource not found
+          description: Printer not found
+        '424':
+          description: Task not found
 servers:
-  - url: 'https://astaprint.upb.de/'
+  - url: 'https://astaprint.upb.de/api/v1'
     description: Production server
-  - url: 'https://sunrise.upb.de/astaprint/'
-    description: Test environment
 components:
   securitySchemes:
     token:
@@ -1095,9 +1045,20 @@ components:
           uid:
             type: string
             description: uid of specific task - hexadecimal encoded
-          user_id:
-            type: integer
-            format: uint32
+          filename:
+            type: string
+          keep:
+            type: boolean
+          color:
+            type: boolean
+          a3:
+            type: boolean
+          duplex:
+            type: boolean
+    DispatcherQueue:
+        type: array
+        items:
+          $ref: '#/components/schemas/DispatcherTask'
     User:
       type: object
       properties:
@@ -1131,31 +1092,8 @@ components:
           type: integer
         location:
           type: string
-        enqueued_items:
-          type: integer
-        has_color:
-          type: boolean
         has_a3:
-          type: boolean
-        has_ohp_slides:
           type: boolean
         coin_operated:
           type: boolean
-    QueueItem:
-      type: object
-      properties:
-        uid:
-          type: string
-        user_id:
-          type: integer
-    Queue:
-      type: object
-      properties:
-        incoming:
-          type: array
-          items:
-            $ref: '#/components/schemas/QueueItem'
-        processing:
-          type: array
-          items:
-            $ref: '#/components/schemas/QueueItem'
+

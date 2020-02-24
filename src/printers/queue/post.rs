@@ -115,7 +115,7 @@ pub fn post_to_queue(
 {
     let queue = match queues.get(&device_id) {
         Some(queue) => queue,
-        None => return Ok(Err(Custom(Status::new(404, "Task Not Found"), ()))),
+        None => return Ok(Err(Custom(Status::new(404, "Printer Not Found"), ()))),
     };
     post_to_queue_handler(user, id, options.map(|o| o.into_inner()), queue.clone())
 }

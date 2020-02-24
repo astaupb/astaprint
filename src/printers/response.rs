@@ -20,10 +20,32 @@
 use mysql::printers::Printer;
 use printers::queue::get::WorkerTaskResponse;
 use snmp::{
-    tool::*,
     CounterValues,
     StatusValues,
 };
+
+#[derive(Serialize, Debug, Clone)]
+pub struct UserPrinterResponse
+{
+    pub device_id: u32,
+    pub location: String,
+    pub has_a3: bool,
+    pub coin_operated: bool,
+}
+
+impl<'a> From<&'a Printer> for UserPrinterResponse
+{
+    fn from(printer: &'a Printer) -> UserPrinterResponse
+    {
+        UserPrinterResponse {
+            device_id: printer.device_id,
+            location: printer.location.clone(),
+            has_a3: printer.has_a3,
+            coin_operated: printer.coin_operated,
+        }
+    }
+}
+
 #[derive(Serialize, Debug, Clone)]
 pub struct PrinterResponse
 {
@@ -71,38 +93,6 @@ impl<'a> From<&'a Printer> for PrinterResponse
             last_watched: printer.last_watched.timestamp(),
             status: None,
             counter: None,
-            queue: None,
-        }
-    }
-}
-
-impl From<Printer> for PrinterResponse
-{
-    fn from(printer: Printer) -> PrinterResponse
-    {
-        let status = Some(status(&printer.ip).unwrap_or_default());
-
-        let counter = Some(counter(&printer.ip).unwrap_or_default());
-
-        PrinterResponse {
-            id: printer.id,
-            hostname: printer.hostname,
-            ip: printer.ip,
-            community: printer.community,
-            mac: printer.mac,
-            device_id: printer.device_id,
-            location: printer.location,
-            has_a3: printer.has_a3,
-            coin_operated: printer.coin_operated,
-            description: printer.description,
-            watch_toner: printer.watch_toner,
-            watch_tray1: printer.watch_tray1,
-            watch_tray2: printer.watch_tray2,
-            watch_tray3: printer.watch_tray3,
-            watch_interval: printer.watch_interval,
-            last_watched: printer.last_watched.timestamp(),
-            status,
-            counter,
             queue: None,
         }
     }

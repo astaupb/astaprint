@@ -75,7 +75,6 @@ use astaprint::{
         get::*,
         info::{
             get::*,
-            put::*,
         },
         options::{
             get::*,
@@ -100,8 +99,8 @@ use astaprint::{
         put::*,
         queue::{
             delete::*,
-            get::*,
             post::*,
+            get::*,
         },
     },
     user::{
@@ -187,7 +186,6 @@ fn rocket() -> rocket::Rocket
             update_options,
             fetch_options,
             fetch_info,
-            update_filename,
             get_dispatcher_queue,
             copy_job,
             upload_job,
@@ -222,11 +220,16 @@ fn rocket() -> rocket::Rocket
             get_single_token,
             delete_single_token,
         ])
-        .mount("/printers", routes![post_to_queue, get_queue, delete_queue])
-        .mount("/journal", routes![get_journal_as_user, post_to_journal_with_token, credit])
-        .mount("/admin", routes![
+        .mount("/printers", routes![
+            post_to_queue,
+            delete_queue,
             get_printers,
             get_single_printer,
+        ])
+        .mount("/journal", routes![get_journal_as_user, post_to_journal_with_token, credit])
+        .mount("/admin", routes![
+            get_printers_as_admin,
+            get_single_printer_as_admin,
             post_printer,
             put_printer_details,
             delete_printer,
