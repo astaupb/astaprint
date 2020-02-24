@@ -24,6 +24,13 @@ tags:
     description: Complete payment journal access
 paths:
   '/tokens':
+    get:
+      operationId: get_admin_tokens
+      tags:
+        - Authorize
+      summary: Get list of active login tokens for currently logged in admin user
+      security:
+        - token: []
     post:
       operationId: post_admin_token
       summary: Get new token using username:password auth
@@ -41,6 +48,28 @@ paths:
                 "eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ"
       security:
         - basicAuth: []
+    delete:
+      operationId: delete_admin_tokens
+      tags:
+        - Authorize
+      summary: Delete all currently active logins to remotely log out anyone with access to this account
+      security:
+        - token: []
+  '/tokens/{id}':
+    get:
+      operationId: get_single_admin_token
+      tags:
+        - Authorize
+      summary: Get information for a single given active login
+      security:
+        - token: []
+    delete:
+      operationId: delete_single_admin_token
+      tags:
+        - Authorize
+      summary: Delete/deactivate a given login
+      security:
+        - token: []
   '/printers':
     get:
       operationId: get_printers
@@ -131,12 +160,49 @@ paths:
       summary: Show complete list of currently processing documents in the dispatcher
       security:
         - token: []
-  '/':
+  '/admins':
+    get:
+      operationId: get_admins
+      tags:
+        - Admins
+      summary: Get list of all admin accounts
+      security:
+        - token: []
     post:
       operationId: post_new_admin
       tags:
         - Admins
       summary: Add a new admin account
+      security:
+        - token: []
+  '/admins/{id}':
+    get:
+      operationId: get_single_admin
+      tags:
+        - Admins
+      summary: Show a single admin's information
+      security:
+        - token: []
+    delete:
+      operationId: delete_admin
+      tags:
+        - Admins
+      summary: Delete an admin account
+      security:
+        - token: []
+    put:
+      operationId: put_admin
+      tags:
+        - Admins
+      summary: Update an admin account
+      security:
+        - token: []
+  '/admins/{id}/password':
+    put:
+      operationId: put_admin_password
+      tags:
+        - Admins
+      summary: Set a new password for the specified admin
       security:
         - token: []
   '/users/{id}':
@@ -451,3 +517,42 @@ components:
             type: boolean
           duplex:
             type: boolean
+    Admin:
+      type: object
+      properties:
+        id:
+          type: integer
+        first_name:
+          type: string
+        last_name:
+          type: string
+        login:
+          type: string
+        service:
+          type: boolean
+          description: True if account belongs to a service employee, false for admins
+        locked:
+          type: boolean
+        expires:
+          type: integer
+        created_by:
+          type: integer
+        created:
+          type: integer
+        updated:
+          type: integer
+    AdminToken:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_agent:
+          type: string
+        ip:
+          type: string
+        location:
+          type: string
+        created:
+          type: integer
+        updated:
+          type: integer
