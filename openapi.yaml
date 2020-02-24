@@ -175,7 +175,7 @@ paths:
         - token: []
       responses:
         '202':
-          description: Success -
+          description: Success
           content:
             application/json:
               schema:
