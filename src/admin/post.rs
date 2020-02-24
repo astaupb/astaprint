@@ -33,6 +33,7 @@ use mysql::{
         update::{
             update_hash_and_salt,
             update_user_name,
+            update_tou_accept,
         },
     },
 };
@@ -138,4 +139,19 @@ pub fn change_user_name_as_admin(
     info!("{} changed name of user {} ", admin.id, id);
 
     Ok(Status::new(205, "Reset Content"))
+}
+
+#[put("/users/tou_accept")]
+pub fn clear_tou_accept(admin: AdminGuard) -> Status
+{
+    match update_tou_accept(false, &admin.connection) {
+        Ok(1) => {
+            info!("tou_accept set to 0");
+            Status::new(204, "Success - No Content")
+        },
+        err => {
+            error!("{:?}", err);
+            Status::new(500, "Internal Server Error")
+        }
+    }
 }
