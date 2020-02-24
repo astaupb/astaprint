@@ -80,6 +80,10 @@ paths:
                     nuppageorder: 0
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
     delete:
       operationId: deleteJobs
       tags:
@@ -92,6 +96,10 @@ paths:
           description: Success - Reset Content
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
   '/jobs/queue':
     post:
       operationId: postJob
@@ -122,6 +130,10 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '415':
           description: Unsupported media type
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
       parameters:
         - in: query
           name: password
@@ -165,6 +177,10 @@ paths:
           description: Bad request (eg. no base64)
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
   '/user/options':
     get:
       operationId: getDefaultOptions
@@ -184,6 +200,10 @@ paths:
                   $ref: '#/components/schemas/JobOptions'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
     put:
       operationId: setDefaultOptions
       tags:
@@ -196,6 +216,10 @@ paths:
           description: Success - No content
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
   '/jobs/{id}':
     get:
       operationId: fetchJob
@@ -221,7 +245,11 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
-          description: Resource not found
+          description: Job not found
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
     delete:
       operationId: deleteJob
       parameters:
@@ -242,7 +270,11 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
-          description: Resource not found
+          description: Job not found
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
     post:
       operationId: copyJob
       parameters:
@@ -272,6 +304,10 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: Job not found
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
   '/jobs/{id}/pdf':
     get:
       operationId: getPdf
@@ -298,7 +334,11 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
-          description: Resource not found
+          description: Job not found
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
   '/jobs/{id}/preview/{index}':
     get:
       operationId: fetchJobPreview
@@ -331,7 +371,11 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
-          description: Resource not found
+          description: Job not found
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
   '/jobs/{id}/info':
     get:
       operationId: fetchJobInfo
@@ -357,7 +401,11 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
-          description: Resource not found
+          description: Job not found
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
   '/jobs/{id}/options':
     get:
       operationId: fetchJobOptions
@@ -383,7 +431,11 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
-          description: Resource not found
+          description: Job not found
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
     put:
       operationId: updateJobOptions
       parameters:
@@ -404,7 +456,11 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
-          description: Resource not found
+          description: Job not found
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
       requestBody:
         content:
           application/json:
@@ -431,6 +487,10 @@ paths:
               schema:
                 type: string
                 example: '"4bjeceVD1kfz0CQgPdwW2"'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
   '/jobs/sharecode':
     post:
       operationId: postSharecode
@@ -448,6 +508,10 @@ paths:
           description: Success
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
   '/user/tou_accept':
     put:
       operationId: setTouAccept
@@ -468,6 +532,10 @@ paths:
           description: Success - Reset Content
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
   '/user':
     get:
       operationId: getUser
@@ -491,6 +559,10 @@ paths:
                 token_id: 77
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
   '/user/name':
     get:
       operationId: getUsername
@@ -509,6 +581,10 @@ paths:
               example: '"testuser"'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
     put:
       operationId: updateUsername
       summary: Update username with JSON
@@ -525,6 +601,10 @@ paths:
           description: Disallowed characters / Too long (>32)
         '472':
           description: Username taken
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
       requestBody:
         content:
           application/json:
@@ -546,6 +626,10 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '472':
           description: Email taken
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
       requestBody:
         content:
           application/json:
@@ -571,6 +655,10 @@ paths:
                   $ref: '#/components/schemas/Token'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
     post:
       operationId: login
       summary: 'Get new token using username:password auth'
@@ -587,6 +675,10 @@ paths:
                 format: base64
               example: >-
                 "eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ"
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
       security:
         - basicAuth: []
     delete:
@@ -601,6 +693,10 @@ paths:
           description: Success - No content - Reset view
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
   '/user/tokens/{token_id}':
     get:
       operationId: getToken
@@ -625,7 +721,11 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
-          description: Resource not found
+          description: Token not found
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
     delete:
       operationId: deleteToken
       summary: Delete one specific token
@@ -645,7 +745,11 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
-          description: Resource not found
+          description: Token not found
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
   '/user/password':
     put:
       operationId: changePassword
@@ -661,6 +765,10 @@ paths:
           description: Wrong Old Password
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
       requestBody:
         description: JSON with both passwords
         required: true
@@ -693,6 +801,10 @@ paths:
           description: Success - Reset View
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
   '/register':
     post:
       operationId: registerUser
@@ -708,6 +820,10 @@ paths:
           description: Disallowed characters / Too long (>32)
         '472':
           description: Email taken
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
       requestBody:
         description: JSON with information on new user
         required: true
@@ -760,6 +876,10 @@ paths:
                   $ref: '#/components/schemas/Transaction'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
     post:
       operationId: postJournal
       summary: Post new entry to the journal
@@ -781,6 +901,10 @@ paths:
           description: Success - No content
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
   '/user/credit':
     get:
       operationId: getCredit
@@ -799,6 +923,10 @@ paths:
               example: 1956
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
   '/printers':
     get:
       operationId: getPrinters
@@ -825,6 +953,10 @@ paths:
                   location: ME U.201
                   has_a3: true
                   coin_operated: false
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
   '/printers/{device_id}':
     get:
       operationId: getSinglePrinter
@@ -854,6 +986,10 @@ paths:
                 coin_operated: false
         '404':
           description: Resource not found
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
   '/printers/{device_id}/queue':
     post:
       operationId: printJob
@@ -885,6 +1021,10 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '404':
           description: Resource not found
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
     delete:
       operationId: deletePrinterQueueEntry
       summary: Cancel printing or scanlock
@@ -914,6 +1054,10 @@ paths:
           description: Printer not found
         '424':
           description: Task not found
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
 servers:
   - url: 'https://astaprint.upb.de/api/v1'
     description: Production server
