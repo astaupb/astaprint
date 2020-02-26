@@ -65,22 +65,20 @@ use logger::Logger;
 
 use astaprint::{
     admin::{
+        admins::{
+            delete::*,
+            get::*,
+            post::*,
+        },
         get::*,
         post::*,
         put::*,
         tokens::*,
-        admins::{
-            post::*,
-            get::*,
-            delete::*,
-        },
     },
     jobs::{
         delete::*,
         get::*,
-        info::{
-            get::*,
-        },
+        info::get::*,
         options::{
             get::*,
             put::*,
@@ -104,8 +102,8 @@ use astaprint::{
         put::*,
         queue::{
             delete::*,
-            post::*,
             get::*,
+            post::*,
         },
     },
     user::{
@@ -225,12 +223,7 @@ fn rocket() -> rocket::Rocket
             get_single_token,
             delete_single_token,
         ])
-        .mount("/printers", routes![
-            post_to_queue,
-            delete_queue,
-            get_printers,
-            get_single_printer,
-        ])
+        .mount("/printers", routes![post_to_queue, delete_queue, get_printers, get_single_printer,])
         .mount("/journal", routes![get_journal_as_user, post_to_journal_with_token, credit])
         .mount("/admin/admins", routes![post_new_admin, get_admins, get_single_admin, delete_admin])
         .mount("/admin", routes![

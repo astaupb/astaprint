@@ -18,7 +18,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use admin::guard::AdminGuard;
-use user::guard::UserGuard;
 use diesel::prelude::*;
 use mysql::printers::select::{
     select_printer_by_device_id,
@@ -35,6 +34,7 @@ use printers::{
 use rocket::State;
 use rocket_contrib::json::Json;
 use snmp::tool::*;
+use user::guard::UserGuard;
 
 #[get("/")]
 pub fn get_printers(user: UserGuard) -> QueryResult<Json<Vec<UserPrinterResponse>>>
@@ -43,7 +43,8 @@ pub fn get_printers(user: UserGuard) -> QueryResult<Json<Vec<UserPrinterResponse
 }
 
 #[get("/<device_id>")]
-pub fn get_single_printer(user: UserGuard, device_id: u32) -> QueryResult<Json<UserPrinterResponse>>
+pub fn get_single_printer(user: UserGuard, device_id: u32)
+-> QueryResult<Json<UserPrinterResponse>>
 {
     Ok(Json(UserPrinterResponse::from(&select_printer_by_device_id(device_id, &user.connection)?)))
 }

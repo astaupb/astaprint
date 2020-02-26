@@ -31,7 +31,8 @@ pub fn delete_admin(admin: AdminGuard, id: u32) -> QueryResult<Status>
 {
     Ok(if delete_admin_by_id(id, &admin.connection)? == 1 {
         Status::new(205, "Success - Reset View")
-    } else {
+    }
+    else {
         Status::new(500, "Internal Server Error")
     })
 }

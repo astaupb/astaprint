@@ -22,11 +22,11 @@ use mysql::admin::select::select_admin_by_login;
 use diesel::prelude::QueryResult;
 
 use admin::{
-    guard::AdminGuard,
     admins::{
         AdminCreate,
         NewAdmin,
     },
+    guard::AdminGuard,
 };
 
 use sodium::PasswordHash;
@@ -37,9 +37,7 @@ use rocket_contrib::json::Json;
 
 use rocket::{
     http::Status,
-    response::{
-        status::Custom,
-    },
+    response::status::Custom,
 };
 
 #[post("/", data = "<new>")]
@@ -68,5 +66,3 @@ pub fn post_new_admin(admin: AdminGuard, new: Json<NewAdmin>) -> QueryResult<Cus
 
     Ok(Custom(Status::new(204, "Success - No Content"), ()))
 }
-
-

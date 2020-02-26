@@ -138,17 +138,10 @@ pub fn update_user_default_options(
 }
 
 #[put("/tou_accept?<tou_accept>")]
-pub fn change_user_tou_accept(
-    user: UserGuard,
-    tou_accept: bool,
-) -> Status {
+pub fn change_user_tou_accept(user: UserGuard, tou_accept: bool) -> Status
+{
     match update_tou_accept_of_user(user.id, tou_accept, &user.connection) {
-        Ok(1) => {
-            Status::new(205, "Success - Reset Content")
-        },
-        _ => {
-            Status::new(500, "Internal Server Error") 
-        }
+        Ok(1) => Status::new(205, "Success - Reset Content"),
+        _ => Status::new(500, "Internal Server Error"),
     }
 }
-

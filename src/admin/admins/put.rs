@@ -47,19 +47,22 @@ pub fn put_admin(admin: AdminGuard, update: Json<AdminUpdate>) -> QueryResult<St
 
     Ok(if update_admin(updated, &admin.connection)? == 1 {
         Status::new(205, "Success - Reset Content")
-    } else {
+    }
+    else {
         Status::new(500, "Internal Server Error")
     })
 }
 
 #[put("/<id>/password", data = "<password>")]
-pub fn put_admin_password(admin: AdminGuard, id: u32, password: Json<String>) -> QueryResult<Status>
+pub fn put_admin_password(admin: AdminGuard, id: u32, password: Json<String>)
+-> QueryResult<Status>
 {
     let (hash, salt) = PasswordHash::create(&password.into_inner());
 
     Ok(if update_admin_hash_and_salt_by_id(id, hash, salt, &admin.connection)? == 1 {
         Status::new(204, "Success - No Content")
-    } else {
+    }
+    else {
         Status::new(500, "Internal Server Error")
     })
 }
