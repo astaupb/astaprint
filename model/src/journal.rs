@@ -35,6 +35,7 @@ impl<'a> From<&'a PrintJournal> for PrintJournalResponse
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct JournalResponse
 {
+    pub user_id: u32,
     pub value: i32,
     pub admin_id: Option<u32>,
     pub description: String,
@@ -48,6 +49,7 @@ impl<'a> From<&'a Journal> for JournalResponse
     fn from(journal: &Journal) -> JournalResponse
     {
         JournalResponse{
+            user_id: journal.user_id,
             value: journal.value,
             admin_id: journal.admin_id,
             description: journal.description.clone(),
@@ -63,6 +65,7 @@ impl<'a> From<&'a(Journal, Option<PrintJournal>)> for JournalResponse
     fn from(journal: &(Journal, Option<PrintJournal>)) -> JournalResponse
     {
         JournalResponse{
+            user_id: journal.0.user_id,
             value: journal.0.value,
             admin_id: journal.0.admin_id,
             description: journal.0.description.clone(),
