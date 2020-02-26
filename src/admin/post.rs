@@ -20,13 +20,11 @@
 use admin::{
     email::send_password_reset_email,
     guard::AdminGuard,
-    Admin,
 };
+
 use base64::encode;
-use chrono::NaiveDate;
 use diesel::prelude::*;
 use mysql::{
-    admin::select::select_admin_by_login,
     user::{
         delete::delete_all_tokens_of_user,
         select::select_user_email_by_id,
@@ -39,49 +37,13 @@ use mysql::{
 };
 use rocket::{
     http::Status,
-    response::status::Custom,
 };
+
 use rocket_contrib::json::Json;
 use sodium::{
     random_bytes,
     PasswordHash,
 };
-
-#[derive(Deserialize, Debug, Clone)]
-pub struct NewAdmin
-{
-    pub first_name: String,
-    pub last_name: String,
-    pub login: String,
-    pub password: String,
-}
-
-#[post("/", data = "<new>")]
-pub fn post_new_admin(admin: AdminGuard, new: Json<NewAdmin>) -> QueryResult<Custom<()>>
-{
-    if select_admin_by_login(&new.login, &admin.connection).is_ok() {
-        return Ok(Custom(Status::new(472, "login already taken"), ()))
-    }
-    let new = new.into_inner();
-
-    let (hash, salt) = PasswordHash::create(&new.password);
-
-    let new_admin = Admin {
-        first_name: new.first_name,
-        last_name: new.last_name,
-        login: Some(new.login),
-        hash: Some(hash),
-        salt: Some(salt),
-        service: false,
-        locked: false,
-        created_by: Some(admin.id),
-        expires: NaiveDate::from_yo(2019, 1),
-    };
-
-    new_admin.insert(&admin.connection)?;
-
-    Ok(Custom(Status::new(204, "Success - No Content"), ()))
-}
 
 #[put("/users/<id>/password", data = "<body>")]
 pub fn change_user_password_as_admin(

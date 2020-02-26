@@ -69,6 +69,9 @@ use astaprint::{
         post::*,
         put::*,
         tokens::*,
+        admins::{
+            post::*,
+        },
     },
     jobs::{
         delete::*,
@@ -227,6 +230,7 @@ fn rocket() -> rocket::Rocket
             get_single_printer,
         ])
         .mount("/journal", routes![get_journal_as_user, post_to_journal_with_token, credit])
+        .mount("/admin/admins", routes![post_new_admin])
         .mount("/admin", routes![
             get_printers_as_admin,
             get_single_printer_as_admin,
@@ -241,7 +245,6 @@ fn rocket() -> rocket::Rocket
             post_journal_token_as_admin,
             delete_queue_as_admin,
             get_queue_as_admin,
-            post_new_admin,
             get_user_as_admin,
             get_user_credit_as_admin,
             get_user_journal_as_admin,

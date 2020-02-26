@@ -46,7 +46,7 @@ paths:
       tags:
         - Authorize
       responses:
-        200:
+        '200':
           description: Success
           content:
             application/json:
@@ -55,6 +55,12 @@ paths:
                 format: base64
               example: >-
                 "eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
       security:
         - basicAuth: []
     delete:
@@ -65,8 +71,14 @@ paths:
       security:
         - token: []
       responses:
-        205:
+        '205':
           description: Success - reset content
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
   '/tokens/{id}':
     get:
       operationId: get_single_admin_token
@@ -83,12 +95,18 @@ paths:
           schema:
             type: integer
       responses:
-        200:
+        '200':
           description: Success
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/AdminToken'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
     delete:
       operationId: delete_single_admin_token
       tags:
@@ -104,8 +122,14 @@ paths:
           schema:
             type: integer
       responses:
-        205:
+        '205':
           description: Success - reset content
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
   '/printers':
     get:
       operationId: get_printers
@@ -114,6 +138,13 @@ paths:
       summary: Get list of all printers in the system
       security:
         - token: []
+      responses:
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
     post:
       operationId: post_printer
       tags:
@@ -121,43 +152,120 @@ paths:
       summary: Add a new printer to the system
       security:
         - token: []
+      responses:
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
   '/printers/{device_id}':
     get:
       operationId: get_single_printer
+      parameters:
+        - in: path
+          name: device_id
+          required: true
+          schema:
+            type: integer
+            format: u32
       tags:
         - Printers
       summary: Get information on a single printer
       security:
         - token: []
+      responses:
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
     delete:
       operationId: delete_printer
+      parameters:
+        - in: path
+          name: device_id
+          required: true
+          schema:
+            type: integer
+            format: u32
       tags:
         - Printers
       summary: Delete a printer from the system
       security:
         - token: []
+      responses:
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
     put:
       operationId: put_printer_details
+      parameters:
+        - in: path
+          name: device_id
+          required: true
+          schema:
+            type: integer
+            format: u32
       tags:
         - Printers
       summary: Update printer details for an existing printer
       security:
         - token: []
+      responses:
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
   '/printers/{device_id}/queue':
     get:
       operationId: get_queue
+      parameters:
+        - in: path
+          name: device_id
+          required: true
+          schema:
+            type: integer
+            format: u32
       tags:
         - Printers
       summary: Show print queue status of a printer
       security:
         - token: []
+      responses:
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
     delete:
       operationId: delete_queue
+      parameters:
+        - in: path
+          name: device_id
+          required: true
+          schema:
+            type: integer
+            format: u32
       tags:
         - Printers
       summary: Clear the print queue of a given printer
       security:
         - token: []
+      responses:
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
   '/journal':
     get:
       operationId: get_journal
@@ -166,6 +274,13 @@ paths:
       summary: Show the complete (all user) journal
       security:
         - token: []
+      responses:
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
     post:
       operationId: post_to_journal
       tags:
@@ -173,6 +288,13 @@ paths:
       summary: Manually add a transaction to the journal
       security:
         - token: []
+      responses:
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
   '/journal/tokens':
     get:
       operationId: get_journal_tokens
@@ -181,6 +303,13 @@ paths:
       summary: Show existing generated journal tokens and their status
       security:
         - token: []
+      responses:
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
     post:
       operationId: post_journal_token
       tags:
@@ -188,6 +317,13 @@ paths:
       summary: Create a new batch of journal tokens with a given value
       security:
         - token: []
+      responses:
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
   '/jobs/queue':
     get:
       operationId: get_dispatcher_queue
@@ -196,6 +332,13 @@ paths:
       summary: Show complete list of currently processing documents in the dispatcher
       security:
         - token: []
+      responses:
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
   '/admins':
     get:
       operationId: get_admins
@@ -204,6 +347,13 @@ paths:
       summary: Get list of all admin accounts
       security:
         - token: []
+      responses:
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
     post:
       operationId: post_new_admin
       tags:
@@ -211,60 +361,175 @@ paths:
       summary: Add a new admin account
       security:
         - token: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewAdmin'
+      responses:
+        '204':
+          description: Success - No Content
+        '472':
+          description: Login already taken
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
   '/admins/{id}':
     get:
       operationId: get_single_admin
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: u32
       tags:
         - Admins
       summary: Show a single admin's information
       security:
         - token: []
+      responses:
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
     delete:
       operationId: delete_admin
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: u32
       tags:
         - Admins
       summary: Delete an admin account
       security:
         - token: []
+      responses:
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
     put:
       operationId: put_admin
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: u32
       tags:
         - Admins
       summary: Update an admin account
       security:
         - token: []
+      responses:
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
   '/admins/{id}/password':
     put:
       operationId: put_admin_password
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: u32
       tags:
         - Admins
       summary: Set a new password for the specified admin
       security:
         - token: []
+      responses:
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
   '/users/{id}':
     get:
       operationId: get_user
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: u32
       tags:
         - Users
       summary: Get information on a single user
       security:
         - token: []
+      responses:
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
   '/users/{id}/credit':
     get:
       operationId: get_user_credit
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: u32
       tags:
         - Users
       summary: Get credit of a given user account
       security:
         - token: []
+      responses:
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
   '/users/{id}/journal':
     get:
       operationId: get_user_journal
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: u32
       tags:
         - Users
       summary: Show transactions for a specific user
       security:
         - token: []
+      responses:
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
   '/users':
     get:
       operationId: get_all_users
@@ -273,45 +538,122 @@ paths:
       summary: Get a list of all users
       security:
         - token: []
+      responses:
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
   '/users/{id}/password':
     post:
       operationId: reset_user_password
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: u32
       tags:
         - Users
       summary: Reset a user`s password and send him a temporary password via mail
       security:
         - token: []
+      responses:
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
     put:
       operationId: change_user_password
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: u32
       tags:
         - Users
       summary: Change user`s password to a defined one
       security:
         - token: []
+      responses:
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
   '/users/{id}/name':
     put:
       operationId: change_user_name
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: u32
       tags:
         - Users
       summary: Change username of a user
       security:
         - token: []
+      responses:
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
   '/users/{id}/email':
     put:
       operationId: change_user_email
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: u32
       tags:
         - Users
       summary: Change or set email of a user
       security:
         - token: []
+      responses:
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
   '/users/{id}/locked':
     put:
       operationId: change_user_locked
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: u32
       tags:
         - Users
       summary: Define if a an account is locked
       security:
         - token: []
+      responses:
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
   '/users/tou_accept':
     post:
       operationId: clear_tou_accept
@@ -320,6 +662,13 @@ paths:
       summary: Reset terms of use acceptance for all users
       security:
         - token: []
+      responses:
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
 servers:
   - url: 'https://astaprint.upb.de/api/v1/admin'
     description: Production server
@@ -341,10 +690,6 @@ components:
             type: string
     ServerError:
       description: Internal server error
-    NoNetworkAuth:
-      description: You need to authorize yourself to your network (eg. webauth)
-    ServiceUnavailiable:
-      description: The servie is temporary unavaliable
     BadGateway:
       description: The server is up but the service seems to be down
   schemas:
@@ -484,7 +829,7 @@ components:
       type: object
       properties:
         user_id:
-          type: intefer
+          type: integer
         uid:
           type: string
     Transaction:
@@ -580,6 +925,17 @@ components:
           type: integer
         updated:
           type: integer
+    NewAdmin:
+      type: object
+      properties:
+        first_name:
+          type: string
+        last_name:
+          type: string
+        login:
+          type: string
+        password:
+          type: string
     AdminToken:
       type: object
       properties:
