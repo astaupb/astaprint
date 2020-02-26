@@ -492,6 +492,8 @@ components:
       properties:
         value:
           type: integer
+        user_id:
+          type: integer
         admin_id:
           type: integer
         description:
