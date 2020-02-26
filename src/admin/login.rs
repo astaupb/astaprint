@@ -112,10 +112,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for AdminLoginGuard
             return Outcome::Failure((Status::Unauthorized, ()))
         }
 
-        let (hash, salt) = match (admin.hash, admin.salt) {
-            (Some(hash), Some(salt)) => (hash, salt),
-            _ => return Outcome::Failure((Status::Unauthorized, ())),
-        };
+        let (hash, salt) = (admin.hash, admin.salt);
 
         if PasswordHash::with_salt(credentials[1], &salt[..]) != hash {
             return Outcome::Failure((Status::Unauthorized, ()))

@@ -71,6 +71,8 @@ use astaprint::{
         tokens::*,
         admins::{
             post::*,
+            get::*,
+            delete::*,
         },
     },
     jobs::{
@@ -230,7 +232,7 @@ fn rocket() -> rocket::Rocket
             get_single_printer,
         ])
         .mount("/journal", routes![get_journal_as_user, post_to_journal_with_token, credit])
-        .mount("/admin/admins", routes![post_new_admin])
+        .mount("/admin/admins", routes![post_new_admin, get_admins, get_single_admin, delete_admin])
         .mount("/admin", routes![
             get_printers_as_admin,
             get_single_printer_as_admin,

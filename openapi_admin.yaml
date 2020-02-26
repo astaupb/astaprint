@@ -348,6 +348,14 @@ paths:
       security:
         - token: []
       responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Admin'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '500':
@@ -394,6 +402,12 @@ paths:
       security:
         - token: []
       responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Admin'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '500':
@@ -415,6 +429,10 @@ paths:
       security:
         - token: []
       responses:
+        '205':
+          description: Success - Reset Content
+        '403':
+          description: Forbidden
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '500':
@@ -435,7 +453,16 @@ paths:
       summary: Update an admin account
       security:
         - token: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminUpdate'
       responses:
+        '205':
+          description: Success - Reset Content
+        '403':
+         description: Forbidden
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '500':
@@ -457,7 +484,16 @@ paths:
       summary: Set a new password for the specified admin
       security:
         - token: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
       responses:
+        '204':
+          description: Success - No Content
+        '403':
+          description: Forbidden
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '500':
@@ -936,6 +972,28 @@ components:
           type: string
         password:
           type: string
+    AdminUpdate:
+      type: object
+      properties:
+        first_name:
+          type: string
+          nullable: true
+        last_name:
+          type: string
+          nullable: true
+        login:
+          type: string
+          nullable: true
+        service:
+          type: boolean
+          nullable: true
+        locked:
+          type: boolean
+          nullable: true
+        expires:
+          type: integer
+          format: i64
+          nullable: true
     AdminToken:
       type: object
       properties:

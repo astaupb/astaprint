@@ -1,6 +1,7 @@
 pub mod select;
 pub mod insert;
 pub mod update;
+pub mod delete;
 
 use crate::schema::*;
 use chrono::{
@@ -15,9 +16,9 @@ pub struct Admin
     pub id: u32,
     pub first_name: String,
     pub last_name: String,
-    pub login: Option<String>,
-    pub hash: Option<Vec<u8>>,
-    pub salt: Option<Vec<u8>>,
+    pub login: String,
+    pub hash: Vec<u8>,
+    pub salt: Vec<u8>,
     pub service: bool,
     pub locked: bool,
     pub expires: NaiveDate,

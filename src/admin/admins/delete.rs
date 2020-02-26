@@ -18,3 +18,20 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+use admin::guard::AdminGuard;
+
+use diesel::prelude::QueryResult;
+
+use rocket::http::Status;
+
+use mysql::admin::delete::delete_admin_by_id;
+
+#[delete("/<id>")]
+pub fn delete_admin(admin: AdminGuard, id: u32) -> QueryResult<Status>
+{
+    Ok(if delete_admin_by_id(id, &admin.connection)? == 1 {
+        Status::new(205, "Success - Reset View")
+    } else {
+        Status::new(500, "Internal Server Error")
+    })
+}

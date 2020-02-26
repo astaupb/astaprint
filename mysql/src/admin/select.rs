@@ -9,6 +9,11 @@ pub fn select_admin(connection: &MysqlConnection) -> QueryResult<Vec<Admin>>
     admin::table.select(admin::all_columns).load(connection)
 }
 
+pub fn select_admin_by_id(id: u32, connection: &MysqlConnection) -> QueryResult<Admin>
+{
+    admin::table.select(admin::all_columns).filter(admin::id.eq(id)).first(connection)
+}
+
 pub fn select_admin_tokens(
     connection: &MysqlConnection,
 ) -> QueryResult<Vec<AdminToken>>
@@ -26,7 +31,7 @@ pub fn select_admin_token_id_by_hash(admin_id: u32, hash: Vec<u8>, connection: &
         .first(connection)
 }
 
-pub fn select_admin_hash_by_id(admin_id: u32, connection: &MysqlConnection) -> QueryResult<Option<Vec<u8>>>
+pub fn select_admin_hash_by_id(admin_id: u32, connection: &MysqlConnection) -> QueryResult<Vec<u8>>
 {
     admin::table
         .select(admin::hash)
@@ -38,7 +43,7 @@ pub fn select_admin_by_login(login: &str, connection: &MysqlConnection)
 {
     admin::table
         .select(admin::all_columns)
-        .filter(admin::login.eq(Some(login)))
+        .filter(admin::login.eq(login))
         .first(connection)
 }
 

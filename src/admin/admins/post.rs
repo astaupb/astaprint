@@ -24,7 +24,7 @@ use diesel::prelude::QueryResult;
 use admin::{
     guard::AdminGuard,
     admins::{
-        Admin,
+        AdminCreate,
         NewAdmin,
     },
 };
@@ -52,12 +52,12 @@ pub fn post_new_admin(admin: AdminGuard, new: Json<NewAdmin>) -> QueryResult<Cus
 
     let (hash, salt) = PasswordHash::create(&new.password);
 
-    let new_admin = Admin {
+    let new_admin = AdminCreate {
         first_name: new.first_name,
         last_name: new.last_name,
-        login: Some(new.login),
-        hash: Some(hash),
-        salt: Some(salt),
+        login: new.login,
+        hash: hash,
+        salt: salt,
         service: false,
         locked: false,
         created_by: Some(admin.id),

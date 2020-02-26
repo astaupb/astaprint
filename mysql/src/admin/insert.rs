@@ -6,7 +6,7 @@ use diesel::{
 
 use crate::schema::*;
 
-type AdminInsert = (String, String, Option<String>, Option<Vec<u8>>, Option<Vec<u8>>, bool, bool, NaiveDate, Option<u32>);
+type AdminInsert = (String, String, String, Vec<u8>, Vec<u8>, bool, bool, NaiveDate, Option<u32>);
 
 pub fn insert_admin(admin: AdminInsert, connection: &MysqlConnection)
     -> QueryResult<usize>
