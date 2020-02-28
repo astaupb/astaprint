@@ -30,8 +30,8 @@ use mysql::{
         select::select_user_email_by_id,
         update::{
             update_hash_and_salt,
-            update_user_name,
             update_tou_accept,
+            update_user_name,
         },
     },
 };
@@ -114,6 +114,6 @@ pub fn clear_tou_accept(admin: AdminGuard) -> Status
         err => {
             error!("{:?}", err);
             Status::new(500, "Internal Server Error")
-        }
+        },
     }
 }

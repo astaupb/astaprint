@@ -33,14 +33,3 @@ use mysql::printers::{
     update::*,
 };
 
-#[put("/printers/<id>", data = "<update>")]
-pub fn put_printer_details(
-    admin: AdminGuard,
-    id: u32,
-    update: Json<PrinterUpdate>,
-) -> QueryResult<Status>
-{
-    let printer = update.into_inner().update(select_printer_by_device_id(id, &admin.connection)?);
-    update_printer(printer, &admin.connection)?;
-    Ok(Status::new(205, "Reset Content"))
-}

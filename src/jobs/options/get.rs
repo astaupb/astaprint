@@ -21,9 +21,7 @@ use diesel::result::QueryResult;
 
 use rocket_contrib::json::Json;
 
-use jobs::{
-    *,
-};
+use jobs::*;
 
 use user::guard::UserGuard;
 

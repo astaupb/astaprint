@@ -73,14 +73,14 @@ use astaprint::{
             post::*,
             get::*,
             delete::*,
+            put::*,
         },
+        printers::http::*,
     },
     jobs::{
         delete::*,
         get::*,
-        info::{
-            get::*,
-        },
+        info::get::*,
         options::{
             get::*,
             put::*,
@@ -100,12 +100,9 @@ use astaprint::{
     printers::{
         delete::*,
         get::*,
-        post::*,
-        put::*,
         queue::{
             delete::*,
             post::*,
-            get::*,
         },
     },
     user::{
@@ -225,20 +222,17 @@ fn rocket() -> rocket::Rocket
             get_single_token,
             delete_single_token,
         ])
-        .mount("/printers", routes![
-            post_to_queue,
-            delete_queue,
-            get_printers,
-            get_single_printer,
-        ])
+        .mount("/printers", routes![post_to_queue, delete_queue, get_printers, get_single_printer,])
         .mount("/journal", routes![get_journal_as_user, post_to_journal_with_token, credit])
-        .mount("/admin/admins", routes![post_new_admin, get_admins, get_single_admin, delete_admin])
-        .mount("/admin", routes![
+        .mount("/admin/admins", routes![post_new_admin, get_admins, get_single_admin, delete_admin, put_admin, put_admin_password])
+        .mount("/admin/printers", routes![
             get_printers_as_admin,
             get_single_printer_as_admin,
             post_printer,
             put_printer_details,
             delete_printer,
+        ])
+        .mount("/admin", routes![
             post_admin_token,
             get_journal_as_admin,
             get_dispatcher_queue_as_admin,

@@ -22,6 +22,9 @@ pub mod guard;
 pub mod login;
 pub mod tokens;
 pub mod admins;
+pub mod users;
+pub mod printers;
+pub mod jobs;
 
 pub mod get;
 pub mod post;

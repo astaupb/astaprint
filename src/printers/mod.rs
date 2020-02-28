@@ -20,8 +20,6 @@
 pub mod accounting;
 pub mod delete;
 pub mod get;
-pub mod post;
-pub mod put;
 pub mod queue;
 pub mod response;
 pub mod update;
@@ -39,5 +37,5 @@ use std::collections::{
     HashMap,
 };
 
-type PrinterQueue = TaskQueueClient<WorkerTask, WorkerCommand<Option<JobOptionsUpdate>>>;
-type PrinterQueues = HashMap<u32, PrinterQueue, RandomState>;
+pub type PrinterQueue = TaskQueueClient<WorkerTask, WorkerCommand<Option<JobOptionsUpdate>>>;
+pub type PrinterQueues = HashMap<u32, PrinterQueue, RandomState>;

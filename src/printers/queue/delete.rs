@@ -25,7 +25,6 @@ use rocket::{
     State,
 };
 
-use admin::guard::AdminGuard;
 use user::guard::UserGuard;
 
 use redis::queue::CommandClient;
@@ -58,32 +57,5 @@ pub fn delete_queue(user: UserGuard, device_id: u32, queues: State<PrinterQueues
     }
     else {
         Custom(Status::new(403, "Forbidden"), ())
-    }
-}
-
-#[delete("/printers/<device_id>/queue")]
-pub fn delete_queue_as_admin(
-    admin: AdminGuard,
-    device_id: u32,
-    queues: State<PrinterQueues>,
-) -> Custom<()>
-{
-    let queue = match queues.get(&device_id) {
-        Some(queue) => queue,
-        None => return Custom(Status::new(404, "Device Not Found"), ()),
-    };
-    let processing = queue.get_processing();
-    if !processing.is_empty() {
-        let client = CommandClient::from((queue, &hex::encode(&processing[0].uid[..])[..]));
-        client
-            .send_command(&WorkerCommand::<Option<JobOptionsUpdate>>::Cancel)
-            .expect("sending cancel command");
-
-        info!("admin {} cleared queue of printer {}", admin.id, device_id);
-
-        Custom(Status::new(205, "Success - Reset Content"), ())
-    }
-    else {
-        Custom(Status::new(424, "Task Not Found"), ())
     }
 }

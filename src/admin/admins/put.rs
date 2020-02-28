@@ -38,10 +38,10 @@ use rocket_contrib::json::Json;
 
 use diesel::prelude::QueryResult;
 
-#[put("/", data = "<update>")]
-pub fn put_admin(admin: AdminGuard, update: Json<AdminUpdate>) -> QueryResult<Status>
+#[put("/<id>", data = "<update>")]
+pub fn put_admin(admin: AdminGuard, id: u32, update: Json<AdminUpdate>) -> QueryResult<Status>
 {
-    let old = select_admin_by_id(admin.id, &admin.connection)?;
+    let old = select_admin_by_id(id, &admin.connection)?;
 
     let updated = update.into_inner().update(old);
 
