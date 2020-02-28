@@ -21,8 +21,8 @@
 use diesel::prelude::QueryResult;
 
 use admin::{
-    guard::AdminGuard,
     admins::AdminResponse,
+    guard::AdminGuard,
 };
 use rocket_contrib::json::Json;
 

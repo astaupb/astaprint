@@ -1,12 +1,12 @@
+pub mod delete;
 pub mod get;
 pub mod post;
 pub mod put;
-pub mod delete;
 
 use chrono::{
     NaiveDate,
-    NaiveTime,
     NaiveDateTime,
+    NaiveTime,
 };
 use diesel::prelude::*;
 use mysql::admin::{
@@ -68,7 +68,7 @@ impl AdminUpdate
             admin.locked = locked;
         }
         if let Some(expires) = self.expires {
-            admin.expires = NaiveDateTime::from_timestamp(expires, 0 /*ns*/).date();
+            admin.expires = NaiveDateTime::from_timestamp(expires, 0 /* ns */).date();
         }
         admin
     }
@@ -93,7 +93,7 @@ impl From<&Admin> for AdminResponse
 {
     fn from(admin: &Admin) -> AdminResponse
     {
-        AdminResponse{
+        AdminResponse {
             id: admin.id,
             first_name: admin.first_name.clone(),
             last_name: admin.last_name.clone(),

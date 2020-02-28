@@ -27,4 +27,3 @@ use diesel::QueryResult;
 use crate::admin::guard::AdminGuard;
 
 use mysql::printers::insert::*;
-

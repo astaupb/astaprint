@@ -24,20 +24,16 @@ use admin::{
 
 use base64::encode;
 use diesel::prelude::*;
-use mysql::{
-    user::{
-        delete::delete_all_tokens_of_user,
-        select::select_user_email_by_id,
-        update::{
-            update_hash_and_salt,
-            update_tou_accept,
-            update_user_name,
-        },
+use mysql::user::{
+    delete::delete_all_tokens_of_user,
+    select::select_user_email_by_id,
+    update::{
+        update_hash_and_salt,
+        update_tou_accept,
+        update_user_name,
     },
 };
-use rocket::{
-    http::Status,
-};
+use rocket::http::Status;
 
 use rocket_contrib::json::Json;
 use sodium::{

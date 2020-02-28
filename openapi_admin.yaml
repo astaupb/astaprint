@@ -139,6 +139,14 @@ paths:
       security:
         - token: []
       responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Printer'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '500':
@@ -175,6 +183,12 @@ paths:
       security:
         - token: []
       responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Printer'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '500':
@@ -239,6 +253,12 @@ paths:
       security:
         - token: []
       responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrinterQueueTask'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '500':
@@ -262,6 +282,10 @@ paths:
       responses:
         '401':
           $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Printer not found
+        '424':
+          description: Task not found
         '500':
           $ref: '#/components/responses/ServerError'
         '502':

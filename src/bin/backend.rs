@@ -68,11 +68,13 @@ use astaprint::{
         get::*,
         post::*,
         put::*,
+        admins::{
+            delete::*,
+            get::*,
+            post::*,
+        },
         tokens::*,
         admins::{
-            post::*,
-            get::*,
-            delete::*,
             put::*,
         },
         printers::http::*,
