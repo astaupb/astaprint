@@ -17,15 +17,12 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
+pub mod admins;
 pub mod email;
 pub mod guard;
-pub mod login;
-pub mod tokens;
-pub mod admins;
-pub mod users;
-pub mod printers;
 pub mod jobs;
-
-pub mod get;
-pub mod post;
-pub mod put;
+pub mod journal;
+pub mod login;
+pub mod printers;
+pub mod tokens;
+pub mod users;

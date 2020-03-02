@@ -20,13 +20,11 @@
 use diesel::prelude::*;
 use rocket_contrib::json::Json;
 
-use admin::guard::AdminGuard;
 use user::guard::UserGuard;
 
 use model::journal::JournalResponse;
 
 use mysql::{
-    select_full_journal,
     select_full_journal_of_user,
 };
 
@@ -43,24 +41,6 @@ pub fn get_journal_as_user(
             limit.unwrap_or(i64::from(u16::max_value()) * 2),
             offset.unwrap_or(0),
             &user.connection,
-        )?
-        .iter()
-        .map(JournalResponse::from)
-        .collect(),
-    ))
-}
-#[get("/journal?<offset>&<limit>")]
-pub fn get_journal_as_admin(
-    offset: Option<i64>,
-    limit: Option<i64>,
-    admin: AdminGuard,
-) -> QueryResult<Json<Vec<JournalResponse>>>
-{
-    Ok(Json(
-        select_full_journal(
-            limit.unwrap_or(i64::from(u16::max_value()) * 2),
-            offset.unwrap_or(0),
-            &admin.connection,
         )?
         .iter()
         .map(JournalResponse::from)

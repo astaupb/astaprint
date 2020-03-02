@@ -25,7 +25,6 @@ use rocket::State;
 
 use rocket_contrib::json::Json;
 
-use admin::guard::AdminGuard;
 use user::guard::UserGuard;
 
 use redis::queue::TaskQueueClient;
@@ -41,22 +40,6 @@ pub fn get_dispatcher_queue(
             .get_processing()
             .iter()
             .filter(|element| element.user_id == user.id)
-            .map(|element| (*element).clone())
-            .map(|task| DispatcherTaskResponse::from(&task))
-            .collect(),
-    ))
-}
-
-#[get("/jobs/queue")]
-pub fn get_dispatcher_queue_as_admin(
-    _admin: AdminGuard,
-    queue: State<TaskQueueClient<DispatcherTask, ()>>,
-) -> Option<Json<Vec<DispatcherTaskResponse>>>
-{
-    Some(Json(
-        queue
-            .get_processing()
-            .iter()
             .map(|element| (*element).clone())
             .map(|task| DispatcherTaskResponse::from(&task))
             .collect(),

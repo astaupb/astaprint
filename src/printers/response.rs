@@ -40,5 +40,3 @@ impl<'a> From<&'a Printer> for UserPrinterResponse
         }
     }
 }
-
-

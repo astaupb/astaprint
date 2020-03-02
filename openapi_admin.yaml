@@ -161,6 +161,8 @@ paths:
       security:
         - token: []
       responses:
+        '205':
+          description: Success - Reset Content
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '500':
@@ -210,6 +212,8 @@ paths:
       security:
         - token: []
       responses:
+        '205':
+          description: Success - Reset Content
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '500':
@@ -231,6 +235,8 @@ paths:
       security:
         - token: []
       responses:
+        '205':
+          description: Success - Reset Content
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '500':
@@ -280,6 +286,8 @@ paths:
       security:
         - token: []
       responses:
+        '205':
+          description: Success - Reset Content
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '404':
@@ -400,8 +408,8 @@ paths:
             schema:
               $ref: '#/components/schemas/NewAdmin'
       responses:
-        '204':
-          description: Success - No Content
+        '205':
+          description: Success - Reset Content
         '472':
           description: Login already taken
         '401':
@@ -524,6 +532,29 @@ paths:
           $ref: '#/components/responses/ServerError'
         '502':
           $ref: '#/components/responses/BadGateway'
+  '/users':
+    get:
+      operationId: get_all_users
+      tags:
+        - Users
+      summary: Get a list of all users
+      security:
+        - token: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
   '/users/{id}':
     get:
       operationId: get_user
@@ -540,6 +571,12 @@ paths:
       security:
         - token: []
       responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '500':
@@ -562,6 +599,13 @@ paths:
       security:
         - token: []
       responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: number
+                format: double
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '500':
@@ -584,21 +628,14 @@ paths:
       security:
         - token: []
       responses:
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '500':
-          $ref: '#/components/responses/ServerError'
-        '502':
-          $ref: '#/components/responses/BadGateway'
-  '/users':
-    get:
-      operationId: get_all_users
-      tags:
-        - Users
-      summary: Get a list of all users
-      security:
-        - token: []
-      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Transaction'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '500':
@@ -621,6 +658,10 @@ paths:
       security:
         - token: []
       responses:
+        '204':
+          description: Success - No Content
+        '400':
+          description: User has no Email
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '500':
@@ -641,7 +682,15 @@ paths:
       summary: Change user`s password to a defined one
       security:
         - token: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
+            example: '"password"'
       responses:
+        '204':
+          description: Success - No Content
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '500':
@@ -663,7 +712,44 @@ paths:
       summary: Change username of a user
       security:
         - token: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
+            example: '"username"'
       responses:
+        '205':
+          description: Success - Reset Content
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+  '/users/{id}/card':
+    put:
+      operationId: change_user_card
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            format: u32
+      tags:
+        - Users
+      summary: Change card of user
+      security:
+        - token: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCard'
+      responses:
+        '205':
+          description: Success - Reset Content
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '500':
@@ -685,7 +771,15 @@ paths:
       summary: Change or set email of a user
       security:
         - token: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
+            example: '"name@mail.upb.de"'
       responses:
+        '205':
+          description: Success - Reset Content
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '500':
@@ -707,7 +801,15 @@ paths:
       summary: Define if a an account is locked
       security:
         - token: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: boolean
+            example: true
       responses:
+        '205':
+          description: Success - Reset Content
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '500':
@@ -723,6 +825,8 @@ paths:
       security:
         - token: []
       responses:
+        '204':
+          description: Success - No Content
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '500':
@@ -758,93 +862,154 @@ components:
       properties:
         id:
           type: integer
+          format: u32
+          example: 18616
         name:
           type: string
+          example: "name"
         credit:
           type: integer
+          format: i32
+          example: 500
         options:
           $ref: '#/components/schemas/JobOptions'
         card:
           type: integer
+          format: u64
+          example: 1179636210
         pin:
           type: integer
+          format: u32
+          example: 18000
         locked:
           type: boolean
+          example: true
         email:
           type: string
+          example: "name@mail.upb.de"
         created:
           type: integer
+          format: i64
+          example: 1553622963
         updated:
           type: integer
+          format: i64
+          example: 1556971410
+    UserCard:
+      type: object
+      properties:
+        sn:
+          type: integer
+          format: u64
+          example: 1179636210
+        pin:
+          type: integer
+          format: u32 
+          example: 18000
     JobOptions:
       type: object
       properties:
         color:
           type: boolean
+          example: true
         duplex:
           type: integer
           format: u8
-          description: 0/1/2
+          description: 0 for no duplex /1 for long edge / 2 for short edge
+          example: 
         copies:
           type: integer
           format: u16
           description: 1-999
+          example: 8
         collate:
           type: boolean
+          description: collate the pages with same numbers while using copies
+          example: false
         bypass:
           type: boolean
+          description: use the bypass tray
+          example: false
         keep:
           type: boolean
+          description: keep the job after successful printing
+          example: false
         a3:
           type: boolean
+          example: false
         range:
           type: string
-          description: 'eg 1-4,7,10-13'
+          description: select the pages to print
+          example: "1-4,7,10-13"
         nup:
           type: integer
           format: u8
           description: 1/2/4
+          example: 1
         nuppageorder:
           type: integer
           format: u8
           description: 0/1/2/3
+          example: 2
         displayname:
           type: string
+          example: job.pdf
     Printer:
       type: object
       properties:
         id:
           type: integer
+          format: u32
+          example: 7
         hostname:
           type: string
+          example: print-cs-44338
         ip:
           type: string
+          example: "192.168.0.2"
         community:
           type: string
+          example: "user"
         mac:
           type: string
+          example: "58:38:79:45:DB:1G"
         device_id:
           type: integer
+          format: u32
+          example: 44338
         location:
           type: string
+          example: "BI_2.107"
         has_a3:
           type: boolean
+          example: false
         coin_operated:
           type: boolean
+          example: false
         description:
           type: string
+          example: "offline"
         watch_toner:
           type: boolean
-        watch_tray1:
+          example: true
+        watch_tray1: 
           type: boolean
+          example: true
         watch_tray2:
           type: boolean
+          example: true
         watch_tray3:
           type: boolean
+          example: true
         watch_interval:
+          description: watch interval in minutes
           type: integer
+          format: u32
+          example: 5
         last_watched:
           type: integer
+          format: i64
+          example: 1574941533
         status:
           $ref: '#/components/schemas/PrinterStatus'
         counter:
@@ -856,76 +1021,135 @@ components:
       properties:
         scan:
           type: integer
+          format: i64
+          description: summary of scan status flags
         copy:
           type: integer
+          format: i64
+          description: summary of copy status flags
         toner_c:
           type: integer
+          format: i64
+          description: toner value of cyan
+          example: 80
         toner_m:
           type: integer
+          format: i64
+          description: toner value of magenta
+          example: 90
         toner_y:
           type: integer
+          format: i64
+          description: toner value of yellow
+          example: 80
         toner_k:
           type: integer
+          format: i64
+          description: toner value of black
+          example: 50
         tray_1:
           type: integer
+          format: i64
+          description: pages left in tray 1
+          example: 550
         tray_2:
           type: integer
+          format: i64
+          description: pages left in tray 2
+          example: 550
         tray_3:
           type: integer
+          format: i64
+          description: pages left in tray 3
+          example: 1000
     PrinterCounter:
       type: object
       properties:
         total:
           type: integer
+          format: i64
+          description: total pages printed with copying
+          example: 82940
         copy_total:
           type: integer
+          format: i64
+          description: total pages copied
+          example: 109
         copy_bw:
           type: integer
+          format: i64
+          description: pages copied without color
+          example: 109
         print_total:
           type: integer
+          format: i64
+          description: total pages printed without copying
+          example: 82831
         print_bw:
           type: integer
+          format: i64
+          description: pages printed in greyscale without copying 
+          example: 78868
     PrinterQueueTask:
       type: object
       properties:
         user_id:
           type: integer
+          format: u32
+          example: 420
         uid:
           type: string
+          example: "78e543ffd3267a16ecaa7117f5d938d64224b0f5"
     Transaction:
       type: object
       properties:
         value:
           type: integer
+          format: i32
+          description: Value of the transaction which is added to the credit
+          example: 5
         user_id:
           type: integer
+          format: u32
+          example: 18616
         admin_id:
           type: integer
+          format: u32
+          example: null
+          nullable: true
         description:
           type: string
+          example: 2 Seiten
         print:
           $ref: '#/components/schemas/PrintTransaction'
-        timestamp:
-          type: string
+          description: Information about the job which was printed
+          nullable: true
         created:
           type: integer
+          format: i64
+          example: 1567600648
     PrintTransaction:
       type: object
       properties:
         pages:
           type: integer
           format: u16
+          description: total pages printed
+          example: 2
         colored:
           type: integer
           format: u16
           description: number of pages from pages property that were printed in color
+          example: 1
         score:
           type: integer
           format: i16
           description: estimation of saved sheets of paper
+          example: 0
         device_id:
           type: integer
           format: u32
+          example: 44330
         options:
           $ref: '#/components/schemas/JobOptions'
     JournalToken:
@@ -933,103 +1157,171 @@ components:
       properties:
         id:
           type: integer
+          format: u32
+          example: 1020
         value:
           type: integer
+          format: u32
+          description: value which the token can add to the credit
+          example: 100
         content:
           type: string
+          description: content of the token itself
+          example: "pKkayyYBj9OayyFg"
         used:
           type: boolean
+          description: true if the token is already consumed
+          example: true
         used_by:
           type: integer
+          format: u32
+          description: id of the user who consumed the token
+          example: 18616
         created:
           type: integer
+          format: i64
+          example: 1567600648
         updated:
           type: integer
+          format: i64
+          example: 1556971410
     DispatcherTask:
         type: object
         properties:
           uid:
             type: string
             description: uid of specific task - hexadecimal encoded
+            example: "78e543ffd3267a16ecaa7117f5d938d64224b0f5"
           filename:
             type: string
+            example: "Stapel Dokument.pdf"
           keep:
             type: boolean
+            description: option request which will override the default option
+            nullable: true
+            example: null
           color:
             type: boolean
+            description: option request which will override the default option
+            nullable: true
+            example: null
           a3:
             type: boolean
+            description: option request which will override the default option
+            nullable: true
+            example: null
           duplex:
             type: boolean
+            description: option request which will override the default option
+            nullable: true
+            example: null
     Admin:
       type: object
       properties:
         id:
           type: integer
+          format: u32
+          example: 7
         first_name:
           type: string
+          example: "Jane"
         last_name:
           type: string
+          example: "Doe"
         login:
           type: string
+          description: username which is used as login
+          example: "jdoe"
         service:
           type: boolean
           description: True if account belongs to a service employee, false for admins
+          example: true
         locked:
           type: boolean
+          description: true if the admin is not allowed to login
+          example: false
         expires:
           type: integer
+          format: i64
+          description: date on which the account expires
         created_by:
           type: integer
+          format: u32
+          description: id of the admin who created this admin
+          example: 1
         created:
           type: integer
+          format: i64
+          example: 1582554910
         updated:
           type: integer
+          format: i64
+          example: 1582554910
     NewAdmin:
       type: object
       properties:
         first_name:
           type: string
+          example: "John"
         last_name:
           type: string
+          example: "Doe"
         login:
           type: string
+          example: "jdoe"
         password:
           type: string
+          example: "password"
     AdminUpdate:
       type: object
       properties:
         first_name:
           type: string
           nullable: true
+          example: null
         last_name:
           type: string
           nullable: true
+          example: null
         login:
           type: string
           nullable: true
+          example: "jodoe"
         service:
           type: boolean
           nullable: true
+          description: True if account belongs to a service employee, false for admins
+          example: null
         locked:
           type: boolean
           nullable: true
+          example: null
         expires:
           type: integer
           format: i64
           nullable: true
+          example: null
     AdminToken:
       type: object
       properties:
         id:
           type: integer
+          format: u32
+          example: 303
         user_agent:
           type: string
+          example: "dart/io"
         ip:
           type: string
+          example: "192.168.0.7"
         location:
           type: string
+          example: "Paderborn"
         created:
           type: integer
+          format: i64
+          example: 1582554910
         updated:
           type: integer
+          format: i64
+          example: 1582554910

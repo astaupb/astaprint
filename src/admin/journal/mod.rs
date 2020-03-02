@@ -18,27 +18,13 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use diesel::prelude::QueryResult;
+pub mod http;
 
-use admin::{
-    admins::AdminResponse,
-    guard::AdminGuard,
-};
-use rocket_contrib::json::Json;
-
-use mysql::admin::select::{
-    select_admin,
-    select_admin_by_id,
-};
-
-#[get("/")]
-pub fn get_admins(admin: AdminGuard) -> QueryResult<Json<Vec<AdminResponse>>>
+#[derive(Deserialize, Debug, Clone)]
+pub struct JournalPost
 {
-    Ok(Json(select_admin(&admin.connection)?.iter().map(AdminResponse::from).collect()))
-}
-
-#[get("/<id>")]
-pub fn get_single_admin(admin: AdminGuard, id: u32) -> QueryResult<Json<AdminResponse>>
-{
-    Ok(Json(AdminResponse::from(&select_admin_by_id(id, &admin.connection)?)))
+    user_id: u32,
+    value: i32,
+    description: String,
+    without_receipt: bool,
 }

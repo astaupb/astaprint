@@ -23,11 +23,7 @@ use mysql::printers::select::{
     select_printers,
 };
 
-use printers::{
-    response::{
-        UserPrinterResponse,
-    },
-};
+use printers::response::UserPrinterResponse;
 use rocket_contrib::json::Json;
 use user::guard::UserGuard;
 

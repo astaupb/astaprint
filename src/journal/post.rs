@@ -25,29 +25,15 @@ use rocket_contrib::json::Json;
 
 use diesel::prelude::*;
 
-use admin::guard::AdminGuard;
 use user::guard::UserGuard;
-
-use sodium::random_bytes;
 
 use mysql::{
     journal::{
-        insert::insert_into_journal_token,
         select::select_journal_token_by_content,
         JournalToken,
     },
-    update_credit_as_admin,
     update_credit_with_unused_token,
 };
-
-#[derive(Deserialize, Debug, Clone)]
-pub struct JournalPost
-{
-    user_id: u32,
-    value: i32,
-    description: String,
-    without_receipt: bool,
-}
 
 #[post("/", data = "<token>")]
 pub fn post_to_journal_with_token(user: UserGuard, token: Json<String>) -> QueryResult<Custom<()>>
@@ -67,27 +53,4 @@ pub fn post_to_journal_with_token(user: UserGuard, token: Json<String>) -> Query
             Ok(Custom(Status::new(204, "Success - No Content"), ()))
         },
     }
-}
-
-#[post("/journal", data = "<body>")]
-pub fn post_to_journal_as_admin(body: Json<JournalPost>, admin: AdminGuard) -> QueryResult<Status>
-{
-    update_credit_as_admin(
-        body.user_id,
-        body.value,
-        admin.id,
-        &body.description,
-        &admin.connection,
-    )?;
-
-    Ok(Status::new(204, "Success - No Content"))
-}
-
-#[post("/journal/tokens?<value>")]
-pub fn post_journal_token_as_admin(value: u32, admin: AdminGuard) -> QueryResult<Json<String>>
-{
-    let content = base64::encode_config(&random_bytes(12)[..], base64::URL_SAFE);
-    insert_into_journal_token(value, content.clone(), false, &admin.connection)?;
-
-    Ok(Json(content))
 }

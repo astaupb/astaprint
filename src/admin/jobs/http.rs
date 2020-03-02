@@ -17,4 +17,31 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-pub mod http;
+
+use model::task::dispatcher::DispatcherTask;
+
+use jobs::queue::DispatcherTaskResponse;
+
+use rocket::State;
+
+use rocket_contrib::json::Json;
+
+use admin::guard::AdminGuard;
+
+use redis::queue::TaskQueueClient;
+
+#[get("/queue")]
+pub fn get_dispatcher_queue_as_admin(
+    _admin: AdminGuard,
+    queue: State<TaskQueueClient<DispatcherTask, ()>>,
+) -> Option<Json<Vec<DispatcherTaskResponse>>>
+{
+    Some(Json(
+        queue
+            .get_processing()
+            .iter()
+            .map(|element| (*element).clone())
+            .map(|task| DispatcherTaskResponse::from(&task))
+            .collect(),
+    ))
+}

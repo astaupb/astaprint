@@ -1,14 +1,38 @@
+// AStAPrint
+// Copyright (C) 2018, 2019 AStA der Universität Paderborn
+//
+// Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
+//
+// This file is part of AStAPrint
+//
+// AStAPrint is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 pub mod http;
+
+use snmp::{
+    CounterValues,
+    StatusValues,
+};
 
 use model::task::worker::WorkerTask;
 
-use mysql::printers::Printer;
-
-use snmp::{
-    StatusValues,
-    CounterValues,
+use mysql::printers::{
+    insert::PrinterInsert,
+    Printer,
 };
 
+/// Representation of a task blocking a printer displayed to an admin
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct WorkerTaskResponse
 {
@@ -27,6 +51,7 @@ impl<'a> From<&'a WorkerTask> for WorkerTaskResponse
     }
 }
 
+/// Represenation of a printer displayed to an admin
 #[derive(Serialize, Debug, Clone)]
 pub struct PrinterResponse
 {
@@ -79,8 +104,7 @@ impl<'a> From<&'a Printer> for PrinterResponse
     }
 }
 
-use mysql::printers::insert::PrinterInsert;
-
+/// POST Body needed to create a new admin
 #[derive(Deserialize, Debug, Clone)]
 pub struct PrinterCreate
 {
@@ -112,4 +136,3 @@ impl From<PrinterCreate> for PrinterInsert
         }
     }
 }
-

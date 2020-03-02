@@ -65,19 +65,12 @@ use logger::Logger;
 
 use astaprint::{
     admin::{
-        get::*,
-        post::*,
-        put::*,
-        admins::{
-            delete::*,
-            get::*,
-            post::*,
-        },
-        tokens::*,
-        admins::{
-            put::*,
-        },
+        admins::http::*,
+        jobs::http::*,
+        journal::http::*,
         printers::http::*,
+        tokens::http::*,
+        users::http::*,
     },
     jobs::{
         delete::*,
@@ -100,7 +93,6 @@ use astaprint::{
         post::*,
     },
     printers::{
-        delete::*,
         get::*,
         queue::{
             delete::*,
@@ -226,30 +218,40 @@ fn rocket() -> rocket::Rocket
         ])
         .mount("/printers", routes![post_to_queue, delete_queue, get_printers, get_single_printer,])
         .mount("/journal", routes![get_journal_as_user, post_to_journal_with_token, credit])
-        .mount("/admin/admins", routes![post_new_admin, get_admins, get_single_admin, delete_admin, put_admin, put_admin_password])
+        .mount("/admin/admins", routes![
+            get_admins,
+            post_new_admin,
+            get_single_admin,
+            delete_admin,
+            put_admin,
+            put_admin_password
+        ])
+        .mount("/admin/jobs", routes![get_dispatcher_queue_as_admin,])
         .mount("/admin/printers", routes![
             get_printers_as_admin,
-            get_single_printer_as_admin,
             post_printer,
-            put_printer_details,
+            get_single_printer_as_admin,
             delete_printer,
+            put_printer_details,
+            get_queue_as_admin,
+            delete_queue_as_admin,
         ])
-        .mount("/admin", routes![
-            post_admin_token,
+        .mount("/admin/journal", routes![
             get_journal_as_admin,
-            get_dispatcher_queue_as_admin,
             get_journal_tokens_as_admin,
             post_to_journal_as_admin,
             post_journal_token_as_admin,
-            delete_queue_as_admin,
-            get_queue_as_admin,
+        ])
+        .mount("/admin/tokens", routes![post_admin_token,])
+        .mount("/users", routes![
+            get_all_users,
             get_user_as_admin,
             get_user_credit_as_admin,
             get_user_journal_as_admin,
-            get_all_users,
             reset_user_password_as_admin,
             change_user_password_as_admin,
             change_user_name_as_admin,
+            change_user_card_as_admin,
             change_user_email_as_admin,
             change_user_locked,
             clear_tou_accept,
