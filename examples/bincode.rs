@@ -33,6 +33,9 @@ fn main()
         a3: Some(true),
         duplex: Some(2),
         uid: vec![1, 2, 3],
+        copies: Some(1),
+        displayname: Some("Paper".to_string()),
+        preprocess: 1,
     };
     println!("{:?}", serialize(&task));
 
@@ -44,6 +47,9 @@ fn main()
         a3: None,
         duplex: None,
         uid: vec![1, 2, 3],
+        copies: None,
+        displayname: None,
+        preprocess: 1,
     };
     println!("{:?}", serialize(&task));
 
@@ -55,6 +61,9 @@ fn main()
         a3: None,
         duplex: None,
         uid: vec![1, 2, 3],
+        copies: Some(1),
+        displayname: Some("Paper".to_string()),
+        preprocess: 1,
     };
     println!("{:?}", serialize(&task));
 
@@ -66,6 +75,9 @@ fn main()
         a3: None,
         duplex: None,
         uid: vec![1, 2, 3],
+        copies: Some(1),
+        displayname: Some("Paper".to_string()),
+        preprocess: 1,
     };
     println!("{:?}", serialize(&task));
 }

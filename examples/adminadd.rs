@@ -29,7 +29,7 @@ use sodium::pwhash::PasswordHash;
 use std::env;
 
 extern crate astaprint;
-use astaprint::admin::Admin;
+use astaprint::admin::admins::AdminCreate;
 
 fn main()
 {
@@ -45,14 +45,13 @@ fn main()
     let first_name = arg[1].clone();
     let last_name = arg[2].clone();
 
-    let login = Some(arg[3].clone());
+    let login = arg[3].clone();
 
     let (hash, salt) = PasswordHash::create(&arg[4]);
-    let (hash, salt) = (Some(hash), Some(salt));
 
     let expires = NaiveDate::from_yo(2019, 1);
 
-    let admin = Admin {
+    let admin = AdminCreate {
         first_name,
         last_name,
         login,

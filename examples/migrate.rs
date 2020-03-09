@@ -211,7 +211,7 @@ fn main()
 
                 count += 1;
                 if count % 100 == 0 {
-                    println!("journal_entry {} migrated", id);
+                    println!("journal_entry {} migrated", entry.id);
                     count = 0;
                 }
             }

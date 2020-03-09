@@ -4,9 +4,12 @@ stages:
 
 build:
     stage: build
-    image: opensuse:leap
+    image: opensuse/leap
     script:
-        - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+        - zypper --non-interactive install curl libpoppler-glib-devel libmariadb-devel libsodium-devel
+        - zypper --non-interactive install -t pattern devel_basis
+        - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -o rustup.sh && sh rustup.sh -y
+        - source  $HOME/.cargo/env
         - rustc --version && cargo --version
         - rustup override set nightly
         - cargo test --all --verbose
