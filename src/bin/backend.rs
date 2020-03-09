@@ -65,7 +65,10 @@ use logger::Logger;
 
 use astaprint::{
     admin::{
-        admins::http::*,
+        admins::{
+            http::*,
+            tokens::http::*,
+        },
         jobs::http::*,
         journal::http::*,
         printers::http::*,
@@ -242,7 +245,13 @@ fn rocket() -> rocket::Rocket
             post_to_journal_as_admin,
             post_journal_token_as_admin,
         ])
-        .mount("/admin/tokens", routes![post_admin_token,])
+        .mount("/admin/tokens", routes![
+            post_admin_token,
+            get_admin_tokens,
+            get_single_admin_token,
+            delete_admin_tokens,
+            delete_single_admin_token
+        ])
         .mount("/users", routes![
             get_all_users,
             get_user_as_admin,

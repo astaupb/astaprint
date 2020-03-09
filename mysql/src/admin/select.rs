@@ -21,6 +21,31 @@ pub fn select_admin_tokens(
     admin_tokens::table.select(admin_tokens::all_columns).load(connection)
 }
 
+pub fn select_admin_tokens_by_admin_id(
+    admin_id: u32,
+    connection: &MysqlConnection)
+    -> QueryResult<Vec<AdminToken>>
+{
+    admin_tokens::table
+        .select(admin_tokens::all_columns)
+        .filter(admin_tokens::admin_id.eq(admin_id))
+        .load(connection)
+}
+
+pub fn select_single_admin_token_optional(
+    token_id: u32,
+    admin_id: u32,
+    connection: &MysqlConnection)
+    -> QueryResult<Option<AdminToken>>
+{
+    admin_tokens::table
+        .select(admin_tokens::all_columns)
+        .filter(admin_tokens::admin_id.eq(admin_id))
+        .filter(admin_tokens::id.eq(token_id))
+        .first(connection)
+        .optional()
+}
+
 pub fn select_admin_token_id_by_hash(admin_id: u32, hash: Vec<u8>, connection: &MysqlConnection)
     -> QueryResult<u32>
 {

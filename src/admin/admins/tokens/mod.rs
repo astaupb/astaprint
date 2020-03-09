@@ -1,7 +1,8 @@
 // AStAPrint
-// Copyright (C) 2018, 2019 AStA der Universität Paderborn
+// Copyright (C) 2018, 2019, 2020 AStA der Universität Paderborn
 //
 // Authors: Gerrit Pape <gerrit.pape@asta.upb.de>
+//          Daniel Negi <daniel.negi@asta.upb.de>
 //
 // This file is part of AStAPrint
 //
@@ -17,31 +18,31 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use diesel::prelude::*;
-use rocket_contrib::json::Json;
+pub mod http;
+use mysql::admin::AdminToken;
 
-use user::guard::UserGuard;
-
-use model::journal::JournalResponse;
-
-use mysql::select_full_journal_of_user;
-
-#[get("/?<offset>&<limit>")]
-pub fn get_journal_as_user(
-    offset: Option<i64>,
-    limit: Option<i64>,
-    user: UserGuard,
-) -> QueryResult<Json<Vec<JournalResponse>>>
+#[derive(Serialize, Debug)]
+pub struct AdminTokenResponse
 {
-    Ok(Json(
-        select_full_journal_of_user(
-            user.id,
-            limit.unwrap_or(i64::from(u16::max_value()) * 2),
-            offset.unwrap_or(0),
-            &user.connection,
-        )?
-        .iter()
-        .map(JournalResponse::from)
-        .collect(),
-    ))
+    pub id: u32,
+    pub user_agent: String,
+    pub ip: String,
+    pub location: String,
+    pub created: i64,
+    pub updated: i64,
+}
+
+impl<'a> From<&'a AdminToken> for AdminTokenResponse
+{
+    fn from(row: &AdminToken) -> AdminTokenResponse
+    {
+        AdminTokenResponse {
+            id: row.id,
+            user_agent: row.user_agent.clone(),
+            ip: row.ip.clone(),
+            location: row.location.clone(),
+            created: row.created.timestamp(),
+            updated: row.updated.timestamp(),
+        }
+    }
 }
