@@ -55,31 +55,31 @@ pub fn jobs(user: UserGuard) -> QueryResult<Json<Vec<Job>>>
 #[get("/<id>/pdf")]
 pub fn fetch_pdf(user: UserGuard, id: u32) -> QueryResult<Option<Vec<u8>>>
 {
-    Ok(select_pdf(id, user.id, &user.connection).expect("selecting pdf"))
+    Ok(select_pdf(id, user.id, &user.connection)?)
 }
 
 #[get("/<id>/preview/0")]
 pub fn fetch_preview_0(user: UserGuard, id: u32) -> QueryResult<Option<Vec<u8>>>
 {
-    Ok(select_preview_0(id, user.id, &user.connection).expect("selecting preview 0"))
+    Ok(select_preview_0(id, user.id, &user.connection)?)
 }
 
 #[get("/<id>/preview/1")]
 pub fn fetch_preview_1(user: UserGuard, id: u32) -> QueryResult<Option<Vec<u8>>>
 {
-    Ok(select_preview_1(id, user.id, &user.connection).expect("selection preview 1"))
+    Ok(select_preview_1(id, user.id, &user.connection)?)
 }
 
 #[get("/<id>/preview/2")]
 pub fn fetch_preview_2(user: UserGuard, id: u32) -> QueryResult<Option<Vec<u8>>>
 {
-    Ok(select_preview_2(id, user.id, &user.connection).expect("selection preview 2"))
+    Ok(select_preview_2(id, user.id, &user.connection)?)
 }
 
 #[get("/<id>/preview/3")]
 pub fn fetch_preview_3(user: UserGuard, id: u32) -> QueryResult<Option<Vec<u8>>>
 {
-    Ok(select_preview_3(id, user.id, &user.connection).expect("selection preview 2"))
+    Ok(select_preview_3(id, user.id, &user.connection)?)
 }
 
 #[get("/<id>/sharecode")]

@@ -1,0 +1,14 @@
+
+stages:
+    - build
+
+build:
+    stage: build
+    image: opensuse:leap
+    script:
+        - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+        - rustc --version && cargo --version
+        - rustup override set nightly
+        - cargo test --all --verbose
+        - cargo build
+
