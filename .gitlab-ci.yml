@@ -14,7 +14,9 @@ build:
         - rustup override set nightly
         - cargo test --all --verbose
         - cargo build
-    artificats:
+    artifacts:
         paths:
-            - ./target/debug/backend
+            - target/debug/backend
+            - target/debug/worker
+            - target/debug/dispatcher
         expire_in: 1 week
