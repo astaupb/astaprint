@@ -1,0 +1,11 @@
+
+stages:
+    - build
+
+build:
+    stage: build
+    image: dnegi:asta-astaprint-build
+    script:
+        - rustc --version && cargo --version
+        - cargo build
+
