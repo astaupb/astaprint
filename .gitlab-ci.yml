@@ -13,6 +13,9 @@ build-openSuse:
             - target/release/worker
             - target/release/dispatcher
         expire_in: 2 days
+        only: 
+            - master
+            - release
 
 build-debian: 
     stage: build
@@ -25,4 +28,6 @@ build-debian:
             - target/release/worker
             - target/release/dispatcher
         expire_in: 2 days
-
+        only: 
+            - master
+            - release
