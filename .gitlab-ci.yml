@@ -1,6 +1,4 @@
-
-stages:
-    - build
+stages: build
 
 build:
     stage: build
