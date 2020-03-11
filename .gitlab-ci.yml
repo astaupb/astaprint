@@ -2,7 +2,7 @@
 stages:
     - build
 
-build-openSuse:
+build:
     stage: build
     image: dnegi/asta-astaprint-build:leap-latest
     script:
@@ -12,22 +12,20 @@ build-openSuse:
             - target/release/backend
             - target/release/worker
             - target/release/dispatcher
-        expire_in: 2 days
-        only: 
-            - master
-            - release
+        expire_in: 1 week
+    only:
+        - release
 
-build-debian: 
+build:
     stage: build
     image: dnegi/asta-astaprint-build:buster-latest
     script:
-        cargo build --release
+        - cargo build --release
     artifacts:
         paths:
             - target/release/backend
             - target/release/worker
             - target/release/dispatcher
-        expire_in: 2 days
-        only: 
-            - master
-            - release
+        expire_in: 1 week
+    only:
+        -release
