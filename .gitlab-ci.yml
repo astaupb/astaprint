@@ -1,7 +1,9 @@
-stages: build
+stages:
+    - build-Debian
+    - build-openSuse
 
-build:
-    stage: build
+build-openSuse:
+    stage: build-openSuse
     image: dnegi/asta-astaprint-build:leap-latest
     script:
         - cargo build --release
@@ -14,8 +16,8 @@ build:
     only:
         - release
 
-build:
-    stage: build
+build-Debian:
+    stage: build-Debian
     image: dnegi/asta-astaprint-build:buster-latest
     script:
         - cargo build --release
@@ -26,4 +28,4 @@ build:
             - target/release/dispatcher
         expire_in: 1 week
     only:
-        -release
+        - release
