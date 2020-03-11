@@ -1,9 +1,4 @@
-stages:
-    - build-Debian
-    - build-openSuse
-
-build-openSuse:
-    stage: build-openSuse
+build openSuse:
     image: dnegi/asta-astaprint-build:leap-latest
     script:
         - cargo build --release
@@ -15,9 +10,9 @@ build-openSuse:
         expire_in: 1 week
     only:
         - release
+        - web
 
-build-Debian:
-    stage: build-Debian
+build Debian:
     image: dnegi/asta-astaprint-build:buster-latest
     script:
         - cargo build --release
@@ -29,3 +24,4 @@ build-Debian:
         expire_in: 1 week
     only:
         - release
+        - web
