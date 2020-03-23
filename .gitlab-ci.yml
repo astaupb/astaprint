@@ -1,4 +1,37 @@
-build openSuse:
+stages:
+    - debug-build
+    - release-build
+
+opensuse-development-build:
+    stage: debug-build
+    image: dnegi/asta-astaprint-build:leap-latest
+    script:
+        - cargo build
+    artifacts:
+        paths:
+            - target/debug/backend
+            - target/debug/worker
+            - target/debug/dispatcher
+    only:
+        - debug
+        - web
+
+debian-development-build:
+    stage: debug-build
+    image: dnegi/asta-astaprint-build:buster-latest
+    script:
+        - cargo build 
+    artifacts:
+        paths:
+            - target/debug/backend
+            - target/debug/worker
+            - target/debug/dispatcher
+    only:
+        - debug
+        - web
+
+opensuse-release-build:
+    stage: release-build
     image: dnegi/asta-astaprint-build:leap-latest
     script:
         - cargo build --release
@@ -7,12 +40,13 @@ build openSuse:
             - target/release/backend
             - target/release/worker
             - target/release/dispatcher
-        expire_in: 1 week
+        expire_in: 2d
     only:
         - release
         - web
 
-build Debian:
+debian-release-build:
+    stage: release-build
     image: dnegi/asta-astaprint-build:buster-latest
     script:
         - cargo build --release
@@ -21,7 +55,7 @@ build Debian:
             - target/release/backend
             - target/release/worker
             - target/release/dispatcher
-        expire_in: 1 week
+        expire_in: 2d
     only:
         - release
         - web
