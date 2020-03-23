@@ -31,8 +31,6 @@ pub fn fetch_options(user: UserGuard, id: u32) -> QueryResult<Option<Json<JobOpt
     let result: Option<Vec<u8>> = select_job_options(id, user.id, &user.connection)?;
 
     Ok(result.map(|serialized| {
-        let options: JobOptions =
-            bincode::deserialize(&serialized[..]).expect("deserializing JobOptions");
-        Json(options)
+        Json(JobOptions::from(&serialized[..]))
     }))
 }

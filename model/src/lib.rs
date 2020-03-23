@@ -6,18 +6,17 @@ extern crate log;
 
 extern crate bincode;
 
+pub mod admin;
 pub mod job;
 pub mod task;
 pub mod journal;
+pub mod printer;
+pub mod user;
 pub mod ppd;
 
 
 #[cfg(test)]
 mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
     use super::task::dispatcher::DispatcherTask;
     #[test]
     fn deserialize_dispatcher_task()

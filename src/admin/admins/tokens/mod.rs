@@ -19,30 +19,3 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 pub mod http;
-use mysql::admin::AdminToken;
-
-#[derive(Serialize, Debug)]
-pub struct AdminTokenResponse
-{
-    pub id: u32,
-    pub user_agent: String,
-    pub ip: String,
-    pub location: String,
-    pub created: i64,
-    pub updated: i64,
-}
-
-impl<'a> From<&'a AdminToken> for AdminTokenResponse
-{
-    fn from(row: &AdminToken) -> AdminTokenResponse
-    {
-        AdminTokenResponse {
-            id: row.id,
-            user_agent: row.user_agent.clone(),
-            ip: row.ip.clone(),
-            location: row.location.clone(),
-            created: row.created.timestamp(),
-            updated: row.updated.timestamp(),
-        }
-    }
-}

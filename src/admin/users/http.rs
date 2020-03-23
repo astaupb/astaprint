@@ -21,14 +21,16 @@
 use admin::{
     email::send_password_reset_email,
     guard::AdminGuard,
-    users::{
+};
+use diesel::prelude::*;
+
+use model::{
+    journal::JournalResponse,
+    user::{
         Card,
         UserResponse,
     },
 };
-use diesel::prelude::*;
-
-use model::journal::JournalResponse;
 use rocket::http::Status;
 use rocket_contrib::json::Json;
 use sodium::{

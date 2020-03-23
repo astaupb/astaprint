@@ -3,6 +3,7 @@ use std::{
     fs::File,
 };
 
+/// contains all the information needed to talk to the printer
 #[derive(Debug, Clone)]
 pub struct PPD
 {
@@ -24,6 +25,7 @@ pub struct PPD
     pub greyscale: Vec<u8>,
 }
 
+/// parses the pjl from a line of the ppd file
 pub fn parse_pjl(line: &str) -> Vec<u8>
 {
     line[line.find('\"').unwrap() + 1 .. line.rfind('\"')

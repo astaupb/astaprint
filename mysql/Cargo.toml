@@ -8,3 +8,5 @@ edition = "2018"
 diesel = {version = "1.4", features = ["mysql", "r2d2", "chrono"]}
 chrono = "0.4"
 bincode = "1.2"
+serde = "1.0"
+serde_derive = "1.0"

@@ -20,10 +20,8 @@
 use diesel::QueryResult;
 use rocket_contrib::json::Json;
 
-use user::{
-    guard::UserGuard,
-    response::UserTokenResponse,
-};
+use model::user::UserTokenResponse;
+use user::guard::UserGuard;
 
 use mysql::user::{
     select::*,

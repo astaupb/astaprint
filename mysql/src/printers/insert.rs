@@ -24,7 +24,7 @@ use diesel::{
 };
 use crate::schema::*;
 
-#[derive(Debug, Clone)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct PrinterInsert {
     pub hostname: String,
     pub ip: String,

@@ -119,10 +119,10 @@ pub fn update_user_default_options(
     update: Json<JobOptionsUpdate>,
 ) -> QueryResult<Status>
 {
-    let mut options: JobOptions = if let Some(options) =
+    let mut options = if let Some(options) =
         select_user_options(user.id, &user.connection).expect("selecting user options")
     {
-        bincode::deserialize(&options).expect("deserializing JobOptions")
+        JobOptions::from(&options[..])
     }
     else {
         JobOptions::default()
@@ -130,7 +130,7 @@ pub fn update_user_default_options(
 
     options.merge(update.into_inner());
 
-    let value = Some(bincode::serialize(&options).expect("serializing JobOptions"));
+    let value = Some(options.serialize());
 
     update_default_job_options(user.id, value, &user.connection)?;
 

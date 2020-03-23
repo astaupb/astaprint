@@ -40,12 +40,15 @@ use mysql::admin::{
     },
 };
 
+use model::admin::AdminResponse;
+
 use admin::{
     admins::{
-        AdminCreate,
-        AdminResponse,
-        AdminUpdate,
-        NewAdmin,
+        add::{
+            AdminAdd,
+            NewAdmin,
+        },
+        update::AdminUpdate,
     },
     guard::AdminGuard,
 };
@@ -66,7 +69,7 @@ pub fn post_new_admin(admin: AdminGuard, new: Json<NewAdmin>) -> QueryResult<Cus
 
     let (hash, salt) = PasswordHash::create(&new.password);
 
-    let new_admin = AdminCreate {
+    let new_admin = AdminAdd {
         first_name: new.first_name,
         last_name: new.last_name,
         login: new.login,

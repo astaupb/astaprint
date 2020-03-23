@@ -18,11 +18,9 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use admin::{
-    admins::tokens::AdminTokenResponse,
-    guard::AdminGuard,
-};
+use admin::guard::AdminGuard;
 use diesel::prelude::QueryResult;
+use model::admin::AdminTokenResponse;
 use mysql::admin::{
     delete::{
         delete_admin_token_by_id,

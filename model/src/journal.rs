@@ -1,4 +1,3 @@
-use bincode::deserialize;
 use mysql::journal::{
     Journal,
     JournalToken,
@@ -7,6 +6,7 @@ use mysql::journal::{
 
 use crate::job::options::JobOptions;
 
+/// represenation of the journal information of a print job
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct PrintJournalResponse
 {
@@ -26,12 +26,12 @@ impl<'a> From<&'a PrintJournal> for PrintJournalResponse
             colored: print_journal.colored,
             score: print_journal.score,
             device_id: print_journal.device_id,
-            options: deserialize(&print_journal.options)
-                .expect("deserializing JobOptions"),
+            options: JobOptions::from(&print_journal.options[..]),
         }
     }
 }
 
+/// representation of a single transaction in the journal
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct JournalResponse
 {
@@ -76,6 +76,7 @@ impl<'a> From<&'a(Journal, Option<PrintJournal>)> for JournalResponse
     }
 }
 
+/// representation of a journal token
 #[derive(Serialize, Debug, Clone)]
 pub struct JournalTokenResponse
 {

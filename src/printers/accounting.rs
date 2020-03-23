@@ -170,7 +170,7 @@ impl Accounting
                     colored: (self.counter.print_total - self.counter.print_bw).try_into().unwrap(),
                     score: job.score(),
                     device_id: self.printer_id,
-                    options: bincode::serialize(&job.options).expect("serializing JobOptions"),
+                    options: job.options.serialize(),
                 },
                 &connection,
             )

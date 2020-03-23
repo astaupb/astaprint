@@ -26,8 +26,12 @@ use diesel::{
 
 use threadpool::ThreadPool;
 
-use redis::store::Store;
+use redis::{
+    store::Store,
+    queue::Unique,
+};
 
+/// contains all the stuff the dispatcher needs to handle dispatcher tasks
 #[derive(Clone)]
 pub struct DispatcherState
 {
@@ -36,6 +40,7 @@ pub struct DispatcherState
     pub thread_pool: ThreadPool,
 }
 
+/// contains all the information the dispatcher needs to dispatch a job
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct DispatcherTask
 {
@@ -49,4 +54,31 @@ pub struct DispatcherTask
     pub copies: Option<u16>,
     pub displayname: Option<String>,
     pub uid: Vec<u8>,
+}
+
+/// represenation of the dispatcher task for admins
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct DispatcherTaskResponse
+{
+    pub uid: String,
+    pub filename: String,
+    pub keep: Option<bool>,
+    pub color: Option<bool>,
+    pub a3: Option<bool>,
+    pub duplex: Option<u8>,
+}
+
+impl<'a> From<&'a DispatcherTask> for DispatcherTaskResponse
+{
+    fn from(task: &'a DispatcherTask) -> DispatcherTaskResponse
+    {
+        DispatcherTaskResponse {
+            uid: task.hex_uid(),
+            filename: task.filename.clone(),
+            keep: task.keep,
+            color: task.color,
+            a3: task.a3,
+            duplex: task.duplex,
+        }
+    }
 }

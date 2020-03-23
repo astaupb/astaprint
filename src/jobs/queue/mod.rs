@@ -48,32 +48,6 @@ use model::{
     },
 };
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct DispatcherTaskResponse
-{
-    pub uid: String,
-    pub filename: String,
-    pub keep: Option<bool>,
-    pub color: Option<bool>,
-    pub a3: Option<bool>,
-    pub duplex: Option<u8>,
-}
-
-impl<'a> From<&'a DispatcherTask> for DispatcherTaskResponse
-{
-    fn from(task: &'a DispatcherTask) -> DispatcherTaskResponse
-    {
-        DispatcherTaskResponse {
-            uid: hex::encode(&task.uid[..]),
-            filename: task.filename.clone(),
-            keep: task.keep,
-            color: task.color,
-            a3: task.a3,
-            duplex: task.duplex,
-        }
-    }
-}
-
 pub fn start_dispatch(
     user_id: u32,
     data: Vec<u8>,
@@ -166,18 +140,17 @@ pub fn dispatch(
         task.filename.clone()
     };
 
-    let info: Vec<u8> = bincode::serialize(&JobInfo {
+    let info: Vec<u8> = JobInfo {
         filename,
         title: result.title,
         pagecount: result.pagecount,
         colored: result.colored,
         a3: result.a3,
         landscape: result.landscape,
-    })
-    .expect("serializing JobInfo");
+    }.serialize();
 
     let mut options: JobOptions = match select_user_options(task.user_id, &connection) {
-        Ok(Some(options)) => bincode::deserialize(&options[..]).expect("deserializing JobOptions"),
+        Ok(Some(options)) => JobOptions::from(&options[..]),
         Ok(None) => JobOptions::default(),
         Err(e) => {
             error!("{} selecting user options: {:?}", uid, e);
@@ -209,7 +182,7 @@ pub fn dispatch(
         JobInsert {
             user_id: task.user_id,
             info,
-            options: bincode::serialize(&options).expect("serializing JobOptions"),
+            options: options.serialize(),
             pdf: result.pdf,
             preview_0: result.preview_0,
             preview_1: result.preview_1,

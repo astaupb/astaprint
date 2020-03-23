@@ -64,10 +64,9 @@ pub fn copy_job(
         let image = image.unwrap_or(false);
         if image {
             // dispatch again with image option
-            let options: JobOptions =
-                bincode::deserialize(&job.options).expect("deserializing JobOptions");
+            let options = JobOptions::from(&job.options[..]);
 
-            let info: JobInfo = bincode::deserialize(&job.info).expect("deserializing JobInfo");
+            let info = JobInfo::from(&job.info[..]);
 
             let _hex_uid = start_dispatch(
                 user.id,

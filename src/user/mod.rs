@@ -25,5 +25,4 @@ pub mod add;
 pub mod guard;
 pub mod key;
 pub mod login;
-pub mod response;
 pub mod tokens;

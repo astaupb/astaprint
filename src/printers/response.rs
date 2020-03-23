@@ -17,26 +17,3 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use mysql::printers::Printer;
-
-#[derive(Serialize, Debug, Clone)]
-pub struct UserPrinterResponse
-{
-    pub device_id: u32,
-    pub location: String,
-    pub has_a3: bool,
-    pub coin_operated: bool,
-}
-
-impl<'a> From<&'a Printer> for UserPrinterResponse
-{
-    fn from(printer: &'a Printer) -> UserPrinterResponse
-    {
-        UserPrinterResponse {
-            device_id: printer.device_id,
-            location: printer.location.clone(),
-            has_a3: printer.has_a3,
-            coin_operated: printer.coin_operated,
-        }
-    }
-}

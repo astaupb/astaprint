@@ -1,5 +1,5 @@
 [package]
-name = "model"
+name = "astaprint-model"
 version = "0.1.0"
 authors = ["Gerrit Pape <papeg@mail.upb.de>"]
 edition = "2018"
@@ -10,6 +10,7 @@ diesel = {version = "1.4", features = ["mysql", "r2d2", "chrono"]}
 mysql = {path = "../mysql"}
 redis = {path = "../redis"}
 sodium = {path = "../sodium"}
+snmp = {path = "../snmp"}
 r2d2_redis = "0.13"
 hex = "0.4"
 bincode = "1.2"

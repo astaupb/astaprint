@@ -9,7 +9,7 @@ path = "src/lib.rs"
 
 [dependencies]
 sodium = {path = "./sodium"}
-model = {path = "./model"}
+model = {path = "./model", package = "astaprint-model"}
 redis = {path = "./redis"}
 mysql = {path = "./mysql"}
 pdf = {path = "./pdf"}

@@ -51,23 +51,20 @@ pub fn update_options(
     if let Some((id, info, options, _created, _updated)) =
         select_job_of_user(user.id, id, &user.connection)?
     {
-        let info: JobInfo = bincode::deserialize(&info[..]).expect("deserializing JobInfo");
-        let mut options: JobOptions =
-            bincode::deserialize(&options[..]).expect("deserializing JobOptions");
-        options.merge(update.into_inner());
-        debug!("to parse: ({:?}, {:?}", options.range, info.pagecount);
-        if let Some(range) = PageRange::new(&options.range, info.pagecount as usize) {
-            debug!("range: {:?}", range);
+        let info: JobInfo = JobInfo::from(&info[..]);
+        let mut options = JobOptions::from(&options[..]);
 
+        options.merge(update.into_inner());
+
+        if let Some(range) = PageRange::new(&options.range, info.pagecount as usize) {
             options.range = format!("{}", range);
             let _char = options.range.pop();
-            debug!("options.range: {:?}", options.range);
         }
         else {
             options.range = String::from("");
         }
-        let serialized = bincode::serialize(&options).expect("serializing JobOptions");
-        update_job_options(id, user.id, serialized, &user.connection)?;
+
+        update_job_options(id, user.id, options.serialize(), &user.connection)?;
 
         Ok(Status::new(205, "Reset Content"))
     }

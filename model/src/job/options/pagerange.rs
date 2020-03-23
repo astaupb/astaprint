@@ -22,6 +22,7 @@ use std::{
     str::FromStr,
 };
 
+/// represents a difference between two pages, e.g. 7-9, 8-8, 10-12
 #[derive(Debug, Clone)]
 pub struct PageDifference
 {
@@ -29,6 +30,9 @@ pub struct PageDifference
     pub subtrahend: u32,
 }
 
+/// parses the page difference from a str
+/// str must contain a dash
+/// if the start of the difference is greater than the end, the start is used for both sides
 impl<'a> FromStr for PageDifference
 {
     type Err = ();
@@ -61,6 +65,7 @@ impl<'a> FromStr for PageDifference
     }
 }
 
+/// represents the pages which are choosed in a pagerange setting
 #[derive(Debug, Clone)]
 pub struct PageRange
 {
@@ -70,8 +75,10 @@ pub struct PageRange
 
 impl PageRange
 {
+    /// calculates the number of selected pages
     pub fn pagecount(&self) -> usize { self.pages.iter().filter(|page| **page).count() }
 
+    /// creates the struct from a vec of booleans
     pub fn from_list(pages: Vec<bool>) -> PageRange
     {
         PageRange {
@@ -79,6 +86,7 @@ impl PageRange
         }
     }
 
+    /// creates the struct from a range str and the total number of pages
     pub fn new(
         range: &str,
         pagecount: usize,
@@ -122,6 +130,7 @@ impl PageRange
     }
 }
 
+/// writes the struct back into a string represenation with a trailing comma
 impl fmt::Display for PageRange
 {
     fn fmt(

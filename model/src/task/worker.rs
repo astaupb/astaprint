@@ -10,6 +10,8 @@ use diesel::{
 
 use r2d2_redis::RedisConnectionManager;
 
+use redis::queue::Unique;
+
 use crate::ppd::PPD;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -25,6 +27,25 @@ impl WorkerTask
     {
         WorkerTask {
             user_id, uid: random_bytes(20),
+        }
+    }
+}
+
+/// Representation of a task blocking a printer displayed to an admin
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct WorkerTaskResponse
+{
+    user_id: u32,
+    uid: String,
+}
+
+impl<'a> From<&'a WorkerTask> for WorkerTaskResponse
+{
+    fn from(task: &WorkerTask) -> WorkerTaskResponse
+    {
+        WorkerTaskResponse {
+            user_id: task.user_id,
+            uid: task.hex_uid(),
         }
     }
 }
@@ -47,4 +68,3 @@ pub enum WorkerCommand<T>
     Hungup,
     HeartBeat,
 }
-

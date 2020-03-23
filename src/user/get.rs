@@ -70,7 +70,7 @@ pub fn get_user_info(user: UserGuard) -> QueryResult<Json<UserInfo>>
 pub fn get_user_default_options(user: UserGuard) -> QueryResult<Json<JobOptions>>
 {
     let options = match select_user_options(user.id, &user.connection)? {
-        Some(options) => bincode::deserialize(&options[..]).expect("deserializing JobOptions"),
+        Some(options) => JobOptions::from(&options[..]),
         None => JobOptions::default(),
     };
 

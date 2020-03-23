@@ -28,7 +28,13 @@ use rocket_contrib::json::Json;
 
 use redis::queue::CommandClient;
 
-use model::task::worker::WorkerCommand;
+use model::{
+    printer::PrinterResponse,
+    task::worker::{
+        WorkerCommand,
+        WorkerTaskResponse,
+    },
+};
 
 use mysql::printers::{
     delete::*,
@@ -42,14 +48,7 @@ use snmp::tool::{
     status,
 };
 
-use admin::{
-    guard::AdminGuard,
-    printers::{
-        PrinterCreate,
-        PrinterResponse,
-        WorkerTaskResponse,
-    },
-};
+use admin::guard::AdminGuard;
 
 use jobs::options::JobOptionsUpdate;
 
@@ -64,7 +63,7 @@ pub fn get_printers_as_admin(admin: AdminGuard) -> QueryResult<Json<Vec<PrinterR
 }
 
 #[post("/printers", data = "<post>")]
-pub fn post_printer(admin: AdminGuard, post: Json<PrinterCreate>) -> QueryResult<Status>
+pub fn post_printer(admin: AdminGuard, post: Json<PrinterInsert>) -> QueryResult<Status>
 {
     insert_into_printers(PrinterInsert::from(post.into_inner()), &admin.connection)?;
 

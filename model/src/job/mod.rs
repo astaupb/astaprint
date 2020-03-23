@@ -1,6 +1,5 @@
 pub mod info;
 pub mod options;
-use bincode;
 use chrono::NaiveDateTime;
 
 use self::{
@@ -13,6 +12,7 @@ use self::{
 
 use crate::ppd::PPD;
 
+/// representation of the print job including all important information except the file itself
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Job
 {
@@ -28,11 +28,10 @@ impl From<(u32, Vec<u8>, Vec<u8>, NaiveDateTime, NaiveDateTime)> for Job
 {
     fn from(row: (u32, Vec<u8>, Vec<u8>, NaiveDateTime, NaiveDateTime)) -> Job
     {
-        let info = bincode::deserialize(&row.1[..]).expect("deserializing JobInfo");
-        let options = bincode::deserialize(&row.2[..]).expect("deserializing JobOptions");
         Job {
             id: row.0,
-            info, options,
+            info: JobInfo::from(&row.1[..]),
+            options: JobOptions::from(&row.2[..]),
             timestamp: row.3.timestamp(),
             created: row.3.timestamp(),
             updated: row.4.timestamp(),
@@ -44,11 +43,10 @@ impl<'a> From<(u32, &'a [u8], &'a [u8], NaiveDateTime, NaiveDateTime)> for Job
 {
     fn from((id, info, options, created, updated): (u32, &'a [u8], &'a [u8], NaiveDateTime, NaiveDateTime)) -> Job
     {
-        let info = bincode::deserialize(info).expect("deserializing JobInfo");
-        let options = bincode::deserialize(options).expect("deserializing JobOptions");
         Job {
             id,
-            info, options,
+            info: JobInfo::from(info),
+            options: JobOptions::from(options),
             timestamp: created.timestamp(),
             created: created.timestamp(),
             updated: updated.timestamp(),
@@ -58,6 +56,7 @@ impl<'a> From<(u32, &'a [u8], &'a [u8], NaiveDateTime, NaiveDateTime)> for Job
 
 impl Job
 {
+    /// calculates the number of pages which are printed depending on the options which are set
     pub fn pages_to_print(&self) -> u16
     {
         let range = PageRange::new(&self.options.range, self.info.pagecount as usize).expect("valid PageRange");
@@ -76,6 +75,7 @@ impl Job
         count as u16 * self.options.copies
     }
 
+    /// estimation of how many sheets of paper where saved compared to using the default options
     pub fn score(&self) -> i16
     {
         let range = PageRange::new(&self.options.range, self.info.pagecount as usize).expect("valid PageRange");
@@ -92,6 +92,7 @@ impl Job
         max_pages as i16 - paper_to_print as i16
     }
 
+    /// translates the print job into printer job language (PJL) using the PPD options and the file itself
     pub fn translate_for_printer(&mut self, mut ppd: PPD, mut data: Vec<u8>) -> Vec<u8>
     {
         let mut header: Vec<u8> = Vec::with_capacity(8096);

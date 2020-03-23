@@ -1,5 +1,6 @@
 pub mod pagerange;
 
+/// options of a print job
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]
 pub struct JobOptions
 {
@@ -16,6 +17,7 @@ pub struct JobOptions
     pub displayname: String,
 }
 
+/// serializes the struct into a binary format which is used for storing it in the database
 impl JobOptions
 {
     pub fn serialize(&self) -> Vec<u8>
@@ -24,6 +26,16 @@ impl JobOptions
     }
 }
 
+/// deserializes the struct back from the binary format
+impl<'a> From<&'a [u8]> for JobOptions
+{
+    fn from(bytes: &'a [u8]) -> JobOptions
+    {
+        bincode::deserialize(bytes).expect("deserializing JobOptions")
+    }
+}
+
+/// default values for the options
 impl Default for JobOptions
 {
     fn default() -> JobOptions
