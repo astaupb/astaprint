@@ -10,7 +10,7 @@ diesel = {version = "1.4", features = ["mysql", "r2d2", "chrono"]}
 mysql = {path = "../mysql"}
 redis = {path = "../redis"}
 sodium = {path = "../sodium"}
-r2d2_redis = "0.12"
+r2d2_redis = "0.13"
 hex = "0.4"
 bincode = "1.2"
 chrono = "0.4"
