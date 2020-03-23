@@ -2,7 +2,7 @@ stages:
     - debug-build
     - release-build
 
-openSuse development build:
+opensuse-development-build:
     stage: debug-build
     image: dnegi/asta-astaprint-build:leap-latest
     script:
@@ -11,12 +11,12 @@ openSuse development build:
         paths:
             - target/debug/backend
             - target/debug/worker
-            - target/debug/dispater
+            - target/debug/dispatcher
     only:
         - debug
         - web
 
-Debian development build:
+debian-development-build:
     stage: debug-build
     image: dnegi/asta-astaprint-build:buster-latest
     script:
@@ -30,7 +30,7 @@ Debian development build:
         - debug
         - web
 
-openSuse release build:
+opensuse-release-build:
     stage: release-build
     image: dnegi/asta-astaprint-build:leap-latest
     script:
@@ -45,7 +45,7 @@ openSuse release build:
         - release
         - web
 
-Debian release build:
+debian-release-build:
     stage: release-build
     image: dnegi/asta-astaprint-build:buster-latest
     script:
