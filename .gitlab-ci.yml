@@ -16,7 +16,7 @@ openSuse development build:
         - debug
         - web
 
-ebian development build:
+Debian development build:
     stage: debug-build
     image: dnegi/asta-astaprint-build:buster-latest
     script:
