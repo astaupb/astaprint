@@ -59,6 +59,7 @@ pub struct AdminGuard
 {
     pub id: u32,
     pub token_id: u32,
+    pub service: bool,
     pub connection: PooledConnection<ConnectionManager<MysqlConnection>>,
 }
 
@@ -95,10 +96,10 @@ impl<'a, 'r> FromRequest<'a, 'r> for AdminGuard
         };
 
         // select password hash of user which is used as salt
-        let result: QueryResult<(Vec<u8>, NaiveDate)> =
-            select_admin_hash_and_expires_by_id(admin_id, &connection);
+        let result: QueryResult<(Vec<u8>, NaiveDate, bool)> =
+            select_admin_hash_and_expires_and_service_by_id(admin_id, &connection);
 
-        if let Ok((salt, expires)) = result {
+        if let Ok((salt, expires, service)) = result {
             if Utc::today().naive_utc() >= expires {
                 info!("admin {} accesss expired", admin_id);
                 return Outcome::Failure((Status::Unauthorized, ()))
@@ -125,6 +126,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for AdminGuard
                     Outcome::Success(AdminGuard {
                         id: admin_id,
                         token_id,
+                        service,
                         connection,
                     })
                 },

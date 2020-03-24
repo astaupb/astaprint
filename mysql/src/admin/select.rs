@@ -69,10 +69,10 @@ pub fn select_admin_hash_by_id(admin_id: u32, connection: &MysqlConnection) -> Q
         .first(connection)
 }
 
-pub fn select_admin_hash_and_expires_by_id(admin_id: u32, connection: &MysqlConnection) -> QueryResult<(Vec<u8>, NaiveDate)>
+pub fn select_admin_hash_and_expires_and_service_by_id(admin_id: u32, connection: &MysqlConnection) -> QueryResult<(Vec<u8>, NaiveDate, bool)>
 {
     admin::table
-        .select((admin::hash, admin::expires))
+        .select((admin::hash, admin::expires, admin::service))
         .filter(admin::id.eq(admin_id))
         .first(connection)
 }

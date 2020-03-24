@@ -61,6 +61,9 @@ pub fn get_admins(admin: AdminGuard) -> QueryResult<Json<Vec<AdminResponse>>>
 #[post("/", data = "<new>")]
 pub fn post_new_admin(admin: AdminGuard, new: Json<NewAdmin>) -> QueryResult<Custom<()>>
 {
+    if admin.service {
+        return Ok(Custom(Status::new(403, "Forbidden"), ()));
+    }
     match add_admin(new.into_inner(), Some(admin.id), &admin.connection) {
         Ok(_) => Ok(Custom(Status::new(205, "Success - Reset Content"), ())),
         Err(LoginInvalid) => Ok(Custom(Status::new(471, "Invalid login"), ())),
@@ -78,6 +81,9 @@ pub fn get_single_admin(admin: AdminGuard, id: u32) -> QueryResult<Json<AdminRes
 #[delete("/<id>")]
 pub fn delete_admin(admin: AdminGuard, id: u32) -> QueryResult<Status>
 {
+    if admin.service {
+        return Ok(Status::new(403, "Forbidden"));
+    }
     Ok(if delete_admin_by_id(id, &admin.connection)? == 1 {
         Status::new(205, "Success - Reset Content")
     }
@@ -89,6 +95,9 @@ pub fn delete_admin(admin: AdminGuard, id: u32) -> QueryResult<Status>
 #[put("/<id>", data = "<update>")]
 pub fn put_admin(admin: AdminGuard, id: u32, update: Json<AdminUpdate>) -> QueryResult<Status>
 {
+    if admin.service {
+        return Ok(Status::new(403, "Forbidden"));
+    }
     let old = select_admin_by_id(id, &admin.connection)?;
 
     let updated = update.into_inner().update(old);
@@ -105,6 +114,9 @@ pub fn put_admin(admin: AdminGuard, id: u32, update: Json<AdminUpdate>) -> Query
 pub fn put_admin_password(admin: AdminGuard, id: u32, password: Json<String>)
 -> QueryResult<Status>
 {
+    if admin.service {
+        return Ok(Status::new(403, "Forbidden"));
+    }
     let (hash, salt) = PasswordHash::create(&password.into_inner());
 
     Ok(if update_admin_hash_and_salt_by_id(id, hash, salt, &admin.connection)? == 1 {
