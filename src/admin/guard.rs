@@ -30,6 +30,11 @@ use rocket::{
     State,
 };
 
+use chrono::{
+    offset::Utc,
+    NaiveDate,
+};
+
 use diesel::{
     prelude::*,
     r2d2::{
@@ -90,9 +95,15 @@ impl<'a, 'r> FromRequest<'a, 'r> for AdminGuard
         };
 
         // select password hash of user which is used as salt
-        let result: QueryResult<Vec<u8>> = select_admin_hash_by_id(admin_id, &connection);
+        let result: QueryResult<(Vec<u8>, NaiveDate)> =
+            select_admin_hash_and_expires_by_id(admin_id, &connection);
 
-        if let Ok(salt) = result {
+        if let Ok((salt, expires)) = result {
+            if Utc::today().naive_utc() >= expires {
+                info!("admin {} accesss expired", admin_id);
+                return Outcome::Failure((Status::Unauthorized, ()))
+            }
+
             let hash = GenericHash::with_salt(&token[..], &salt[..]);
 
             match select_admin_token_id_by_hash(admin_id, hash, &connection) {
