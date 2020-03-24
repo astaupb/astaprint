@@ -410,6 +410,8 @@ paths:
       responses:
         '205':
           description: Success - Reset Content
+        '471':
+          description: Login invalid (not alphanumeric or more than 32 chars)
         '472':
           description: Login already taken
         '401':
@@ -1272,6 +1274,22 @@ components:
         password:
           type: string
           example: "password"
+        service:
+          type: boolean
+          nullable: true
+          example: null
+          default: true
+        locked:
+          type: boolean
+          nullable: true
+          example: null
+          default: false
+        expires:
+          type: integer
+          format: i64
+          nullable: true
+          example: null
+          default: 2 years from today
     AdminUpdate:
       type: object
       properties:

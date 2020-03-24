@@ -20,16 +20,13 @@
 extern crate mysql;
 use mysql::create_mysql_pool;
 
-extern crate chrono;
-use chrono::NaiveDate;
-
-extern crate sodium;
-use sodium::pwhash::PasswordHash;
-
 use std::env;
 
 extern crate astaprint;
-use astaprint::admin::admins::AdminCreate;
+use astaprint::admin::admins::add::{
+    add_admin,
+    NewAdmin,
+};
 
 fn main()
 {
@@ -42,26 +39,18 @@ fn main()
 
     let connection = create_mysql_pool(&mysql_url, 1).get().unwrap();
 
-    let first_name = arg[1].clone();
-    let last_name = arg[2].clone();
-
-    let login = arg[3].clone();
-
-    let (hash, salt) = PasswordHash::create(&arg[4]);
-
-    let expires = NaiveDate::from_yo(2019, 1);
-
-    let admin = AdminCreate {
-        first_name,
-        last_name,
-        login,
-        hash,
-        salt,
-        service: false,
-        locked: false,
-        created_by: None,
-        expires,
-    };
-
-    admin.insert(&connection).expect("inserting admin into database");
+    add_admin(
+        NewAdmin {
+            first_name: arg[1].clone(),
+            last_name: arg[2].clone(),
+            login: arg[3].clone(),
+            password: arg[4].clone(),
+            service: None,
+            locked: None,
+            expires: None,
+        },
+        None,
+        &connection,
+    )
+    .expect("adding Admin");
 }

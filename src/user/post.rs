@@ -31,7 +31,8 @@ use user::{
 
 use user::add::{
     add_user,
-    UserAddError,
+    NewUser,
+    UserAddError::*,
 };
 
 use diesel::{
@@ -57,31 +58,17 @@ pub fn logout(user: UserGuard) -> QueryResult<Status>
     Ok(Status::new(205, "Reset View"))
 }
 
-#[derive(Deserialize, Debug, Clone)]
-pub struct NewUser
-{
-    name: String,
-    password: String,
-    email: Option<String>,
-}
-
 #[post("/", data = "<user>")]
 pub fn register_as_new_user(
     user: Json<NewUser>,
     pool: State<Pool<ConnectionManager<MysqlConnection>>>,
 ) -> QueryResult<Custom<()>>
 {
-    let connection = pool.get().expect("getting mysql connection from pool");
-
-    if user.name.chars().any(|c| !c.is_alphanumeric()) || user.name.bytes().count() > 32 {
-        return Ok(Custom(Status::new(471, "Invalid Username"), ()))
-    }
-    match add_user(&user.name, &user.password, user.email.clone(), false, &connection) {
+    match add_user(user.into_inner(), &pool.get().expect("getting mysql connection")) {
         Ok(_id) => Ok(Custom(Status::new(204, "Success - No Content"), ())),
-        Err(UserAddError::UsernameExists) => {
-            Ok(Custom(Status::new(470, "username already taken"), ()))
-        },
-        Err(UserAddError::EmailExists) => Ok(Custom(Status::new(472, "email already taken"), ())),
-        Err(UserAddError::QueryError(e)) => Err(e),
+        Err(UsernameExists) => Ok(Custom(Status::new(470, "username already taken"), ())),
+        Err(UsernameInvalid) => Ok(Custom(Status::new(471, "Invalid Username"), ())),
+        Err(EmailExists) => Ok(Custom(Status::new(472, "email already taken"), ())),
+        Err(QueryError(e)) => Err(e),
     }
 }

@@ -29,10 +29,20 @@ use mysql::{
     user::select::*,
 };
 
+#[derive(Deserialize, Debug, Clone)]
+pub struct NewUser
+{
+    pub name: String,
+    pub password: String,
+    pub email: Option<String>,
+    pub locked: Option<bool>,
+}
+
 #[derive(Debug)]
 pub enum UserAddError
 {
     UsernameExists,
+    UsernameInvalid,
     EmailExists,
     QueryError(Error),
 }
@@ -42,27 +52,23 @@ impl From<Error> for UserAddError
     fn from(err: Error) -> UserAddError { UserAddError::QueryError(err) }
 }
 
-pub fn add_user(
-    name: &str,
-    password: &str,
-    email: Option<String>,
-    locked: bool,
-    connection: &MysqlConnection,
-) -> Result<u32, UserAddError>
+pub fn add_user(user: NewUser, connection: &MysqlConnection) -> Result<u32, UserAddError>
 {
-    let user_id: Option<u32> = select_user_id_by_name_optional(name, connection)?;
+    if user.name.chars().any(|c| !c.is_alphanumeric()) || user.name.bytes().count() > 32 {
+        return Err(UserAddError::UsernameInvalid)
+    }
 
-    if user_id.is_some() {
+    if select_user_id_by_name_optional(&user.name, connection)?.is_some() {
         return Err(UserAddError::UsernameExists)
     }
 
-    let user_id: Option<u32> = select_user_id_by_email_optional(name, connection)?;
-
-    if user_id.is_some() {
-        return Err(UserAddError::EmailExists)
+    if let Some(email) = &user.email {
+        if select_user_id_by_email_optional(email, connection)?.is_some() {
+            return Err(UserAddError::EmailExists)
+        }
     }
 
-    let (hash, salt) = PasswordHash::create(password);
+    let (hash, salt) = PasswordHash::create(&user.password);
 
-    Ok(insert_user(name, hash, salt, email, locked, connection)?)
+    Ok(insert_user(&user.name, hash, salt, user.email, user.locked.unwrap_or(false), connection)?)
 }

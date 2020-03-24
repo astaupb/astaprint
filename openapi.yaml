@@ -829,16 +829,24 @@ paths:
         required: true
         content:
           application/json:
-            example:
-              username: newuser
-              password: newpassword
             schema:
               type: object
               properties:
                 username:
                   type: string
+                  example: newuser
                 password:
                   type: string
+                  example: newpassword
+                email:
+                  type: string
+                  example: "user@mail.upb.de"
+                  nullable: true
+                locked:
+                  type: boolean
+                  nullable: true
+                  example: null
+                  default: false
   '/journal':
     get:
       operationId: getJournal

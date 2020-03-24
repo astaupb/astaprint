@@ -18,7 +18,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-use chrono::NaiveDate;
 use diesel::prelude::QueryResult;
 use rocket::{
     http::Status,
@@ -32,7 +31,6 @@ use mysql::admin::{
     select::{
         select_admin,
         select_admin_by_id,
-        select_admin_by_login,
     },
     update::{
         update_admin,
@@ -45,7 +43,8 @@ use model::admin::AdminResponse;
 use admin::{
     admins::{
         add::{
-            AdminAdd,
+            add_admin,
+            AdminAddError::*,
             NewAdmin,
         },
         update::AdminUpdate,
@@ -62,28 +61,12 @@ pub fn get_admins(admin: AdminGuard) -> QueryResult<Json<Vec<AdminResponse>>>
 #[post("/", data = "<new>")]
 pub fn post_new_admin(admin: AdminGuard, new: Json<NewAdmin>) -> QueryResult<Custom<()>>
 {
-    if select_admin_by_login(&new.login, &admin.connection).is_ok() {
-        return Ok(Custom(Status::new(472, "login already taken"), ()))
+    match add_admin(new.into_inner(), Some(admin.id), &admin.connection) {
+        Ok(_) => Ok(Custom(Status::new(205, "Success - Reset Content"), ())),
+        Err(LoginInvalid) => Ok(Custom(Status::new(471, "Invalid login"), ())),
+        Err(LoginExists) => Ok(Custom(Status::new(472, "login already taken"), ())),
+        Err(QueryError(e)) => Err(e),
     }
-    let new = new.into_inner();
-
-    let (hash, salt) = PasswordHash::create(&new.password);
-
-    let new_admin = AdminAdd {
-        first_name: new.first_name,
-        last_name: new.last_name,
-        login: new.login,
-        hash,
-        salt,
-        service: false,
-        locked: false,
-        created_by: Some(admin.id),
-        expires: NaiveDate::from_yo(2019, 1),
-    };
-
-    new_admin.insert(&admin.connection)?;
-
-    Ok(Custom(Status::new(204, "Success - Reset Content"), ()))
 }
 
 #[get("/<id>")]

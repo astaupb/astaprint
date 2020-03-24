@@ -14,6 +14,11 @@ pub fn select_admin_by_id(id: u32, connection: &MysqlConnection) -> QueryResult<
     admin::table.select(admin::all_columns).filter(admin::id.eq(id)).first(connection)
 }
 
+pub fn select_admin_id_by_login_optional(login: &str, connection: &MysqlConnection) -> QueryResult<Option<u32>>
+{
+    admin::table.select(admin::id).filter(admin::login.eq(login)).first(connection).optional()
+}
+
 pub fn select_admin_tokens(
     connection: &MysqlConnection,
 ) -> QueryResult<Vec<AdminToken>>
