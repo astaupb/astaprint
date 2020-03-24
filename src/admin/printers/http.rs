@@ -65,7 +65,7 @@ pub fn get_printers_as_admin(admin: AdminGuard) -> QueryResult<Json<Vec<PrinterR
 #[post("/printers", data = "<post>")]
 pub fn post_printer(admin: AdminGuard, post: Json<PrinterInsert>) -> QueryResult<Status>
 {
-    insert_into_printers(PrinterInsert::from(post.into_inner()), &admin.connection)?;
+    insert_into_printers(post.into_inner(), &admin.connection)?;
 
     Ok(Status::new(205, "Success - Reset Content"))
 }

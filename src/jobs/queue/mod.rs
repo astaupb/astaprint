@@ -147,7 +147,8 @@ pub fn dispatch(
         colored: result.colored,
         a3: result.a3,
         landscape: result.landscape,
-    }.serialize();
+    }
+    .serialize();
 
     let mut options: JobOptions = match select_user_options(task.user_id, &connection) {
         Ok(Some(options)) => JobOptions::from(&options[..]),

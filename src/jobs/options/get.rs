@@ -30,7 +30,5 @@ pub fn fetch_options(user: UserGuard, id: u32) -> QueryResult<Option<Json<JobOpt
 {
     let result: Option<Vec<u8>> = select_job_options(id, user.id, &user.connection)?;
 
-    Ok(result.map(|serialized| {
-        Json(JobOptions::from(&serialized[..]))
-    }))
+    Ok(result.map(|serialized| Json(JobOptions::from(&serialized[..]))))
 }

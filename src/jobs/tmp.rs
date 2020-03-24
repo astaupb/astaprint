@@ -55,7 +55,7 @@ impl TemporaryFile
 
         let mut buf: Vec<u8> = Vec::new();
 
-        file.read_to_end(&mut buf)?;
+        file.read(&mut buf)?;
 
         remove_file(path)?;
 
