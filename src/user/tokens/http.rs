@@ -44,7 +44,7 @@ pub fn get_all_tokens(user: UserGuard) -> QueryResult<Json<Vec<UserTokenResponse
     Ok(Json(tokens.iter().map(UserTokenResponse::from).collect()))
 }
 
-#[post("/tokens")]
+#[post("/")]
 pub fn login(login: LoginGuard) -> Json<String> { Json(login.token) }
 
 #[delete("/")]

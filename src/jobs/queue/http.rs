@@ -49,7 +49,7 @@ use crate::{
     user::guard::UserGuard,
 };
 
-#[get("/queue")]
+#[get("/")]
 pub fn get_dispatcher_queue(
     user: UserGuard,
     queue: State<TaskQueueClient<DispatcherTask, ()>>,
@@ -67,7 +67,7 @@ pub fn get_dispatcher_queue(
 }
 
 #[post(
-    "/queue?<filename>&<preprocess>&<keep>&<a3>&<color>&<duplex>&<copies>&<password>",
+    "/?<filename>&<preprocess>&<keep>&<a3>&<color>&<duplex>&<copies>&<password>",
     data = "<data>",
     format = "application/pdf"
 )]
