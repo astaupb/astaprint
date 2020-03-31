@@ -55,7 +55,6 @@ use crate::user::{
     login::parse_header,
 };
 
-
 /// request guard for admin login
 pub struct AdminLoginGuard
 {

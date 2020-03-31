@@ -42,8 +42,8 @@ use model::{
 };
 
 use crate::{
-    user::guard::UserGuard,
     jobs::queue::start_dispatch,
+    user::guard::UserGuard,
 };
 
 use redis::{

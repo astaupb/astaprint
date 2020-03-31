@@ -27,7 +27,6 @@ use rocket::{
 
 use rocket_contrib::json::Json;
 
-
 use redis::{
     queue::TaskQueueClient,
     store::Store,

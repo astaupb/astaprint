@@ -29,15 +29,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "astaprint"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
- "astaprint-logger 0.1.0",
- "astaprint-model 0.1.0",
- "astaprint-mysql 0.1.0",
- "astaprint-pdf 0.1.0",
- "astaprint-redis 0.1.0",
- "astaprint-snmp 0.1.0",
- "astaprint-sodium 0.1.0",
+ "astaprint-logger 1.1.0",
+ "astaprint-model 1.1.0",
+ "astaprint-mysql 1.1.0",
+ "astaprint-pdf 1.1.0",
+ "astaprint-redis 1.1.0",
+ "astaprint-snmp 1.1.0",
+ "astaprint-sodium 1.1.0",
  "base64 0.12.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "bincode 1.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "chrono 0.4.11 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -61,7 +61,7 @@ dependencies = [
 
 [[package]]
 name = "astaprint-logger"
-version = "0.1.0"
+version = "1.1.0"
 dependencies = [
  "chrono 0.4.11 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -69,12 +69,12 @@ dependencies = [
 
 [[package]]
 name = "astaprint-model"
-version = "0.1.0"
+version = "1.1.0"
 dependencies = [
- "astaprint-mysql 0.1.0",
- "astaprint-redis 0.1.0",
- "astaprint-snmp 0.1.0",
- "astaprint-sodium 0.1.0",
+ "astaprint-mysql 1.1.0",
+ "astaprint-redis 1.1.0",
+ "astaprint-snmp 1.1.0",
+ "astaprint-sodium 1.1.0",
  "bincode 1.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "chrono 0.4.11 (registry+https://github.com/rust-lang/crates.io-index)",
  "diesel 1.4.4 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -88,7 +88,7 @@ dependencies = [
 
 [[package]]
 name = "astaprint-mysql"
-version = "0.1.0"
+version = "1.1.0"
 dependencies = [
  "bincode 1.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "chrono 0.4.11 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -99,10 +99,10 @@ dependencies = [
 
 [[package]]
 name = "astaprint-pdf"
-version = "0.1.0"
+version = "1.1.0"
 dependencies = [
- "astaprint-model 0.1.0",
- "astaprint-sodium 0.1.0",
+ "astaprint-model 1.1.0",
+ "astaprint-sodium 1.1.0",
  "cairo-rs 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "hex 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -111,9 +111,9 @@ dependencies = [
 
 [[package]]
 name = "astaprint-redis"
-version = "0.1.0"
+version = "1.1.0"
 dependencies = [
- "astaprint-sodium 0.1.0",
+ "astaprint-sodium 1.1.0",
  "base64 0.12.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "bincode 1.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "hex 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -125,7 +125,7 @@ dependencies = [
 
 [[package]]
 name = "astaprint-snmp"
-version = "0.1.0"
+version = "1.1.0"
 dependencies = [
  "serde 1.0.105 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_derive 1.0.105 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -134,7 +134,7 @@ dependencies = [
 
 [[package]]
 name = "astaprint-sodium"
-version = "0.1.0"
+version = "1.1.0"
 
 [[package]]
 name = "atty"

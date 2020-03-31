@@ -34,7 +34,6 @@ use crate::user::{
     login::LoginGuard,
 };
 
-
 #[get("/")]
 pub fn get_all_tokens(user: UserGuard) -> QueryResult<Json<Vec<UserTokenResponse>>>
 {

@@ -34,8 +34,8 @@ use mysql::admin::{
 };
 
 use crate::admin::{
-    login::AdminLoginGuard,
     guard::AdminGuard,
+    login::AdminLoginGuard,
 };
 
 #[get("/")]

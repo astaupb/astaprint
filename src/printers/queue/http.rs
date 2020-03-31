@@ -43,11 +43,11 @@ use redis::queue::CommandClient;
 use sodium::random_bytes;
 
 use crate::{
-    user::guard::UserGuard,
     printers::{
         PrinterQueue,
         PrinterQueues,
     },
+    user::guard::UserGuard,
 };
 
 pub fn post_to_queue_handler(

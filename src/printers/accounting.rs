@@ -41,7 +41,7 @@ use mysql::{
 
 use snmp::CounterValues;
 
-/// struct containing all the accounting logic  
+/// struct containing all the accounting logic
 pub struct Accounting
 {
     user_id: u32,
@@ -94,16 +94,19 @@ impl Accounting
         self.credit
     }
 
-    /// returns the already accounted value which will be addd to the credit in the end
+    /// returns the already accounted value which will be addd to the credit in
+    /// the end
     pub fn value(&self) -> i32 { self.value }
 
-    /// returns the number of pages which are allowed to print with the current credit
+    /// returns the number of pages which are allowed to print with the current
+    /// credit
     pub fn pages_left(&self) -> i32 { (self.credit + self.value) / i32::from(self.baseprice) }
 
     /// returns true if there is not enough credit for another page
     pub fn not_enough_credit(&self) -> bool { self.credit + self.value < i32::from(self.baseprice) }
 
-    /// start accounting for a new job by passing the job information and base countervalues
+    /// start accounting for a new job by passing the job information and base
+    /// countervalues
     pub fn start(&mut self, job: Job, counter: CounterValues)
     {
         self.credit();
