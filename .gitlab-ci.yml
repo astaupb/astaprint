@@ -1,6 +1,20 @@
 stages:
     - debug-build
     - release-build
+    - doc-build
+
+opensuse-doc-build:
+    stage: doc-build
+    image: dnegi/asta-astaprint-build:leap-latest
+    script:
+        - cargo doc
+    artifacts:
+        paths:
+            - target/doc
+        expire_in: 2d
+    only:
+        - release
+        - web
 
 opensuse-development-build:
     stage: debug-build
