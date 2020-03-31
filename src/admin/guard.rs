@@ -46,15 +46,17 @@ use diesel::{
 
 use sodium::GenericHash;
 
-use crate::user::key::split_x_api_key;
+use crate::user::{
+    key::split_x_api_key,
+    login::parse_header,
+};
 
 use mysql::admin::{
     select::*,
     update::*,
 };
 
-use user::login::parse_header;
-
+/// request guard for admin accesses
 pub struct AdminGuard
 {
     pub id: u32,

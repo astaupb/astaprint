@@ -27,9 +27,9 @@ use rocket::State;
 
 use rocket_contrib::json::Json;
 
-use admin::guard::AdminGuard;
-
 use redis::queue::TaskQueueClient;
+
+use crate::admin::guard::AdminGuard;
 
 #[get("/queue")]
 pub fn get_dispatcher_queue_as_admin(

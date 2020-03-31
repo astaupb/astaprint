@@ -19,11 +19,6 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 use diesel::result::QueryResult;
 
-use model::task::worker::{
-    WorkerCommand,
-    WorkerTask,
-};
-
 use rocket::{
     http::Status,
     response::status::{
@@ -35,17 +30,24 @@ use rocket::{
 
 use rocket_contrib::json::Json;
 
-use user::guard::UserGuard;
+use model::{
+    job::options::update::JobOptionsUpdate,
+    task::worker::{
+        WorkerCommand,
+        WorkerTask,
+    },
+};
 
 use redis::queue::CommandClient;
 
 use sodium::random_bytes;
 
-use jobs::options::JobOptionsUpdate;
-
-use printers::{
-    PrinterQueue,
-    PrinterQueues,
+use crate::{
+    user::guard::UserGuard,
+    printers::{
+        PrinterQueue,
+        PrinterQueues,
+    },
 };
 
 pub fn post_to_queue_handler(
@@ -118,4 +120,31 @@ pub fn post_to_queue(
         None => return Ok(Err(Custom(Status::new(404, "Printer Not Found"), ()))),
     };
     post_to_queue_handler(user, id, options.map(|o| o.into_inner()), queue.clone())
+}
+
+#[delete("/<device_id>/queue")]
+pub fn delete_queue(user: UserGuard, device_id: u32, queues: State<PrinterQueues>) -> Custom<()>
+{
+    let queue = match queues.get(&device_id) {
+        Some(queue) => queue,
+        None => return Custom(Status::new(404, "Device Not Found"), ()),
+    };
+    let processing = queue.get_processing();
+    if processing.is_empty() {
+        return Custom(Status::new(424, "Task Not Found"), ())
+    }
+    let task = processing[0].clone();
+    if task.user_id == user.id {
+        let hex_uid = hex::encode(&task.uid[..]);
+        debug!("sending cancel to {}", &hex_uid[.. 8]);
+        let client = CommandClient::from((queue, &hex_uid[..]));
+        client
+            .send_command(&WorkerCommand::<Option<JobOptionsUpdate>>::Cancel)
+            .expect("sending cancel command");
+
+        Custom(Status::new(205, "Success - Reset Content"), ())
+    }
+    else {
+        Custom(Status::new(403, "Forbidden"), ())
+    }
 }

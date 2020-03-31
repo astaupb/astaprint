@@ -17,8 +17,8 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-pub mod get;
-pub mod post;
+//! module containing the dispatcher logic
+pub mod http;
 
 pub mod data;
 
@@ -48,6 +48,7 @@ use model::{
     },
 };
 
+/// helper function for preparing a dispatcher task
 pub fn start_dispatch(
     user_id: u32,
     data: Vec<u8>,
@@ -103,6 +104,7 @@ pub fn start_dispatch(
     hex_uid
 }
 
+/// this is the main dispatcher logic
 pub fn dispatch(
     task: DispatcherTask,
     state: DispatcherState,

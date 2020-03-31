@@ -17,16 +17,6 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use model::job::options::JobOptions;
-
-use mysql::jobs::select::*;
-
-pub mod info;
-pub mod options;
-
+//! module containing all the operations on /jobs
+pub mod http;
 pub mod queue;
-pub mod tmp;
-
-pub mod delete;
-pub mod get;
-pub mod post;

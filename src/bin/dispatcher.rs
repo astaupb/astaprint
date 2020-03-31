@@ -28,6 +28,8 @@ extern crate threadpool;
 extern crate mysql;
 extern crate pdf;
 
+extern crate astaprint;
+
 use logger::Logger;
 
 use threadpool::ThreadPool;
@@ -43,10 +45,10 @@ use model::task::dispatcher::{
     DispatcherState,
     DispatcherTask,
 };
-extern crate astaprint;
-use astaprint::jobs::queue::dispatch;
 
 use mysql::get_mysql_pool;
+
+use astaprint::jobs::queue::dispatch;
 
 fn main()
 {

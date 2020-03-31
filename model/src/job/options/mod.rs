@@ -1,4 +1,5 @@
 pub mod pagerange;
+pub mod update;
 
 /// options of a print job
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone)]

@@ -17,20 +17,9 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-pub mod delete;
-pub mod get;
-pub mod post;
-
+//! module containing the main worker logic
+pub mod http;
 pub mod timeout;
-
-use model::{
-    job::Job,
-    task::worker::{
-        WorkerCommand,
-        WorkerState,
-        WorkerTask,
-    },
-};
 
 use std::{
     collections::VecDeque,
@@ -38,19 +27,21 @@ use std::{
     time,
 };
 
-use pdf::{
-    process::{
-        pdfnup,
-        trim_pages,
-    },
-    tmp::TmpFile,
-};
-
 use lpr::LprConnection;
 
-use printers::{
-    accounting::Accounting,
-    queue::timeout::TimeOut,
+use model::{
+    job::{
+        options::update::{
+            JobOptionsUpdate,
+            Update,
+        },
+        Job,
+    },
+    task::worker::{
+        WorkerCommand,
+        WorkerState,
+        WorkerTask,
+    },
 };
 
 use mysql::jobs::{
@@ -65,9 +56,17 @@ use redis::queue::{
 
 use snmp::tool::*;
 
-use jobs::options::{
-    JobOptionsUpdate,
-    Update,
+use pdf::{
+    process::{
+        pdfnup,
+        trim_pages,
+    },
+    tmp::TmpFile,
+};
+
+use crate::printers::{
+    accounting::Accounting,
+    queue::timeout::TimeOut,
 };
 
 pub fn work(

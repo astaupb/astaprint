@@ -17,9 +17,8 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-pub mod get;
-pub mod post;
-pub mod put;
+//! module contating all the operations on /user
+pub mod http;
 
 pub mod add;
 pub mod guard;

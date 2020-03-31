@@ -2,19 +2,20 @@
 name = "astaprint"
 version = "1.0.0"
 authors = ["Gerrit Pape <gerrit.pape@asta.upb.de>"]
+edition = "2018"
 
 [lib]
 name = "astaprint"
 path = "src/lib.rs"
 
 [dependencies]
-sodium = {path = "./sodium"}
+sodium = {path = "./sodium", package = "astaprint-sodium"}
 model = {path = "./model", package = "astaprint-model"}
-redis = {path = "./redis"}
-mysql = {path = "./mysql"}
-pdf = {path = "./pdf"}
-snmp = {path = "./snmp"}
-logger = {path = "./logger"}
+redis = {path = "./redis", package = "astaprint-redis"}
+mysql = {path = "./mysql", package = "astaprint-mysql"}
+pdf = {path = "./pdf", package = "astaprint-pdf"}
+snmp = {path = "./snmp", package = "astaprint-snmp"}
+logger = {path = "./logger", package = "astaprint-logger"}
 log = {version = "0.4", features = ["std", "max_level_debug", "release_max_level_info"]}
 chrono = "0.4"
 serde = "1.0"

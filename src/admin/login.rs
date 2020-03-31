@@ -38,8 +38,6 @@ use diesel::{
     },
 };
 
-use crate::user::key::merge_x_api_key;
-
 use sodium::{
     random_bytes,
     GenericHash,
@@ -52,8 +50,13 @@ use mysql::admin::{
     Admin,
 };
 
-use user::login::parse_header;
+use crate::user::{
+    key::merge_x_api_key,
+    login::parse_header,
+};
 
+
+/// request guard for admin login
 pub struct AdminLoginGuard
 {
     pub token: String,

@@ -17,6 +17,12 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+use std::{
+    convert::TryInto,
+    ops::Drop,
+};
+
 use diesel::{
     prelude::*,
     r2d2::{
@@ -35,11 +41,7 @@ use mysql::{
 
 use snmp::CounterValues;
 
-use std::{
-    convert::TryInto,
-    ops::Drop,
-};
-
+/// struct containing all the accounting logic  
 pub struct Accounting
 {
     user_id: u32,
@@ -57,6 +59,7 @@ pub struct Accounting
 
 impl Accounting
 {
+    /// create new accounting with user and printer id and base counter values
     pub fn new(
         user_id: u32,
         printer_id: u32,
@@ -80,6 +83,7 @@ impl Accounting
         }
     }
 
+    /// returns and internally updates the latest credit of the user
     pub fn credit(&mut self) -> i32
     {
         let connection = self.mysql_pool.get().expect("gettting connection from pool");
@@ -90,12 +94,16 @@ impl Accounting
         self.credit
     }
 
+    /// returns the already accounted value which will be addd to the credit in the end
     pub fn value(&self) -> i32 { self.value }
 
+    /// returns the number of pages which are allowed to print with the current credit
     pub fn pages_left(&self) -> i32 { (self.credit + self.value) / i32::from(self.baseprice) }
 
+    /// returns true if there is not enough credit for another page
     pub fn not_enough_credit(&self) -> bool { self.credit + self.value < i32::from(self.baseprice) }
 
+    /// start accounting for a new job by passing the job information and base countervalues
     pub fn start(&mut self, job: Job, counter: CounterValues)
     {
         self.credit();
@@ -111,6 +119,7 @@ impl Accounting
         self.basecounter = counter;
     }
 
+    /// update the accounting information with the new counter values
     pub fn update(&mut self, counter: Option<CounterValues>) -> bool
     {
         if let Some(counter) = counter {
@@ -148,6 +157,7 @@ impl Accounting
         false
     }
 
+    /// check if all expected pages are printed if this is case
     pub fn finished(&mut self) -> bool
     {
         self.job.is_some()
@@ -155,6 +165,7 @@ impl Accounting
             && self.finish()
     }
 
+    /// finish accounting by hand
     pub fn finish(&mut self) -> bool
     {
         if self.value < 0 {

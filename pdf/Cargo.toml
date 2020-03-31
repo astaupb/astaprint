@@ -1,11 +1,11 @@
 [package]
-name = "pdf"
+name = "astaprint-pdf"
 version = "0.1.0"
 authors = ["Gerrit Pape <papeg@mail.upb.de>"]
 edition = "2018"
 
 [dependencies]
-sodium = {path = "../sodium"}
+sodium = {path = "../sodium", package = "astaprint-sodium"}
 log = {version = "0.4", features = ["std", "max_level_debug", "release_max_level_info"]}
 model = {path = "../model", package = "astaprint-model"}
 hex = "0.4"

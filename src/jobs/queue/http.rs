@@ -27,23 +27,45 @@ use rocket::{
 
 use rocket_contrib::json::Json;
 
-use poppler::PopplerDocument;
-
-use model::task::dispatcher::DispatcherTask;
-
-use jobs::queue::{
-    data::PdfBody,
-    start_dispatch,
-};
-
-use user::guard::UserGuard;
-
-use pdf::process::decrypt_pdf_from_data;
 
 use redis::{
     queue::TaskQueueClient,
     store::Store,
 };
+
+use poppler::PopplerDocument;
+
+use model::task::dispatcher::{
+    DispatcherTask,
+    DispatcherTaskResponse,
+};
+
+use pdf::process::decrypt_pdf_from_data;
+
+use crate::{
+    jobs::queue::{
+        data::PdfBody,
+        start_dispatch,
+    },
+    user::guard::UserGuard,
+};
+
+#[get("/queue")]
+pub fn get_dispatcher_queue(
+    user: UserGuard,
+    queue: State<TaskQueueClient<DispatcherTask, ()>>,
+) -> Option<Json<Vec<DispatcherTaskResponse>>>
+{
+    Some(Json(
+        queue
+            .get_processing()
+            .iter()
+            .filter(|element| element.user_id == user.id)
+            .map(|element| (*element).clone())
+            .map(|task| DispatcherTaskResponse::from(&task))
+            .collect(),
+    ))
+}
 
 #[post(
     "/queue?<filename>&<preprocess>&<keep>&<a3>&<color>&<duplex>&<copies>&<password>",

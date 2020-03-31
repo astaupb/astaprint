@@ -29,6 +29,8 @@ extern crate model;
 extern crate mysql;
 extern crate snmp;
 
+extern crate astaprint;
+
 use std::thread;
 
 use diesel::{
@@ -60,6 +62,7 @@ use mysql::{
 };
 
 use model::{
+    job::options::update::JobOptionsUpdate,
     ppd::PPD,
     task::worker::{
         WorkerCommand,
@@ -68,11 +71,7 @@ use model::{
     },
 };
 
-extern crate astaprint;
-use astaprint::{
-    jobs::options::JobOptionsUpdate,
-    printers::queue::work,
-};
+use astaprint::printers::queue::work;
 
 fn spawn_worker(
     device_id: u32,

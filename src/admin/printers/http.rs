@@ -29,7 +29,11 @@ use rocket_contrib::json::Json;
 use redis::queue::CommandClient;
 
 use model::{
-    printer::PrinterResponse,
+    job::options::update::JobOptionsUpdate,
+    printer::{
+        PrinterResponse,
+        PrinterUpdate,
+    },
     task::worker::{
         WorkerCommand,
         WorkerTaskResponse,
@@ -48,14 +52,11 @@ use snmp::tool::{
     status,
 };
 
-use admin::guard::AdminGuard;
-
-use jobs::options::JobOptionsUpdate;
-
-use printers::{
-    update::PrinterUpdate,
-    PrinterQueues,
+use crate::{
+    admin::guard::AdminGuard,
+    printers::PrinterQueues,
 };
+
 #[get("/")]
 pub fn get_printers_as_admin(admin: AdminGuard) -> QueryResult<Json<Vec<PrinterResponse>>>
 {

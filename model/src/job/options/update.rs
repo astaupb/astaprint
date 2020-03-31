@@ -17,19 +17,7 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-pub mod get;
-pub mod put;
-
-use model::job::options::JobOptions;
-
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(untagged)]
-pub enum Value
-{
-    S(String),
-    I(u16),
-    B(bool),
-}
+use crate::job::options::JobOptions;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct JobOptionsUpdate

@@ -26,10 +26,11 @@ use lettre::{
     SendableEmail,
     SmtpClient,
     SmtpTransport,
+    Transport,
 };
 
-use crate::lettre::Transport;
-
+/// sending a password to a given mail
+/// uses smtp so it only works within the university network
 pub fn send_password_reset_email(to: &str, password: &str) -> Result<(), Error>
 {
     let email = SendableEmail::new(

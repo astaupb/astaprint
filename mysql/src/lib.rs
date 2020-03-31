@@ -1,3 +1,7 @@
+//! this module contains the database schema  
+//! the struct representations of the tables  
+//! the simple queries for single tables
+//! and more complex transactions below
 #[macro_use]
 extern crate diesel;
 
@@ -24,10 +28,11 @@ use diesel::{
 
 use std::env;
 
-// Transactions
+/// all the transactions are found here
 use journal::insert::insert_into_journal;
 use user::update::update_user_credit;
 
+/// import a credit for an existing user
 pub fn import_credit(user_id: u32, credit: i32, connection: &MysqlConnection) -> QueryResult<()>
 {
     connection.transaction::<_, Error, _>(|| {
@@ -47,6 +52,7 @@ use user::{
     select::select_user_id_by_name,
 };
 
+/// insert a new user
 pub fn insert_user(name: &str, hash: Vec<u8>, salt: Vec<u8>, email: Option<String>, locked: bool, connection: &MysqlConnection) -> QueryResult<u32>
 {
     connection.transaction::<_, Error, _>(|| {
@@ -65,6 +71,7 @@ pub fn insert_user(name: &str, hash: Vec<u8>, salt: Vec<u8>, email: Option<Strin
 
 use journal::select::select_latest_credit_of_user;
 
+/// update the credit of an user
 pub fn update_credit_as_admin(user_id: u32, value: i32, admin_id: u32, description: &str, connection: &MysqlConnection) -> QueryResult<i32>
 {
     connection.transaction::<_, Error, _>(|| {
@@ -85,6 +92,7 @@ use journal::select::{
 };
 use journal::update::update_journal_token;
 
+/// update the credit with a journal token
 pub fn update_credit_with_unused_token(user_id: u32, token_id: u32, connection: &MysqlConnection) -> QueryResult<i32>
 {
     connection.transaction::<_, Error, _>(|| {
@@ -119,9 +127,9 @@ pub struct CreditUpdate
     pub options: Vec<u8>,
 }
 
+/// update the credit and journal after printing with extra information in the print journal
 pub fn update_credit_after_print(update: CreditUpdate, connection: &MysqlConnection) -> QueryResult<i32>
 {
-
     connection.transaction::<_, Error, _>(|| {
         let _rows_affected = insert_into_print_journal(update.job_id, update.pages, update.colored, update.score, update.device_id, update.options, connection)?;
 
@@ -147,6 +155,7 @@ use journal::{
     Journal,
 };
 
+/// select full journal of a user including print journal
 pub fn select_full_journal_of_user(user_id: u32, limit: i64, offset: i64, connection: &MysqlConnection) -> QueryResult<Vec<(Journal, Option<PrintJournal>)>>
 {
     connection.transaction::<_, Error, _>(|| {
@@ -164,6 +173,7 @@ pub fn select_full_journal_of_user(user_id: u32, limit: i64, offset: i64, connec
     })
 }
 
+/// select the full journal including print journal
 pub fn select_full_journal(limit: i64, offset: i64, connection: &MysqlConnection) -> QueryResult<Vec<(Journal, Option<PrintJournal>)>>
 {
     connection.transaction::<_, Error, _>(|| {
@@ -182,6 +192,7 @@ pub fn select_full_journal(limit: i64, offset: i64, connection: &MysqlConnection
 }
 
 
+/// wrapper for pool builder
 pub fn create_mysql_pool(
     url: &str,
     max_size: u32,
@@ -193,6 +204,7 @@ pub fn create_mysql_pool(
         .expect("creating Mysql Connection Pool")
 }
 
+/// get the astaprint mysql pool, pass the number of connections
 pub fn get_mysql_pool(
     max_size: u32,
 ) -> Pool<ConnectionManager<MysqlConnection>>

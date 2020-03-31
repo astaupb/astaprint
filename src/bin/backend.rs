@@ -53,11 +53,14 @@ use mysql::{
     printers::select::select_device_ids,
 };
 
-use model::task::{
-    dispatcher::DispatcherTask,
-    worker::{
-        WorkerCommand,
-        WorkerTask,
+use model::{
+    job::options::update::JobOptionsUpdate,
+    task::{
+        dispatcher::DispatcherTask,
+        worker::{
+            WorkerCommand,
+            WorkerTask,
+        },
     },
 };
 
@@ -65,10 +68,7 @@ use logger::Logger;
 
 use astaprint::{
     admin::{
-        admins::{
-            http::*,
-            tokens::http::*,
-        },
+        admins::http::*,
         jobs::http::*,
         journal::http::*,
         printers::http::*,
@@ -76,40 +76,17 @@ use astaprint::{
         users::http::*,
     },
     jobs::{
-        delete::*,
-        get::*,
-        info::get::*,
-        options::{
-            get::*,
-            put::*,
-            JobOptionsUpdate,
-        },
-        post::*,
-        queue::{
-            get::*,
-            post::*,
-        },
+        http::*,
+        queue::http::*,
     },
-    journal::{
-        credit::*,
-        get::*,
-        post::*,
-    },
+    journal::http::*,
     printers::{
-        get::*,
-        queue::{
-            delete::*,
-            post::*,
-        },
+        http::*,
+        queue::http::*,
     },
     user::{
-        get::*,
-        post::*,
-        put::*,
-        tokens::{
-            delete::*,
-            get::*,
-        },
+        http::*,
+        tokens::http::*,
     },
 };
 
@@ -134,6 +111,9 @@ fn cors() -> rocket_cors::Cors
 
 #[get("/")]
 fn api_reference() -> &'static str { include_str!("../../openapi.yaml") }
+
+#[get("/")]
+fn api_reference_admin() -> &'static str { include_str!("../../openapi_admin.yaml") }
 
 fn rocket() -> rocket::Rocket
 {
@@ -169,8 +149,6 @@ fn rocket() -> rocket::Rocket
     let mmdb_reader =
         maxminddb::Reader::open_readfile("GeoLite2-City.mmdb").expect("opening maxminddb reader");
 
-    let redis_pool = get_redis_pool(5, Redis::Lock);
-
     rocket::ignite()
         .manage(mysql_pool)
         .manage(redis_pool)
@@ -182,45 +160,45 @@ fn rocket() -> rocket::Rocket
         .mount("/", routes![api_reference])
         .mount("/jobs/", routes![
             jobs,
-            update_options,
-            fetch_options,
-            fetch_info,
-            get_dispatcher_queue,
-            copy_job,
-            upload_job,
-            delete_job,
             delete_all_jobs,
             fetch_job,
+            delete_job,
+            update_options,
+            copy_job,
             fetch_pdf,
             fetch_preview_0,
             fetch_preview_1,
             fetch_preview_2,
             fetch_preview_3,
+            fetch_info,
+            fetch_options,
             get_sharecode,
             post_sharecode,
         ])
+        .mount("/jobs/queue", routes![upload_job, get_dispatcher_queue])
         .mount("/user", routes![
-            login,
-            logout,
+            get_user_summary,
             register_as_new_user,
-            get_user_info,
             get_user_default_options,
             update_user_default_options,
-            credit_redirect,
-            change_password,
+            change_user_tou_accept,
             fetch_username,
             change_username,
             change_email,
-            change_user_tou_accept,
+            change_password,
+            fetch_credit,
+            logout,
         ])
         .mount("/user/tokens", routes![
             get_all_tokens,
             delete_all_tokens,
+            login,
             get_single_token,
             delete_single_token,
         ])
         .mount("/printers", routes![post_to_queue, delete_queue, get_printers, get_single_printer,])
         .mount("/journal", routes![get_journal_as_user, post_to_journal_with_token, credit])
+        .mount("/admin", routes![api_reference_admin])
         .mount("/admin/admins", routes![
             get_admins,
             post_new_admin,
@@ -252,7 +230,7 @@ fn rocket() -> rocket::Rocket
             delete_admin_tokens,
             delete_single_admin_token
         ])
-        .mount("/users", routes![
+        .mount("/admin/users", routes![
             get_all_users,
             get_user_as_admin,
             get_user_credit_as_admin,

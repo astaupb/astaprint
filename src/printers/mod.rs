@@ -17,23 +17,24 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
+//! module containing all the operations on /printers
 pub mod accounting;
-pub mod get;
+pub mod http;
 pub mod queue;
-pub mod response;
-pub mod update;
 
-use jobs::options::JobOptionsUpdate;
-
-use model::task::worker::{
-    WorkerCommand,
-    WorkerTask,
-};
-
-use redis::queue::TaskQueueClient;
 use std::collections::{
     hash_map::RandomState,
     HashMap,
+};
+
+use redis::queue::TaskQueueClient;
+
+use model::{
+    job::options::update::JobOptionsUpdate,
+    task::worker::{
+        WorkerCommand,
+        WorkerTask,
+    },
 };
 
 pub type PrinterQueue = TaskQueueClient<WorkerTask, WorkerCommand<Option<JobOptionsUpdate>>>;

@@ -36,7 +36,7 @@ use mysql::{
     update_credit_as_admin,
 };
 
-use admin::{
+use crate::admin::{
     guard::AdminGuard,
     journal::JournalPost,
 };

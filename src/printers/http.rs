@@ -17,48 +17,28 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-use sodium::random_bytes;
+use diesel::prelude::*;
 
-use std::{
-    fs::{
-        remove_file,
-        File,
-    },
-    io::{
-        self,
-        Read,
-        Write,
-    },
+use rocket_contrib::json::Json;
+
+use mysql::printers::select::{
+    select_printer_by_device_id,
+    select_printers,
 };
 
-#[derive(Clone, Debug)]
-pub struct TemporaryFile;
+use model::printer::UserPrinterResponse;
 
-impl TemporaryFile
+use crate::user::guard::UserGuard;
+
+#[get("/")]
+pub fn get_printers(user: UserGuard) -> QueryResult<Json<Vec<UserPrinterResponse>>>
 {
-    pub fn create(data: Vec<u8>) -> io::Result<String>
-    {
-        let uid = random_bytes(20);
+    Ok(Json(select_printers(&user.connection)?.iter().map(UserPrinterResponse::from).collect()))
+}
 
-        let path = format!("/tmp/{}", hex::encode(&uid[..]));
-
-        let mut file = File::create(&path)?;
-
-        file.write_all(&data[..])?;
-
-        Ok(path)
-    }
-
-    pub fn remove(path: &str) -> io::Result<Vec<u8>>
-    {
-        let mut file = File::open(path)?;
-
-        let mut buf: Vec<u8> = Vec::new();
-
-        file.read(&mut buf)?;
-
-        remove_file(path)?;
-
-        Ok(buf)
-    }
+#[get("/<device_id>")]
+pub fn get_single_printer(user: UserGuard, device_id: u32)
+-> QueryResult<Json<UserPrinterResponse>>
+{
+    Ok(Json(UserPrinterResponse::from(&select_printer_by_device_id(device_id, &user.connection)?)))
 }

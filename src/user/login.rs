@@ -17,6 +17,11 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
+use std::net::{
+    IpAddr,
+    Ipv4Addr,
+};
+
 use base64;
 
 use rocket::{
@@ -38,8 +43,6 @@ use diesel::{
     },
 };
 
-use crate::user::key::merge_x_api_key;
-
 use sodium::{
     random_bytes,
     GenericHash,
@@ -54,10 +57,7 @@ use mysql::user::{
     User,
 };
 
-use std::net::{
-    IpAddr,
-    Ipv4Addr,
-};
+use crate::user::key::merge_x_api_key;
 
 pub fn parse_header(
     request: &Request,
@@ -68,6 +68,7 @@ pub fn parse_header(
 
     let user_agent: Vec<_> = headers.get("user-agent").collect();
 
+    // sanitize too large user agents
     let user_agent = if user_agent[0].len() > 128 {
         String::from(&user_agent[0][.. 128])
     }
@@ -196,7 +197,6 @@ impl<'a, 'r> FromRequest<'a, 'r> for LoginGuard
 
         let (user_agent, ip, location) = parse_header(request, None)?;
 
-        // sanitize too large user agents
         match insert_into_user_tokens(
             user.id,
             &user_agent,

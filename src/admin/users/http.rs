@@ -17,11 +17,6 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-use admin::{
-    email::send_password_reset_email,
-    guard::AdminGuard,
-};
 use diesel::prelude::*;
 
 use model::{
@@ -57,6 +52,11 @@ use mysql::{
             update_user_name,
         },
     },
+};
+
+use crate::admin::{
+    email::send_password_reset_email,
+    guard::AdminGuard,
 };
 
 #[get("/?<limit>&<offset>")]

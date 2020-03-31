@@ -1,5 +1,5 @@
 [package]
-name = "redis"
+name = "astaprint-redis"
 version = "0.1.0"
 authors = ["Gerrit Pape <papeg@mail.upb.de>"]
 edition = "2018"
@@ -12,4 +12,4 @@ r2d2_redis = "0.13"
 bincode = "1.2"
 serde = "1.0"
 threadpool = "1.7"
-sodium = {path = "../sodium"}
+sodium = {path = "../sodium", package = "astaprint-sodium"}

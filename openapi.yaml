@@ -181,45 +181,6 @@ paths:
           $ref: '#/components/responses/ServerError'
         '502':
           $ref: '#/components/responses/BadGateway'
-  '/user/options':
-    get:
-      operationId: getDefaultOptions
-      tags:
-        - User
-      summary: Get default options of user
-      security:
-        - token: []
-      responses:
-        '202':
-          description: Success
-          content:
-            application/json:
-              schema:
-                type: object
-                items:
-                  $ref: '#/components/schemas/JobOptions'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '500':
-          $ref: '#/components/responses/ServerError'
-        '502':
-          $ref: '#/components/responses/BadGateway'
-    put:
-      operationId: setDefaultOptions
-      tags:
-        - User
-      summary: Set default options of user
-      security:
-        - token: []
-      responses:
-        '204':
-          description: Success - No content
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '500':
-          $ref: '#/components/responses/ServerError'
-        '502':
-          $ref: '#/components/responses/BadGateway'
   '/jobs/{id}':
     get:
       operationId: fetchJob
@@ -512,30 +473,6 @@ paths:
           $ref: '#/components/responses/ServerError'
         '502':
           $ref: '#/components/responses/BadGateway'
-  '/user/tou_accept':
-    put:
-      operationId: setTouAccept
-      parameters:
-        - name: tou_accept
-          in: query
-          description: value on which to set the flag
-          required: true
-          schema:
-            type: boolean
-      summary: Set the Terms of Usage accept flag
-      tags:
-        - User
-      security:
-        - token: []
-      responses:
-        '205':
-          description: Success - Reset Content
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '500':
-          $ref: '#/components/responses/ServerError'
-        '502':
-          $ref: '#/components/responses/BadGateway'
   '/user':
     get:
       operationId: getUser
@@ -557,6 +494,111 @@ paths:
                 credit: 19.6
                 active_tokens: 4
                 token_id: 77
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+    post:
+      operationId: registerUser
+      summary: Register a new user
+      tags:
+        - User
+        - Authorize
+      responses:
+        '204':
+          description: Success - No content
+        '470':
+          description: Username taken
+        '471':
+          description: Disallowed characters / Too long (>32)
+        '472':
+          description: Email taken
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+      requestBody:
+        description: JSON with information on new user
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: newuser
+                password:
+                  type: string
+                  example: newpassword
+                email:
+                  type: string
+                  example: "user@mail.upb.de"
+                  nullable: true
+                locked:
+                  type: boolean
+                  nullable: true
+                  example: null
+                  default: false
+  '/user/options':
+    get:
+      operationId: getDefaultOptions
+      tags:
+        - User
+      summary: Get default options of user
+      security:
+        - token: []
+      responses:
+        '202':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/JobOptions'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+    put:
+      operationId: setDefaultOptions
+      tags:
+        - User
+      summary: Set default options of user
+      security:
+        - token: []
+      responses:
+        '204':
+          description: Success - No content
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+  '/user/tou_accept':
+    put:
+      operationId: setTouAccept
+      parameters:
+        - name: tou_accept
+          in: query
+          description: value on which to set the flag
+          required: true
+          schema:
+            type: boolean
+      summary: Set the Terms of Usage accept flag
+      tags:
+        - User
+      security:
+        - token: []
+      responses:
+        '205':
+          description: Success - Reset Content
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '500':
@@ -636,6 +678,84 @@ paths:
             example: '"newusername"'
             schema:
               type: string
+  '/user/password':
+    put:
+      operationId: changePassword
+      summary: Change password
+      tags:
+        - User
+      security:
+        - token: []
+      responses:
+        '204':
+          description: Success - No content
+        '400':
+          description: Wrong Old Password
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+      requestBody:
+        description: JSON with both passwords
+        required: true
+        content:
+          application/json:
+            example:
+              password:
+                old: test123
+                new: base64richtigsecure
+            schema:
+              type: object
+              properties:
+                password:
+                  type: object
+                  properties:
+                    old:
+                      type: string
+                    new:
+                      type: string
+  '/user/credit':
+    get:
+      operationId: getCredit
+      summary: Get credit in cents as integer
+      tags:
+        - User
+      security:
+        - token: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: i32
+              example: 1984
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+  '/user/logout':
+    post:
+      operationId: logout
+      summary: Delete the current token to logout
+      tags:
+        - User
+      security:
+        - token: []
+      responses:
+        '205':
+          description: Success - Reset View
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+        '502':
+          $ref: '#/components/responses/BadGateway'
   '/user/tokens':
     get:
       operationId: getTokens
@@ -750,103 +870,6 @@ paths:
           $ref: '#/components/responses/ServerError'
         '502':
           $ref: '#/components/responses/BadGateway'
-  '/user/password':
-    put:
-      operationId: changePassword
-      summary: Change password
-      tags:
-        - User
-      security:
-        - token: []
-      responses:
-        '204':
-          description: Success - No content
-        '400':
-          description: Wrong Old Password
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '500':
-          $ref: '#/components/responses/ServerError'
-        '502':
-          $ref: '#/components/responses/BadGateway'
-      requestBody:
-        description: JSON with both passwords
-        required: true
-        content:
-          application/json:
-            example:
-              password:
-                old: test123
-                new: base64richtigsecure
-            schema:
-              type: object
-              properties:
-                password:
-                  type: object
-                  properties:
-                    old:
-                      type: string
-                    new:
-                      type: string
-  '/user/logout':
-    post:
-      operationId: logout
-      summary: Delete the current token to logout
-      tags:
-        - User
-      security:
-        - token: []
-      responses:
-        '205':
-          description: Success - Reset View
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '500':
-          $ref: '#/components/responses/ServerError'
-        '502':
-          $ref: '#/components/responses/BadGateway'
-  '/register':
-    post:
-      operationId: registerUser
-      summary: Register a new user
-      tags:
-        - Authorize
-      responses:
-        '204':
-          description: Success - No content
-        '470':
-          description: Username taken
-        '471':
-          description: Disallowed characters / Too long (>32)
-        '472':
-          description: Email taken
-        '500':
-          $ref: '#/components/responses/ServerError'
-        '502':
-          $ref: '#/components/responses/BadGateway'
-      requestBody:
-        description: JSON with information on new user
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                username:
-                  type: string
-                  example: newuser
-                password:
-                  type: string
-                  example: newpassword
-                email:
-                  type: string
-                  example: "user@mail.upb.de"
-                  nullable: true
-                locked:
-                  type: boolean
-                  nullable: true
-                  example: null
-                  default: false
   '/journal':
     get:
       operationId: getJournal
@@ -907,28 +930,6 @@ paths:
       responses:
         '204':
           description: Success - No content
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '500':
-          $ref: '#/components/responses/ServerError'
-        '502':
-          $ref: '#/components/responses/BadGateway'
-  '/user/credit':
-    get:
-      operationId: getCredit
-      summary: Get credit as decimal number string
-      tags:
-        - User
-      security:
-        - token: []
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema:
-                type: number
-              example: 1956
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '500':

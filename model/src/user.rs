@@ -41,11 +41,42 @@ impl<'a> From<&'a User> for UserResponse
     }
 }
 
+/// summary of the user displayed to itself
+#[derive(Serialize, Debug)]
+pub struct UserSummary
+{
+    pub id: u32,
+    pub name: String,
+    pub credit: i32,
+    pub card: Option<u64>,
+    pub pin: Option<u32>,
+    pub email: Option<String>,
+    pub tou_accept: bool,
+    pub tokens: usize,
+    pub token_id: u32,
+}
+
+/// request body for changing the card credentials
 #[derive(Deserialize, Debug, Clone)]
 pub struct Card
 {
     pub sn: Option<u64>,
     pub pin: Option<u32>,
+}
+
+/// part of the password change body
+#[derive(Deserialize, Debug)]
+pub struct PasswordChange
+{
+    pub old: String,
+    pub new: String,
+}
+
+/// request body for changing the password
+#[derive(Deserialize, Debug)]
+pub struct PasswordChangeBody
+{
+    pub password: PasswordChange,
 }
 
 /// representation of a user token

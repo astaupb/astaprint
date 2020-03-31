@@ -42,14 +42,15 @@ use diesel::{
 
 use sodium::GenericHash;
 
-use crate::user::key::split_x_api_key;
-
 use mysql::user::{
     select::*,
     update::*,
 };
 
-use user::login::parse_header;
+use crate::user::{
+    key::split_x_api_key,
+    login::parse_header,
+};
 
 pub struct UserGuard
 {

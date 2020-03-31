@@ -6,7 +6,7 @@ use mysql::journal::{
 
 use crate::job::options::JobOptions;
 
-/// represenation of the journal information of a print job
+/// representation of the journal information of a print job
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct PrintJournalResponse
 {

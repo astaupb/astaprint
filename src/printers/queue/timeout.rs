@@ -26,6 +26,10 @@ use std::{
     },
 };
 
+/// helper type for calculating timeout
+/// create it by passing timeout duration in seconds
+/// renew it by using the refresh function
+/// check if timeout elapsed with the check function
 #[derive(Clone)]
 pub struct TimeOut
 {

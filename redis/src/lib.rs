@@ -44,7 +44,7 @@ pub fn get_redis_pool(max_size: u32, redis: Redis) -> Pool<RedisConnectionManage
             },
             Redis::Store => {
                 env::var("ASTAPRINT_STORE_REDIS_URL")
-                    .expect("reading ASTAPRINT_STORELOCK_REDIS_URL from env")
+                    .expect("reading ASTAPRINT_STORE_REDIS_URL from env")
             },
             Redis::Dispatcher => {
                 env::var("ASTAPRINT_DISPATCHER_REDIS_URL")

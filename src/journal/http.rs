@@ -17,23 +17,48 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
+use diesel::prelude::*;
+
+use rocket_contrib::json::Json;
+
 use rocket::{
     http::Status,
     response::status::Custom,
 };
-use rocket_contrib::json::Json;
 
-use diesel::prelude::*;
-
-use user::guard::UserGuard;
+use model::journal::JournalResponse;
 
 use mysql::{
     journal::{
         select::select_journal_token_by_content,
         JournalToken,
     },
+    select_full_journal_of_user,
     update_credit_with_unused_token,
+    user::select::select_user_credit_by_id,
 };
+
+use crate::user::guard::UserGuard;
+
+#[get("/?<offset>&<limit>")]
+pub fn get_journal_as_user(
+    offset: Option<i64>,
+    limit: Option<i64>,
+    user: UserGuard,
+) -> QueryResult<Json<Vec<JournalResponse>>>
+{
+    Ok(Json(
+        select_full_journal_of_user(
+            user.id,
+            limit.unwrap_or(i64::from(u16::max_value()) * 2),
+            offset.unwrap_or(0),
+            &user.connection,
+        )?
+        .iter()
+        .map(JournalResponse::from)
+        .collect(),
+    ))
+}
 
 #[post("/", data = "<token>")]
 pub fn post_to_journal_with_token(user: UserGuard, token: Json<String>) -> QueryResult<Custom<()>>
@@ -53,4 +78,10 @@ pub fn post_to_journal_with_token(user: UserGuard, token: Json<String>) -> Query
             Ok(Custom(Status::new(204, "Success - No Content"), ()))
         },
     }
+}
+
+#[get("/credit")]
+pub fn credit(user: UserGuard) -> QueryResult<Json<i32>>
+{
+    Ok(Json(select_user_credit_by_id(user.id, &user.connection)?))
 }

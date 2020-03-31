@@ -7,10 +7,10 @@ edition = "2018"
 [dependencies]
 log = {version = "0.4", features = ["std", "max_level_debug", "release_max_level_info"]}
 diesel = {version = "1.4", features = ["mysql", "r2d2", "chrono"]}
-mysql = {path = "../mysql"}
-redis = {path = "../redis"}
-sodium = {path = "../sodium"}
-snmp = {path = "../snmp"}
+mysql = {path = "../mysql", package = "astaprint-mysql"}
+redis = {path = "../redis", package = "astaprint-redis"}
+sodium = {path = "../sodium", package = "astaprint-sodium"}
+snmp = {path = "../snmp", package = "astaprint-snmp"}
 r2d2_redis = "0.13"
 hex = "0.4"
 bincode = "1.2"
