@@ -55,7 +55,7 @@ impl TmpFile
 
         let mut buf: Vec<u8> = Vec::new();
 
-        file.read(&mut buf)?;
+        file.read_to_end(&mut buf)?;
 
         file.sync_all()?;
 
@@ -70,7 +70,7 @@ impl TmpFile
 
         let mut buf: Vec<u8> = Vec::new();
 
-        file.read(&mut buf)?;
+        file.read_to_end(&mut buf)?;
 
         file.sync_all()?;
 
