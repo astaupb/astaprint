@@ -30,6 +30,8 @@ use rocket::{
     State,
 };
 
+use chrono::offset::Utc;
+
 use diesel::{
     prelude::*,
     r2d2::{
@@ -109,14 +111,18 @@ impl<'a, 'r> FromRequest<'a, 'r> for AdminLoginGuard
             Ok(admin) => admin,
             Err(_) => return Outcome::Failure((Status::Unauthorized, ())),
         };
+
         debug!("{:?}", admin);
         if admin.locked {
             return Outcome::Failure((Status::Unauthorized, ()))
         }
 
-        let (hash, salt) = (admin.hash, admin.salt);
+        if Utc::today().naive_utc() >= admin.expires {
+            info!("admin {} accesss expired", admin.id);
+            return Outcome::Failure((Status::Unauthorized, ()))
+        }
 
-        if PasswordHash::with_salt(credentials[1], &salt[..]) != hash {
+        if PasswordHash::with_salt(credentials[1], &admin.salt[..]) != admin.hash {
             return Outcome::Failure((Status::Unauthorized, ()))
         }
 
@@ -125,7 +131,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for AdminLoginGuard
 
         // using the password hash as salt for performace reasons
         // and so every token gets invalidated on password change
-        let hash = GenericHash::with_salt(&token[..], &hash[..]);
+        let hash = GenericHash::with_salt(&token[..], &admin.hash[..]);
 
         let x_api_key = match merge_x_api_key(admin.id, token) {
             Ok(key) => key,
