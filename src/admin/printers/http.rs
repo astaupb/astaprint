@@ -63,7 +63,7 @@ pub fn get_printers_as_admin(admin: AdminGuard) -> QueryResult<Json<Vec<PrinterR
     Ok(Json(select_printers(&admin.connection)?.iter().map(PrinterResponse::from).collect()))
 }
 
-#[post("/printers", data = "<post>")]
+#[post("/", data = "<post>")]
 pub fn post_printer(admin: AdminGuard, post: Json<PrinterInsert>) -> QueryResult<Status>
 {
     insert_into_printers(post.into_inner(), &admin.connection)?;
