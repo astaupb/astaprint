@@ -160,6 +160,11 @@ paths:
       summary: Add a new printer to the system
       security:
         - token: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewPrinter'
       responses:
         '205':
           description: Success - Reset Content
@@ -234,6 +239,11 @@ paths:
       summary: Update printer details for an existing printer
       security:
         - token: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PrinterUpdate'
       responses:
         '205':
           description: Success - Reset Content
@@ -1018,6 +1028,103 @@ components:
           $ref: '#/components/schemas/PrinterCounter'
         queue:
           $ref: '#/components/schemas/PrinterQueueTask'
+    NewPrinter:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: u32
+          example: 7
+        hostname:
+          type: string
+          example: print-cs-44338
+        ip:
+          type: string
+          example: "192.168.0.2"
+        community:
+          type: string
+          example: "user"
+        mac:
+          type: string
+          example: "58:38:79:45:DB:1G"
+        device_id:
+          type: integer
+          format: u32
+          example: 44338
+        location:
+          type: string
+          example: "BI_2.107"
+        has_a3:
+          type: boolean
+          example: false
+        coin_operated:
+          type: boolean
+          example: false
+        description:
+          type: string
+          example: "offline"
+    PrinterUpdate:
+      type: object
+      properties:
+        hostname:
+          type: string
+          example: null
+          nullable: true
+        ip:
+          type: string
+          example: null
+          nullable: true
+        community:
+          type: string
+          example: null
+          nullable: true
+        mac:
+          type: string
+          example: null
+          nullable: true
+        device_id:
+          type: integer
+          format: u32
+          example: 44338
+          nullable: true
+        location:
+          type: string
+          example: "BI_2.107"
+          nullable: true
+        has_a3:
+          type: boolean
+          example: false
+          nullable: true
+        coin_operated:
+          type: boolean
+          example: false
+          nullable: true
+        description:
+          type: string
+          example: null
+          nullable: true
+        watch_toner:
+          type: boolean
+          example: true
+          nullable: true
+        watch_tray1: 
+          type: boolean
+          example: true
+          nullable: true
+        watch_tray2:
+          type: boolean
+          example: true
+          nullable: true
+        watch_tray3:
+          type: boolean
+          example: true
+          nullable: true
+        watch_interval:
+          description: watch interval in minutes
+          type: integer
+          format: u32
+          example: 5
+          nullable: true
     PrinterStatus:
       type: object
       properties:
