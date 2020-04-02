@@ -32,7 +32,10 @@ extern crate astaprint;
 extern crate mysql;
 extern crate redis;
 
-use std::collections::HashMap;
+use std::{
+    collections::HashMap,
+    env,
+};
 
 use rocket::http::Method;
 use rocket_cors::{
@@ -146,8 +149,10 @@ fn rocket() -> rocket::Rocket
         worker_queues
             .insert(device_id, TaskQueueClient::new(&format!("worker::{}", device_id), pool));
     }
-    let mmdb_reader =
-        maxminddb::Reader::open_readfile("GeoLite2-City.mmdb").expect("opening maxminddb reader");
+    let mmdb_reader = maxminddb::Reader::open_readfile(
+        &env::var("ASTAPRINT_MMDB_FILE").expect("reading path of mmdb file from env"),
+    )
+    .expect("opening maxminddb reader");
 
     rocket::ignite()
         .manage(mysql_pool)

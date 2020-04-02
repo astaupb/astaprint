@@ -31,7 +31,10 @@ extern crate snmp;
 
 extern crate astaprint;
 
-use std::thread;
+use std::{
+    env,
+    thread,
+};
 
 use diesel::{
     mysql::MysqlConnection,
@@ -125,7 +128,10 @@ fn main()
 
     let connection = mysql_pool.get().expect("getting mysql connection from pool");
 
-    let ppd = PPD::new_from_file("./Ricoh-MP_C4504ex-PDF-Ricoh.ppd").expect("creating PPD");
+    let ppd = PPD::new_from_file(
+        &env::var("ASTAPRINT_PPD_FILE").expect("reading path of ppd file from environment"),
+    )
+    .expect("creating PPD");
 
     for id in select_device_ids(&connection).expect("selecting device ids") {
         let redis_pool = get_redis_pool(32, Redis::Worker);
